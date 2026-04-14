@@ -1,0 +1,7 @@
+src/components/common/ProductCard/ProductCard.tsx(3,10): error TS1484: 'Product' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/context/AppContext.tsx(2,10): error TS1484: 'Product' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/hooks/useClickOutside.ts(1,21): error TS1484: 'RefObject' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/layouts/MainLayout/components/Footer.tsx(2,36): error TS2305: Module '"lucide-react"' has no exported member 'Facebook'.
+src/layouts/MainLayout/components/Footer.tsx(2,46): error TS2305: Module '"lucide-react"' has no exported member 'Youtube'.
+src/layouts/MainLayout/components/Footer.tsx(2,55): error TS2305: Module '"lucide-react"' has no exported member 'Instagram'.
+src/pages/Blog/BlogDetail.tsx(3,21): error TS1484: 'BlogSection' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
