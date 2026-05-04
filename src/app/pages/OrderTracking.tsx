@@ -1,0 +1,319 @@
+import { useState } from "react";
+import { useSearchParams, Link } from "react-router";
+import { Search, Package, CheckCircle, Truck, XCircle, Clock, ChevronRight, AlertTriangle, RotateCcw } from "lucide-react";
+import { useApp } from "../context/AppContext";
+import { formatPrice } from "../data/products";
+
+const statusConfig: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+  pending: { label: "Chờ xác nhận", color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200", icon: <Clock className="w-4 h-4 text-yellow-600" /> },
+  confirmed: { label: "Đã xác nhận", color: "text-blue-700", bg: "bg-blue-50 border-blue-200", icon: <CheckCircle className="w-4 h-4 text-blue-600" /> },
+  shipping: { label: "Đang giao hàng", color: "text-indigo-700", bg: "bg-indigo-50 border-indigo-200", icon: <Truck className="w-4 h-4 text-indigo-600" /> },
+  delivered: { label: "Đã giao hàng", color: "text-green-700", bg: "bg-green-50 border-green-200", icon: <CheckCircle className="w-4 h-4 text-green-600" /> },
+  cancelled: { label: "Đã hủy", color: "text-red-700", bg: "bg-red-50 border-red-200", icon: <XCircle className="w-4 h-4 text-red-600" /> },
+  return_requested: { label: "Yêu cầu đổi trả", color: "text-orange-700", bg: "bg-orange-50 border-orange-200", icon: <RotateCcw className="w-4 h-4 text-orange-600" /> },
+  returned: { label: "Đã hoàn hàng", color: "text-gray-700", bg: "bg-gray-50 border-gray-200", icon: <RotateCcw className="w-4 h-4 text-gray-500" /> },
+};
+
+export function OrderTracking() {
+  const [searchParams] = useSearchParams();
+  const { orders, cancelOrder, requestReturn } = useApp();
+  const [searchId, setSearchId] = useState(searchParams.get("id") || "");
+  const [foundOrder, setFoundOrder] = useState(() => {
+    const id = searchParams.get("id");
+    return id ? orders.find((o) => o.id === id) : null;
+  });
+  const [cancelModal, setCancelModal] = useState(false);
+  const [returnModal, setReturnModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [returnReason, setReturnReason] = useState("");
+
+  const handleSearch = () => {
+    const order = orders.find((o) => o.id === searchId.trim());
+    setFoundOrder(order || null);
+  };
+
+  const handleCancel = () => {
+    if (foundOrder && cancelReason) {
+      cancelOrder(foundOrder.id, cancelReason);
+      setCancelModal(false);
+      setCancelReason("");
+      const updated = orders.find((o) => o.id === foundOrder.id);
+      if (updated) setFoundOrder({ ...updated, status: "cancelled", cancelReason } as any);
+    }
+  };
+
+  const handleReturn = () => {
+    if (foundOrder && returnReason) {
+      requestReturn(foundOrder.id, returnReason);
+      setReturnModal(false);
+      setReturnReason("");
+      setFoundOrder((prev) => prev ? { ...prev, status: "return_requested", returnReason } as any : null);
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-5">
+        <Link to="/" className="hover:text-blue-600">Trang chủ</Link>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <span className="text-gray-800">Theo dõi đơn hàng</span>
+      </div>
+
+      <h1 className="text-gray-900 mb-2">Theo dõi đơn hàng</h1>
+      <p className="text-gray-500 text-sm mb-6">Nhập mã đơn hàng để kiểm tra trạng thái giao hàng</p>
+
+      {/* Search */}
+      <div className="bg-white rounded-2xl p-5 border border-gray-100 mb-6">
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={searchId}
+            onChange={(e) => setSearchId(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            placeholder="Nhập mã đơn hàng (vd: SZ20260315001)"
+            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm"
+          />
+          <button
+            onClick={handleSearch}
+            className="px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-xl flex items-center gap-2 transition-colors"
+          >
+            <Search className="w-4 h-4" />
+            <span className="hidden sm:inline">Tra cứu</span>
+          </button>
+        </div>
+        <p className="text-xs text-gray-400 mt-2">Mẫu thử: SZ20260315001, SZ20260320002</p>
+      </div>
+
+      {foundOrder === null && searchId && (
+        <div className="text-center py-10 bg-white rounded-2xl border border-gray-100">
+          <AlertTriangle className="w-10 h-10 text-yellow-400 mx-auto mb-3" />
+          <p className="text-gray-600">Không tìm thấy đơn hàng với mã <strong>{searchId}</strong></p>
+          <p className="text-gray-400 text-sm mt-1">Kiểm tra lại mã đơn hàng và thử lại</p>
+        </div>
+      )}
+
+      {foundOrder && (
+        <div className="space-y-5">
+          {/* Status Card */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Mã đơn hàng</p>
+                <p className="font-bold text-gray-800">#{foundOrder.id}</p>
+              </div>
+              <span className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border ${statusConfig[foundOrder.status]?.bg} ${statusConfig[foundOrder.status]?.color}`}>
+                {statusConfig[foundOrder.status]?.icon}
+                {statusConfig[foundOrder.status]?.label}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+              <div className="bg-gray-50 p-3 rounded-xl">
+                <p className="text-gray-500 text-xs mb-1">Ngày đặt</p>
+                <p className="text-gray-800">{foundOrder.orderDate}</p>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-xl">
+                <p className="text-gray-500 text-xs mb-1">Tổng tiền</p>
+                <p className="text-blue-700 font-bold">{formatPrice(foundOrder.total)}</p>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-xl">
+                <p className="text-gray-500 text-xs mb-1">Thanh toán</p>
+                <p className="text-gray-800">{foundOrder.paymentMethod}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Tracking Timeline */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+            <h3 className="text-gray-800 mb-5">Lịch trình đơn hàng</h3>
+            <div className="space-y-0">
+              {foundOrder.trackingHistory.map((event, i) => (
+                <div key={i} className="flex gap-4">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${event.done ? "bg-blue-600" : "bg-gray-200"}`}>
+                      {event.done ? <CheckCircle className="w-4 h-4 text-white" /> : <div className="w-2 h-2 rounded-full bg-gray-400" />}
+                    </div>
+                    {i < foundOrder.trackingHistory.length - 1 && (
+                      <div className={`w-0.5 h-8 mt-1 ${event.done ? "bg-blue-200" : "bg-gray-200"}`} />
+                    )}
+                  </div>
+                  <div className="pb-6 flex-1">
+                    <p className={`text-sm font-medium ${event.done ? "text-gray-800" : "text-gray-400"}`}>{event.status}</p>
+                    <p className={`text-xs mt-0.5 ${event.done ? "text-gray-500" : "text-gray-300"}`}>{event.description}</p>
+                    {event.time && <p className="text-xs text-gray-400 mt-1">{event.time}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Order items */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+            <h3 className="text-gray-800 mb-4">Sản phẩm đã đặt</h3>
+            <div className="space-y-3">
+              {foundOrder.items.map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-800 truncate">{item.name}</p>
+                    <p className="text-xs text-gray-500">Size: {item.size} · Màu: {item.color} · x{item.quantity}</p>
+                  </div>
+                  <p className="text-sm font-medium text-blue-700 flex-shrink-0">{formatPrice(item.price * item.quantity)}</p>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-gray-100 mt-4 pt-4 space-y-2 text-sm">
+              <div className="flex justify-between text-gray-600">
+                <span>Tạm tính</span><span>{formatPrice(foundOrder.subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Phí ship</span>
+                <span>{foundOrder.shippingFee === 0 ? "Miễn phí" : formatPrice(foundOrder.shippingFee)}</span>
+              </div>
+              <div className="flex justify-between font-bold text-gray-800 pt-1">
+                <span>Tổng cộng</span>
+                <span className="text-blue-700">{formatPrice(foundOrder.total)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Shipping address */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+            <h3 className="text-gray-800 mb-3">Địa chỉ nhận hàng</h3>
+            <p className="text-sm font-medium text-gray-800">{foundOrder.address.fullName} · {foundOrder.address.phone}</p>
+            <p className="text-sm text-gray-600">{foundOrder.address.street}, {foundOrder.address.ward}, {foundOrder.address.district}, {foundOrder.address.province}</p>
+          </div>
+
+          {/* Actions */}
+          {(foundOrder.status === "pending" || foundOrder.status === "confirmed") && (
+            <div className="bg-yellow-50 rounded-2xl p-5 border border-yellow-100">
+              <p className="text-sm text-yellow-700 mb-3 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                Bạn muốn hủy đơn hàng này?
+              </p>
+              <button
+                onClick={() => setCancelModal(true)}
+                className="flex items-center gap-2 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm transition-colors"
+              >
+                <XCircle className="w-4 h-4" />
+                Hủy đơn hàng
+              </button>
+            </div>
+          )}
+
+          {foundOrder.status === "delivered" && (
+            <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100">
+              <p className="text-sm text-blue-700 mb-3 flex items-center gap-2">
+                <RotateCcw className="w-4 h-4" />
+                Bạn muốn đổi trả sản phẩm?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setReturnModal(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm transition-colors"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Yêu cầu đổi trả
+                </button>
+                <Link to="/returns" className="flex items-center gap-2 px-5 py-2.5 border border-blue-200 text-blue-600 rounded-xl text-sm hover:bg-blue-50 transition-colors">
+                  Xem chính sách đổi trả
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {foundOrder.status === "cancelled" && (
+            <div className="bg-red-50 rounded-2xl p-4 border border-red-100">
+              <p className="text-sm text-red-700">❌ Đơn hàng đã bị hủy</p>
+              {(foundOrder as any).cancelReason && <p className="text-xs text-red-500 mt-1">Lý do: {(foundOrder as any).cancelReason}</p>}
+            </div>
+          )}
+
+          {foundOrder.status === "return_requested" && (
+            <div className="bg-orange-50 rounded-2xl p-4 border border-orange-100">
+              <p className="text-sm text-orange-700">🔄 Yêu cầu đổi trả đang được xử lý</p>
+              {(foundOrder as any).returnReason && <p className="text-xs text-orange-500 mt-1">Lý do: {(foundOrder as any).returnReason}</p>}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Recent orders shortcuts */}
+      {!foundOrder && orders.length > 0 && (
+        <div className="bg-white rounded-2xl p-5 border border-gray-100">
+          <h3 className="text-gray-800 mb-4">Đơn hàng gần đây</h3>
+          <div className="space-y-3">
+            {orders.slice(0, 3).map((order) => (
+              <button
+                key={order.id}
+                onClick={() => { setSearchId(order.id); setFoundOrder(order); }}
+                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 transition-colors text-left"
+              >
+                <Package className="w-8 h-8 text-blue-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-800">#{order.id}</p>
+                  <p className="text-xs text-gray-500">{order.orderDate} · {formatPrice(order.total)}</p>
+                </div>
+                <span className={`text-xs px-2 py-1 rounded-full border ${statusConfig[order.status]?.bg} ${statusConfig[order.status]?.color}`}>
+                  {statusConfig[order.status]?.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Cancel modal */}
+      {cancelModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-gray-900 mb-2">Xác nhận hủy đơn hàng</h3>
+            <p className="text-sm text-gray-500 mb-4">Vui lòng cho chúng tôi biết lý do hủy để cải thiện dịch vụ</p>
+            <div className="space-y-2 mb-4">
+              {["Tôi đặt nhầm sản phẩm", "Tôi muốn thay đổi địa chỉ giao hàng", "Tôi tìm được giá tốt hơn", "Lý do khác"].map((r) => (
+                <label key={r} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50">
+                  <input type="radio" name="cancelReason" value={r} onChange={() => setCancelReason(r)} className="accent-blue-600" />
+                  <span className="text-sm text-gray-700">{r}</span>
+                </label>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setCancelModal(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors text-sm">
+                Hủy bỏ
+              </button>
+              <button onClick={handleCancel} className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm transition-colors">
+                Xác nhận hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Return modal */}
+      {returnModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-gray-900 mb-2">Yêu cầu đổi trả hàng</h3>
+            <p className="text-sm text-gray-500 mb-4">Chọn lý do đổi trả. Chúng tôi sẽ liên hệ trong 24h</p>
+            <div className="space-y-2 mb-4">
+              {["Sản phẩm bị lỗi/hỏng", "Sản phẩm không đúng mô tả", "Kích cỡ không phù hợp", "Sản phẩm không như mong đợi", "Lý do khác"].map((r) => (
+                <label key={r} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50">
+                  <input type="radio" name="returnReason" value={r} onChange={() => setReturnReason(r)} className="accent-blue-600" />
+                  <span className="text-sm text-gray-700">{r}</span>
+                </label>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setReturnModal(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors text-sm">
+                Hủy bỏ
+              </button>
+              <button onClick={handleReturn} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm transition-colors">
+                Gửi yêu cầu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
