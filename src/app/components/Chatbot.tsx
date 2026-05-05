@@ -118,9 +118,14 @@ export function Chatbot() {
 
   // Hệ thống hàng đợi âm thanh thông minh (Chống chồng chéo)
   const audioBuffer = useRef<Map<number, string>>(new Map());
+  const retryCounts = useRef<Map<number, number>>(new Map());
   const nextIndexToPlay = useRef(0);
   const isCurrentlyPlaying = useRef(false);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  
+  // Pipeline Gối đầu
+  const textChunksToProcess = useRef<string[]>([]);
+  const nextProcessIndex = useRef(0);
 
   const speak = async (text: string) => {
     if (isMuted) return;
@@ -134,6 +139,7 @@ export function Chatbot() {
     
     // 2. Reset trạng thái
     audioBuffer.current.clear();
+    retryCounts.current.clear();
     nextIndexToPlay.current = 0;
     isCurrentlyPlaying.current = false;
 
@@ -144,89 +150,191 @@ export function Chatbot() {
       .replace(/\s+/g, ' ')
       .trim();
 
+    // 3. LOGIC MỚI: Tách thành từng câu hoàn chỉnh (Bắt buộc có khoảng trắng sau dấu câu để không chém đôi giá tiền 2.990.000đ)
+    const rawChunks = cleanFullText.split(/([.!?]\s|\n)/);
     let chunks: string[] = [];
-    const words = cleanFullText.split(/\s+/);
+    
+    // Hàm phụ để cắt nhỏ chuỗi theo độ dài nếu không có dấu câu
+    const splitByLength = (text: string, maxLength: number) => {
+      const parts: string[] = [];
+      let current = text;
+      while (current.length > maxLength) {
+        let splitIdx = current.lastIndexOf(' ', maxLength);
+        if (splitIdx === -1) splitIdx = maxLength;
+        parts.push(current.substring(0, splitIdx).trim());
+        current = current.substring(splitIdx).trim();
+      }
+      if (current) parts.push(current);
+      return parts;
+    };
 
-    if (words.length <= 50) {
-      // Nếu dưới 50 từ thì để nguyên 1 đoạn cho hay
-      chunks = [cleanFullText];
-    } else {
-      // Nếu dài quá 50 từ mới CHỈ CHIA LÀM ĐÔI để giảm delay
-      const midIndex = Math.floor(words.length / 2);
-      const p1 = words.slice(0, midIndex).join(' ');
-      const p2 = words.slice(midIndex).join(' ');
-      chunks = [p1, p2];
+    for (let i = 0; i < rawChunks.length; i += 2) {
+      let sentence = (rawChunks[i] + (rawChunks[i+1] || "")).trim();
+      
+      if (sentence.length > 85) {
+        // Cắt theo dấu phẩy trước (Bắt buộc có khoảng trắng để tránh chém nhầm 1,000,000)
+        const subParts = sentence.split(/([,;]\s)/);
+        for (let j = 0; j < subParts.length; j += 2) {
+          const subSentence = (subParts[j] + (subParts[j+1] || "")).trim();
+          if (subSentence.length > 85) {
+            // Nếu vẫn quá dài thì cắt theo độ dài (khoảng trắng)
+            chunks.push(...splitByLength(subSentence, 85));
+          } else if (subSentence.length > 2) {
+            chunks.push(subSentence);
+          }
+        }
+      } else if (sentence.length > 2) {
+        chunks.push(sentence);
+      }
     }
 
+    if (chunks.length === 0 && cleanFullText) chunks = [cleanFullText];
     if (chunks.length === 0) return;
-    console.log(`>>> Tổng số từ: ${words.length}. Đã chia thành ${chunks.length} đoạn.`);
+    
+    console.log(`>>> Phát cuốn chiếu: ${chunks.length} câu.`);
+    chunks.forEach((c, idx) => console.log(`[Đoạn ${idx + 1}]: ${c}`));
 
-    chunks.forEach(async (chunk, index) => {
-      try {
-        const response = await api.get("/tts", { params: { text: chunk } });
-        const url = response.data.audioUrl;
-        if (url) {
-          audioBuffer.current.set(index, url);
-          tryPlayNext();
+    // Kỹ thuật Gối đầu (Pre-fetching & Pipeline)
+    textChunksToProcess.current = chunks;
+    nextProcessIndex.current = 0;
+
+    // Kích hoạt nạp trước 2 câu đầu tiên vào đường ống (Pipeline)
+    processNextChunk(); 
+    if (chunks.length > 1) processNextChunk();
+  };
+
+  // Hàm ping URL để đảm bảo file thực sự tồn tại trên server FPT (UX tối đa)
+  const waitAudioReady = (url: string): Promise<boolean> => {
+    console.log(`>>> [PING] Đang kiểm tra URL từ FPT.AI: ${url}`);
+    return new Promise((resolve) => {
+      let attempts = 0;
+      const check = () => {
+        attempts++;
+        if (attempts > 10) { // Giảm xuống 10s để nếu lỗi thì gọi tạo lại nhanh hơn
+          console.error(`❌ [PING THẤT BẠI] URL này vẫn bị 404 sau 10 giây: ${url}`);
+          return resolve(false); 
         }
-      } catch (err) {
-        console.error(`Lỗi tải đoạn ${index}:`, err);
-        audioBuffer.current.set(index, "ERROR");
-        tryPlayNext();
-      }
+        
+        const tempAudio = new Audio(url);
+        tempAudio.onloadedmetadata = () => resolve(true); // 200 OK
+        tempAudio.onerror = () => {
+          setTimeout(check, 1000); // 404, đợi 1s
+        };
+      };
+      check();
     });
   };
 
+  const processNextChunk = async () => {
+    const idx = nextProcessIndex.current;
+    if (idx >= textChunksToProcess.current.length) return;
+    
+    nextProcessIndex.current++; 
+    const text = textChunksToProcess.current[idx];
+    
+    let isSuccess = false;
+    let maxRetries = 2; // Thử yêu cầu tạo lại tối đa 2 lần
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        if (attempt > 0) {
+          console.warn(`⚠️ [RETRY API] FPT.AI tạo file lỗi, yêu cầu tạo lại đoạn ${idx + 1} (lần ${attempt})...`);
+        }
+        
+        const response = await api.get("/tts", { params: { text } });
+        const url = response.data.audioUrl;
+        
+        if (url) {
+          const isReady = await waitAudioReady(url);
+          if (isReady) {
+            audioBuffer.current.set(idx, url);
+            isSuccess = true;
+            break; // Đã tạo và load thành công, thoát vòng lặp
+          }
+        } else {
+          // Backend từ chối vì câu chỉ có Emoji, không cần thử lại
+          break;
+        }
+      } catch (err) {
+        console.error(`Lỗi API khi nạp đoạn ${idx + 1}:`, err);
+      }
+    }
+    
+    if (!isSuccess) {
+      audioBuffer.current.set(idx, "ERROR");
+    }
+    
+    tryPlayNext();
+  };
+
+
+
   const tryPlayNext = () => {
-    // Khóa (Lock): Nếu đang phát hoặc đoạn tiếp theo chưa sẵn sàng thì thoát
     if (isCurrentlyPlaying.current || !audioBuffer.current.has(nextIndexToPlay.current)) return;
 
     const url = audioBuffer.current.get(nextIndexToPlay.current);
     
     if (!url || url === "ERROR" || !url.startsWith('http')) {
-      console.warn(`⚠️ URL đoạn ${nextIndexToPlay.current + 1} không hợp lệ:`, url);
       skipToNext();
       return;
     }
 
     isCurrentlyPlaying.current = true;
-    
-    // Tạo Audio mới và lưu vào Ref để có thể dừng bất cứ lúc nào
     const audio = new Audio(url);
     currentAudioRef.current = audio;
 
     console.log(`>>> Đang phát đoạn ${nextIndexToPlay.current + 1}...`);
 
-    // Đợi 3.5s để FPT.AI tạo file hoàn tất
-    setTimeout(() => {
-      const onFinished = () => {
-        if (currentAudioRef.current === audio) {
-          isCurrentlyPlaying.current = false;
-          nextIndexToPlay.current++;
-          tryPlayNext();
-        }
-      };
+    let isFinishedTriggered = false;
+    const onFinished = () => {
+      if (isFinishedTriggered) return;
+      isFinishedTriggered = true;
 
-      audio.onended = onFinished;
-      audio.onerror = (e) => {
-        console.error(`❌ Lỗi file âm thanh đoạn ${nextIndexToPlay.current + 1}:`, e);
-        onFinished();
-      };
-      
-      audio.play().catch(e => {
-        if (e.name === "NotAllowedError") {
-          console.warn("⚠️ Chờ click để phát...");
-          document.addEventListener("click", () => audio.play(), { once: true });
-        } else {
+      if (currentAudioRef.current === audio) {
+        currentAudioRef.current = null;
+        isCurrentlyPlaying.current = false;
+        nextIndexToPlay.current++;
+        
+        // Khi vừa dứt câu, kích hoạt nạp câu tiếp theo gối đầu
+        processNextChunk();
+        tryPlayNext();
+      }
+    };
+
+    audio.onended = onFinished;
+    
+    // Kỹ thuật Gối đầu mượt (Crossfade): Phát sớm 0.2s nếu đoạn trước bị cắt ngang (không có dấu câu)
+    const currentText = textChunksToProcess.current[nextIndexToPlay.current] || "";
+    const hasPunctuation = /[.!?;\n]$/.test(currentText.trim());
+    const overlapTime = hasPunctuation ? 0 : 0.2; 
+
+    if (overlapTime > 0) {
+      audio.ontimeupdate = () => {
+        if (audio.duration && audio.duration - audio.currentTime <= overlapTime) {
           onFinished();
         }
-      });
-    }, 3500);
+      };
+    }
+    
+    // Khả năng lỗi ở đây là cực thấp vì waitAudioReady đã ping trước đó
+    audio.onerror = () => {
+      console.warn(`❌ Lỗi phát đoạn ${nextIndexToPlay.current + 1}, bỏ qua.`);
+      onFinished();
+    };
+    
+    audio.play().catch(e => {
+      if (e.name === "NotAllowedError") {
+        document.addEventListener("click", () => audio.play(), { once: true });
+      } else {
+        onFinished();
+      }
+    });
   };
 
   const skipToNext = () => {
     isCurrentlyPlaying.current = false;
     nextIndexToPlay.current++;
+    processNextChunk();
     tryPlayNext();
   };
 
@@ -275,20 +383,24 @@ export function Chatbot() {
           
           if (realProduct) {
             // Chuẩn bị dữ liệu chi tiết để AI có "nguyên liệu" tư vấn
-            const variantInfo = realProduct.variants?.map(v => `- Size ${v.size}, màu ${v.color} (Giá: ${formatPrice(v.price)})`).join("\n") || "Liên hệ để biết thêm";
+            const variantInfo = realProduct.variants?.map((v: any) => `- Size ${v.size}, màu ${v.color} (Giá: ${formatPrice(v.price)})`).join("\n") || "Liên hệ để biết thêm";
             
             const detailedPrompt = `
-              Bối cảnh: Khách hàng đang xem sản phẩm ${realProduct.name} - ${realProduct.brandName}.
-              Chi tiết: Mã ${realProduct.productCode}, giá ${formatPrice(realProduct.price)}.
-              QUY ĐỊNH: Trả lời đúng cấu trúc [TEXT]: nội dung hiển thị, [VOICE]: nội dung đọc (Việt hóa 100% các từ tiếng Anh).
-            `;
+              Bối cảnh: Khách hàng đang xem sản phẩm ${realProduct.name} - Thương hiệu: ${realProduct.brandName}.
+              Chi tiết: Mã ${realProduct.productCode}, Giá: ${formatPrice(realProduct.price)}.
+              Mô tả sản phẩm: ${realProduct.description || "Không có thông tin mô tả."}
+              Tình trạng kho (Kích cỡ và màu sắc):
+              ${variantInfo}
+              
+              Nhiệm vụ: Dựa vào thông tin trên, hãy chủ động giới thiệu nhanh những điểm nổi bật nhất của sản phẩm và hỏi xem khách hàng cần tư vấn thêm về size hay màu sắc nào không.
+              QUY ĐỊNH: Không tự ý phiên âm tiếng Anh. Trả lời tự nhiên, thân thiện. Không cần lặp lại toàn bộ thông tin.`;
 
             const botResponse = await chatService.chat(detailedPrompt);
             
             const introMsg: Message = {
               id: `bot-intro-${Date.now()}`,
               role: "bot",
-              text: botResponse.response,
+              text: typeof botResponse === 'string' ? botResponse : (botResponse.response || botResponse.text || "Xin lỗi, mình chưa thể tải thông tin sản phẩm lúc này."),
               time: getTime(),
               quickReplies: ["Có size nào?", "Màu sắc có gì?", "Còn hàng không?", "Chính sách đổi trả?"],
             };
@@ -329,6 +441,16 @@ export function Chatbot() {
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
 
+    // 1. Dừng mọi âm thanh cũ ngay khi gửi tin mới
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
+    }
+    audioBuffer.current.clear();
+    retryCounts.current.clear();
+    nextIndexToPlay.current = 0;
+    isCurrentlyPlaying.current = false;
+
     const userMsg: Message = {
       id: `user-${Date.now()}`,
       role: "user",
@@ -339,33 +461,168 @@ export function Chatbot() {
     setInputText("");
     setIsTyping(true);
 
+    const botMsgId = `bot-${Date.now()}`;
+    const botMsg: Message = {
+      id: botMsgId,
+      role: "bot",
+      text: "",
+      time: getTime(),
+      quickReplies: QUICK_REPLIES_DEFAULT,
+    };
+    setMessages((prev) => [...prev, botMsg]);
+
     try {
-      // Call Gemini AI Backend
-      const botResponse = await chatService.chat(text);
+      // Lấy token để vượt qua Spring Security
+      const token = localStorage.getItem('accessToken');
       
-      const botMsg: Message = {
-        id: `bot-${Date.now()}`,
-        role: "bot",
-        text: botResponse.response,
-        time: getTime(),
-        quickReplies: QUICK_REPLIES_DEFAULT, 
-      };
+      // Bơm ngữ cảnh sản phẩm hiện tại vào câu hỏi của người dùng (nếu đang ở trang chi tiết)
+      const currentProductId = location.pathname.split("/").find((segment, index, array) => array[index - 1] === "product");
       
-      setMessages((prev) => [...prev, botMsg]);
-      speak(botResponse.voiceText || botResponse.response); // Ưu tiên dùng giọng đọc đã Việt hóa hoàn toàn
+      let finalMessage = text;
+      if (currentProductId) {
+        try {
+          const realProduct = await productService.getProductById(parseInt(currentProductId));
+          if (realProduct) {
+            const variantInfo = realProduct.variants?.map((v: any) => `- Size ${v.size}, màu ${v.color}`).join(", ") || "Chưa cập nhật";
+            finalMessage = `[Ngữ cảnh: Khách hàng đang xem ${realProduct.name}, mã ${realProduct.productCode}. Size/màu có sẵn: ${variantInfo}. YÊU CẦU: Hãy trả lời trực tiếp câu hỏi sau một cách tự nhiên, tuyệt đối KHÔNG lặp lại thông tin ngữ cảnh hay dùng cụm từ "Dựa trên thông tin bối cảnh bạn cung cấp..."]. Câu hỏi của khách hàng: ${text}`;
+          }
+        } catch (error) {
+          console.error("Không thể lấy thông tin sản phẩm để làm ngữ cảnh:", error);
+        }
+      }
+
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // 2. Kỹ thuật Cuốn chiếu: Kết nối Stream tới Backend
+      const response = await fetch(`http://localhost:8080/api/chatbot/stream?message=${encodeURIComponent(finalMessage)}`, {
+        headers
+      });
+      
+      if (!response.ok) {
+        if (response.status === 403) throw new Error("403 Forbidden - Hãy kiểm tra lại phân quyền!");
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      if (!response.body) throw new Error("No body");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullContent = "";
+      let sentenceBuffer = "";
+      let sentenceIndex = 0;
+      let sseBuffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // Parse chuẩn Server-Sent Events (SSE) theo bộ đệm để không bị cắt dở dang các luồng data
+        sseBuffer += decoder.decode(value, { stream: true });
+        let cleanToken = "";
+        
+        let splitIndex;
+        while ((splitIndex = sseBuffer.indexOf('\n\n')) >= 0) {
+          const event = sseBuffer.substring(0, splitIndex);
+          sseBuffer = sseBuffer.substring(splitIndex + 2); // Cắt bỏ phần đã xử lý (kể cả \n\n)
+          
+          const lines = event.split('\n');
+          const dataLines = lines.filter(line => line.startsWith('data:'));
+          if (dataLines.length > 0) {
+            cleanToken += dataLines.map(line => line.substring(5)).join('\n');
+          }
+        }
+
+        fullContent += cleanToken;
+        sentenceBuffer += cleanToken;
+
+        // Cập nhật text hiển thị trên UI ngay lập tức
+        setMessages((prev) =>
+          prev.map((m) => (m.id === botMsgId ? { ...m, text: fullContent.trim() } : m))
+        );
+
+        // 3. Buffer Layer: Tách câu dựa trên dấu kết thúc (. ? ! \n) kết hợp khoảng trắng để tránh cắt nhầm số thập phân hoặc giá tiền (2.990.000)
+        const sentenceEnders = /([.!?]\s|\n)/;
+        const isTooLong = sentenceBuffer.length > 80 && sentenceBuffer.includes(",");
+        const isExtremelyLong = sentenceBuffer.length > 95; // Ngắt khẩn cấp nếu câu quá dài mà không có dấu câu
+        
+        if (sentenceEnders.test(sentenceBuffer) || isTooLong || isExtremelyLong) {
+          // Nếu ngắt khẩn cấp thì tìm khoảng trắng gần nhất
+          let splitRegex = /([.!?]\s|\n)/;
+          if (isTooLong) splitRegex = /([.!?,]\s|\n)/;
+          if (isExtremelyLong && !sentenceBuffer.includes(",")) splitRegex = /(\s)/;
+
+          const parts = sentenceBuffer.split(splitRegex);
+          
+          // Gom lại câu hoàn chỉnh
+          for (let i = 0; i < parts.length - 1; i += 2) {
+            const sentence = (parts[i] + (parts[i+1] || "")).trim();
+            if (sentence && sentence.length > 5) {
+              speakChunk(sentence, sentenceIndex++);
+            }
+          }
+          sentenceBuffer = parts[parts.length - 1];
+        }
+      }
+
+      // Xử lý câu cuối cùng còn sót lại trong buffer
+      if (sentenceBuffer.trim().length > 2) {
+        speakChunk(sentenceBuffer.trim(), sentenceIndex);
+      }
+
     } catch (error) {
-      console.error("Chat error:", error);
-      const errorMsg: Message = {
-        id: `bot-${Date.now()}`,
-        role: "bot",
-        text: "Xin lỗi, hiện tại hệ thống AI đang quá tải. Vui lòng thử lại sau giây lát hoặc liên hệ hotline 1800-1234 nhé!",
-        time: getTime(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-      speak(errorMsg.text);
+      console.error("Stream Error:", error);
+      setIsTyping(false);
     } finally {
       setIsTyping(false);
     }
+  };
+
+  // Hàm speakChunk hỗ trợ Rolling TTS
+  const speakChunk = async (sentence: string, index: number) => {
+    if (isMuted) return;
+
+    const cleanSentence = sentence
+      .replace(/[*_#`~|\[\]]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!cleanSentence || cleanSentence.length < 2) return;
+
+    let isSuccess = false;
+    let maxRetries = 2; // Thử gọi lại API tối đa 2 lần
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        if (attempt > 0) {
+          console.warn(`⚠️ [RETRY STREAM] FPT.AI tạo file lỗi, yêu cầu tạo lại đoạn ${index + 1} (lần ${attempt})...`);
+        }
+        
+        const response = await api.get("/tts", { params: { text: cleanSentence } });
+        const url = response.data.audioUrl;
+        
+        if (url) {
+          const isReady = await waitAudioReady(url);
+          if (isReady) {
+            audioBuffer.current.set(index, url);
+            isSuccess = true;
+            break;
+          }
+        } else {
+          break; // rỗng
+        }
+      } catch (err) {
+        console.error(`Lỗi tải đoạn stream ${index}:`, err);
+      }
+    }
+
+    if (!isSuccess) {
+      audioBuffer.current.set(index, "ERROR");
+    }
+    
+    tryPlayNext();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
