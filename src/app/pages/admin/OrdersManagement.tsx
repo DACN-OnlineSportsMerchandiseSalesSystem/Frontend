@@ -1,23 +1,61 @@
-import { useState } from "react";
-import { Search, Eye, Edit2, Printer, Download, CheckCircle, XCircle, Clock, Package, Truck, X } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Search, Eye, Edit2, Printer, Download, CheckCircle, XCircle, Clock, Package, Truck, X, Loader2, AlertCircle } from "lucide-react";
 import { formatPrice } from "../../data/products";
-import { Order } from "../../context/AppContext";
+import orderService from "../../../services/orderService";
+import { Order, useApp } from "../../context/AppContext";
 
 const statusConfig = {
-  pending: { label: "Chờ xử lý", color: "yellow", icon: Clock },
-  confirmed: { label: "Đã xác nhận", color: "blue", icon: CheckCircle },
-  shipping: { label: "Đang giao", color: "purple", icon: Truck },
-  delivered: { label: "Đã giao", color: "green", icon: CheckCircle },
-  cancelled: { label: "Đã hủy", color: "red", icon: XCircle },
-  return_requested: { label: "Yêu cầu trả", color: "orange", icon: Package },
-  returned: { label: "Đã trả", color: "gray", icon: Package },
+  pending: { label: "Chờ xử lý", color: "yellow", icon: Clock, next: "confirmed" },
+  confirmed: { label: "Đã xác nhận", color: "blue", icon: CheckCircle, next: "shipping" },
+  shipping: { label: "Đang giao", color: "purple", icon: Truck, next: "delivered" },
+  delivered: { label: "Đã giao", color: "green", icon: CheckCircle, next: null },
+  canceled: { label: "Đã hủy", color: "red", icon: XCircle, next: null },
+  return_requested: { label: "Yêu cầu trả", color: "orange", icon: Package, next: "returned" },
+  returned: { label: "Đã trả", color: "gray", icon: Package, next: null },
 };
 
-export function OrdersManagement({ orders }: { orders: Order[] }) {
+export function OrdersManagement() {
+  const { mapApiOrderToUI } = useApp();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+
+  const fetchOrders = useCallback(async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const apiOrders = await orderService.getAllOrdersAdmin();
+      console.log(">>> [ADMIN] Fetched orders:", apiOrders);
+      const mappedOrders: Order[] = apiOrders.map(mapApiOrderToUI)
+        .sort((a, b) => parseInt(b.id) - parseInt(a.id));
+      setOrders(mappedOrders);
+    } catch (err: any) {
+      console.error(">>> [ADMIN] Fetch orders error:", err);
+      setError(err?.response?.data?.message || "Không thể tải danh sách đơn hàng");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [mapApiOrderToUI]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const handleUpdateStatus = async (id: string, newStatus: string) => {
+    try {
+      await orderService.updateOrderStatus(parseInt(id), newStatus.toUpperCase());
+      await fetchOrders();
+      if (selectedOrder && selectedOrder.id === id) {
+        setShowDetailModal(false); // Close modal to refresh data on next open
+      }
+    } catch (err: any) {
+      alert(err?.response?.data?.message || "Cập nhật trạng thái thất bại");
+    }
+  };
 
   const filteredOrders = orders.filter(order => {
     const matchSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -33,7 +71,7 @@ export function OrdersManagement({ orders }: { orders: Order[] }) {
     confirmed: orders.filter(o => o.status === "confirmed").length,
     shipping: orders.filter(o => o.status === "shipping").length,
     delivered: orders.filter(o => o.status === "delivered").length,
-    cancelled: orders.filter(o => o.status === "cancelled").length,
+    canceled: orders.filter(o => o.status === "canceled").length,
   };
 
   return (
@@ -60,7 +98,7 @@ export function OrdersManagement({ orders }: { orders: Order[] }) {
             { key: "confirmed", label: "Đã xác nhận" },
             { key: "shipping", label: "Đang giao" },
             { key: "delivered", label: "Đã giao" },
-            { key: "cancelled", label: "Đã hủy" },
+            { key: "canceled", label: "Đã hủy" },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -71,7 +109,7 @@ export function OrdersManagement({ orders }: { orders: Order[] }) {
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              {tab.label} ({statusCounts[tab.key as keyof typeof statusCounts]})
+              {tab.label} ({statusCounts[tab.key as keyof typeof statusCounts] || 0})
             </button>
           ))}
         </div>
@@ -92,83 +130,98 @@ export function OrdersManagement({ orders }: { orders: Order[] }) {
         <p className="text-sm text-gray-600 mt-3">Tìm thấy {filteredOrders.length} đơn hàng</p>
       </div>
 
-      {/* Orders Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã đơn</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày đặt</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Khách hàng</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sản phẩm</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổng tiền</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredOrders.map((order) => {
-                const config = statusConfig[order.status as keyof typeof statusConfig];
-                const StatusIcon = config.icon;
-                return (
-                  <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3">
-                      <p className="text-sm font-mono font-medium text-blue-600">#{order.id}</p>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{order.orderDate}</td>
-                    <td className="px-4 py-3">
-                      <p className="text-sm font-medium text-gray-800">{order.address.fullName}</p>
-                      <p className="text-xs text-gray-500">{order.address.phone}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="text-sm text-gray-600">{order.items.length} sản phẩm</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="text-sm font-bold text-gray-900">{formatPrice(order.total)}</p>
-                      <p className="text-xs text-gray-500">{order.paymentMethod}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-${config.color}-100 text-${config.color}-700`}>
-                        <StatusIcon className="w-3 h-3" />
-                        {config.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setShowDetailModal(true);
-                          }}
-                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Xem chi tiết"
-                        >
-                          <Eye className="w-4 h-4 text-blue-600" />
-                        </button>
-                        <button
-                          className="p-2 hover:bg-purple-50 rounded-lg transition-colors"
-                          title="In đơn hàng"
-                        >
-                          <Printer className="w-4 h-4 text-purple-600" />
-                        </button>
-                        {order.status === "pending" && (
-                          <button
-                            className="p-2 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Xác nhận đơn"
-                          >
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
+          <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
+          <p className="text-gray-500">Đang tải danh sách đơn hàng...</p>
         </div>
-      </div>
+      ) : error ? (
+        <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl flex items-center gap-3">
+          <AlertCircle className="w-5 h-5" />
+          <p>{error}</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-100">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã đơn</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày đặt</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Khách hàng</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sản phẩm</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổng tiền</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredOrders.map((order) => {
+                  const config = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
+                  const StatusIcon = config.icon;
+                  return (
+                    <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <p className="text-sm font-mono font-medium text-blue-600">#{order.id}</p>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{order.orderDate}</td>
+                      <td className="px-4 py-3">
+                        <p className="text-sm font-medium text-gray-800">{order.address.fullName}</p>
+                        <p className="text-xs text-gray-500">{order.address.phone}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-sm text-gray-600">{order.items.length} sản phẩm</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-sm font-bold text-gray-900">{formatPrice(order.total)}</p>
+                        <p className="text-xs text-gray-500">{order.paymentMethod}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-${config.color}-100 text-${config.color}-700`}>
+                          <StatusIcon className="w-3 h-3" />
+                          {config.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setShowDetailModal(true);
+                            }}
+                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Xem chi tiết"
+                          >
+                            <Eye className="w-4 h-4 text-blue-600" />
+                          </button>
+                          {config.next && (
+                            <button
+                              onClick={() => handleUpdateStatus(order.id, config.next!)}
+                              className="p-2 hover:bg-green-50 rounded-lg transition-colors"
+                              title={`Chuyển sang ${statusConfig[config.next as keyof typeof statusConfig].label}`}
+                            >
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            </button>
+                          )}
+                          {order.status === "pending" && (
+                            <button
+                              onClick={() => handleUpdateStatus(order.id, "canceled")}
+                              className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Hủy đơn"
+                            >
+                              <XCircle className="w-4 h-4 text-red-600" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Order Detail Modal */}
       {showDetailModal && selectedOrder && (
@@ -178,14 +231,15 @@ export function OrdersManagement({ orders }: { orders: Order[] }) {
             setShowDetailModal(false);
             setSelectedOrder(null);
           }}
+          onStatusUpdate={handleUpdateStatus}
         />
       )}
     </div>
   );
 }
 
-function OrderDetailModal({ order, onClose }: { order: Order; onClose: () => void }) {
-  const config = statusConfig[order.status as keyof typeof statusConfig];
+function OrderDetailModal({ order, onClose, onStatusUpdate }: { order: Order; onClose: () => void; onStatusUpdate: (id: string, status: string) => void }) {
+  const config = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
   const StatusIcon = config.icon;
 
   return (
@@ -212,19 +266,20 @@ function OrderDetailModal({ order, onClose }: { order: Order; onClose: () => voi
               </span>
             </div>
             <div className="flex items-center gap-2">
-              {order.status === "pending" && (
-                <>
-                  <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-colors text-sm">
-                    Xác nhận đơn
-                  </button>
-                  <button className="px-4 py-2 border border-red-500 text-red-500 hover:bg-red-50 rounded-xl transition-colors text-sm">
-                    Hủy đơn
-                  </button>
-                </>
+              {config.next && (
+                <button 
+                  onClick={() => onStatusUpdate(order.id, config.next!)}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors text-sm"
+                >
+                  Chuyển sang {statusConfig[config.next as keyof typeof statusConfig].label}
+                </button>
               )}
-              {order.status === "confirmed" && (
-                <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-colors text-sm">
-                  Chuyển sang giao hàng
+              {order.status === "pending" && (
+                <button 
+                  onClick={() => onStatusUpdate(order.id, "canceled")}
+                  className="px-4 py-2 border border-red-500 text-red-500 hover:bg-red-50 rounded-xl transition-colors text-sm"
+                >
+                  Hủy đơn
                 </button>
               )}
               <button className="px-4 py-2 border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors text-sm">
@@ -326,7 +381,7 @@ function OrderDetailModal({ order, onClose }: { order: Order; onClose: () => voi
           <div className="bg-white border border-gray-100 rounded-xl p-4">
             <h4 className="text-sm font-bold text-gray-900 mb-4">Lịch sử vận chuyển</h4>
             <div className="space-y-4">
-              {order.trackingHistory.map((event, idx) => (
+              {order.trackingHistory?.map((event, idx) => (
                 <div key={idx} className="flex gap-4">
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -334,7 +389,7 @@ function OrderDetailModal({ order, onClose }: { order: Order; onClose: () => voi
                     }`}>
                       {event.done ? <CheckCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                     </div>
-                    {idx < order.trackingHistory.length - 1 && (
+                    {idx < (order.trackingHistory?.length || 0) - 1 && (
                       <div className={`w-0.5 h-full mt-2 ${event.done ? 'bg-green-200' : 'bg-gray-200'}`} />
                     )}
                   </div>

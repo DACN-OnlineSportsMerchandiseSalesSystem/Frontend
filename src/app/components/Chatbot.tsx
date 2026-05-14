@@ -12,6 +12,7 @@ interface Message {
   text: string;
   time: string;
   quickReplies?: string[];
+  productCards?: Array<{ id: number; name: string; slug: string; brandName: string; price: number; imageUrl: string | null }>;
 }
 
 const QUICK_REPLIES_DEFAULT = [
@@ -115,6 +116,8 @@ export function Chatbot() {
   const [hasAutoOpenedProduct, setHasAutoOpenedProduct] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Session ID cho Redis Memory — sinh 1 lần duy nhất khi Chatbot mount
+  const sessionIdRef = useRef<string>(crypto.randomUUID());
 
   // Hệ thống hàng đợi âm thanh thông minh (Chống chồng chéo)
   const audioBuffer = useRef<Map<number, string>>(new Map());
@@ -426,6 +429,16 @@ export function Chatbot() {
     }
   }, [location.pathname, hasAutoOpenedProduct]);
 
+  // Hàm lấy email từ JWT token đã lưu trong localStorage
+  const getEmailFromToken = (): string | null => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return payload.sub || payload.email || null;
+    } catch { return null; }
+  };
+
   // Reset when leaving pages (optional logic to re-trigger if needed)
   useEffect(() => {
     if (!currentProduct) {
@@ -467,45 +480,36 @@ export function Chatbot() {
       role: "bot",
       text: "",
       time: getTime(),
-      quickReplies: QUICK_REPLIES_DEFAULT,
+      quickReplies: currentProductId ? ["Còn size nào?", "Thêm vào giỏ", "Chính sách đổi trả?"] : QUICK_REPLIES_DEFAULT,
     };
+    // Tắt isTyping ngay khi thêm bong bóng bot — tránh hiện 2 "thinking" cùng lúc
     setMessages((prev) => [...prev, botMsg]);
+    setIsTyping(false);
 
     try {
-      // Lấy token để vượt qua Spring Security
       const token = localStorage.getItem('accessToken');
-      
-      // Bơm ngữ cảnh sản phẩm hiện tại vào câu hỏi của người dùng (nếu đang ở trang chi tiết)
-      const currentProductId = location.pathname.split("/").find((segment, index, array) => array[index - 1] === "product");
-      
-      let finalMessage = text;
-      if (currentProductId) {
-        try {
-          const realProduct = await productService.getProductById(parseInt(currentProductId));
-          if (realProduct) {
-            const variantInfo = realProduct.variants?.map((v: any) => `- Size ${v.size}, màu ${v.color}`).join(", ") || "Chưa cập nhật";
-            finalMessage = `[Ngữ cảnh: Khách hàng đang xem ${realProduct.name}, mã ${realProduct.productCode}. Size/màu có sẵn: ${variantInfo}. YÊU CẦU: Hãy trả lời trực tiếp câu hỏi sau một cách tự nhiên, tuyệt đối KHÔNG lặp lại thông tin ngữ cảnh hay dùng cụm từ "Dựa trên thông tin bối cảnh bạn cung cấp..."]. Câu hỏi của khách hàng: ${text}`;
-          }
-        } catch (error) {
-          console.error("Không thể lấy thông tin sản phẩm để làm ngữ cảnh:", error);
-        }
-      }
+      const userEmail = getEmailFromToken();
 
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      // 2. Kỹ thuật Cuốn chiếu: Kết nối Stream tới Backend
-      const response = await fetch(`http://localhost:8080/api/chatbot/stream?message=${encodeURIComponent(finalMessage)}`, {
-        headers
+      console.log(`>>> [CHAT] msg="${text}" | productId=${currentProductId ?? 'null'} | session=${sessionIdRef.current} | user=${userEmail ?? 'guest'}`);
+
+      const response = await fetch('http://localhost:8080/api/chatbot/stream', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          message: text.trim(),
+          productId: currentProductId ? parseInt(currentProductId) : null,
+          sessionId: sessionIdRef.current,
+          userEmail: userEmail,
+        }),
       });
-      
+
       if (!response.ok) {
-        if (response.status === 403) throw new Error("403 Forbidden - Hãy kiểm tra lại phân quyền!");
+        if (response.status === 403) throw new Error("403 Forbidden!");
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
       if (!response.body) throw new Error("No body");
 
       const reader = response.body.getReader();
@@ -514,67 +518,77 @@ export function Chatbot() {
       let sentenceBuffer = "";
       let sentenceIndex = 0;
       let sseBuffer = "";
+      // Named SSE event tracking
+      let currentEventName = "token";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        // Parse chuẩn Server-Sent Events (SSE) theo bộ đệm để không bị cắt dở dang các luồng data
         sseBuffer += decoder.decode(value, { stream: true });
-        let cleanToken = "";
-        
+
         let splitIndex;
         while ((splitIndex = sseBuffer.indexOf('\n\n')) >= 0) {
-          const event = sseBuffer.substring(0, splitIndex);
-          sseBuffer = sseBuffer.substring(splitIndex + 2); // Cắt bỏ phần đã xử lý (kể cả \n\n)
-          
-          const lines = event.split('\n');
-          const dataLines = lines.filter(line => line.startsWith('data:'));
-          if (dataLines.length > 0) {
-            cleanToken += dataLines.map(line => line.substring(5)).join('\n');
-          }
-        }
+          const rawEvent = sseBuffer.substring(0, splitIndex);
+          sseBuffer = sseBuffer.substring(splitIndex + 2);
 
-        fullContent += cleanToken;
-        sentenceBuffer += cleanToken;
+          const lines = rawEvent.split('\n');
+          // Lấy event name nếu có
+          const eventLine = lines.find(l => l.startsWith('event:'));
+          if (eventLine) currentEventName = eventLine.substring(6).trim();
+          else currentEventName = 'token';
 
-        // Cập nhật text hiển thị trên UI ngay lập tức
-        setMessages((prev) =>
-          prev.map((m) => (m.id === botMsgId ? { ...m, text: fullContent.trim() } : m))
-        );
+          const dataLine = lines.find(l => l.startsWith('data:'));
+          if (!dataLine) continue;
+          const data = dataLine.substring(5);
 
-        // 3. Buffer Layer: Tách câu dựa trên dấu kết thúc (. ? ! \n) kết hợp khoảng trắng để tránh cắt nhầm số thập phân hoặc giá tiền (2.990.000)
-        const sentenceEnders = /([.!?]\s|\n)/;
-        const isTooLong = sentenceBuffer.length > 80 && sentenceBuffer.includes(",");
-        const isExtremelyLong = sentenceBuffer.length > 95; // Ngắt khẩn cấp nếu câu quá dài mà không có dấu câu
-        
-        if (sentenceEnders.test(sentenceBuffer) || isTooLong || isExtremelyLong) {
-          // Nếu ngắt khẩn cấp thì tìm khoảng trắng gần nhất
-          let splitRegex = /([.!?]\s|\n)/;
-          if (isTooLong) splitRegex = /([.!?,]\s|\n)/;
-          if (isExtremelyLong && !sentenceBuffer.includes(",")) splitRegex = /(\s)/;
-
-          const parts = sentenceBuffer.split(splitRegex);
-          
-          // Gom lại câu hoàn chỉnh
-          for (let i = 0; i < parts.length - 1; i += 2) {
-            const sentence = (parts[i] + (parts[i+1] || "")).trim();
-            if (sentence && sentence.length > 5) {
-              speakChunk(sentence, sentenceIndex++);
+          if (currentEventName === 'token') {
+            fullContent += data;
+            sentenceBuffer += data;
+            setMessages((prev) =>
+              prev.map((m) => (m.id === botMsgId ? { ...m, text: fullContent.trim() } : m))
+            );
+            // Rolling TTS: tách câu để đọc cuốn chiếu
+            const sentenceEnders = /([.!?]\s|\n)/;
+            const isTooLong = sentenceBuffer.length > 80 && sentenceBuffer.includes(",");
+            const isExtremelyLong = sentenceBuffer.length > 95;
+            if (sentenceEnders.test(sentenceBuffer) || isTooLong || isExtremelyLong) {
+              let splitRegex = /([.!?]\s|\n)/;
+              if (isTooLong) splitRegex = /([.!?,]\s|\n)/;
+              if (isExtremelyLong && !sentenceBuffer.includes(",")) splitRegex = /(\s)/;
+              const parts = sentenceBuffer.split(splitRegex);
+              for (let i = 0; i < parts.length - 1; i += 2) {
+                const sentence = (parts[i] + (parts[i+1] || "")).trim();
+                if (sentence && sentence.length > 5) speakChunk(sentence, sentenceIndex++);
+              }
+              sentenceBuffer = parts[parts.length - 1];
             }
+          } else if (currentEventName === 'cart_updated') {
+            // Thông báo Frontend cập nhật giỏ hàng
+            window.dispatchEvent(new Event('cart-updated'));
+            console.log('>>> [CART] Giỏ hàng đã được cập nhật bởi AI!');
+          } else if (currentEventName === 'product_cards') {
+            try {
+              const cards = JSON.parse(data);
+              setMessages((prev) =>
+                prev.map((m) => (m.id === botMsgId ? { ...m, productCards: cards } : m))
+              );
+              console.log(`>>> [UI] Nhận ${cards.length} product cards.`);
+            } catch (e) { console.error('Parse product_cards error:', e); }
           }
-          sentenceBuffer = parts[parts.length - 1];
         }
       }
 
-      // Xử lý câu cuối cùng còn sót lại trong buffer
+      // Phát câu cuối còn sót lại trong buffer
       if (sentenceBuffer.trim().length > 2) {
         speakChunk(sentenceBuffer.trim(), sentenceIndex);
       }
 
     } catch (error) {
       console.error("Stream Error:", error);
-      setIsTyping(false);
+      setMessages((prev) =>
+        prev.map((m) => (m.id === botMsgId ? { ...m, text: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại!" } : m))
+      );
     } finally {
       setIsTyping(false);
     }
@@ -671,8 +685,17 @@ export function Chatbot() {
             <div className="flex items-center gap-1">
               <button
                 onClick={() => {
-                  setIsMuted(!isMuted);
-                  if (!isMuted) window.speechSynthesis?.cancel(); // Stop speaking if muted
+                  const newMuted = !isMuted;
+                  setIsMuted(newMuted);
+                  if (newMuted) {
+                    // Stop current audio immediately if muting
+                    if (currentAudioRef.current) {
+                      currentAudioRef.current.pause();
+                      currentAudioRef.current = null;
+                    }
+                    isCurrentlyPlaying.current = false;
+                    window.speechSynthesis?.cancel();
+                  }
                 }}
                 className="w-7 h-7 rounded-lg hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition-colors"
                 title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
@@ -730,6 +753,29 @@ export function Chatbot() {
                         {msg.role === "bot" ? formatBotText(msg.text) : msg.text}
                       </div>
                       <span className="text-xs text-gray-400 mt-1 px-1">{msg.time}</span>
+                      {/* Generative UI: Product Cards */}
+                      {msg.role === "bot" && msg.productCards && msg.productCards.length > 0 && (
+                        <div className="mt-2 flex gap-2 overflow-x-auto pb-1 max-w-[260px]">
+                          {msg.productCards.map((card) => (
+                            <a
+                              key={card.id}
+                              href={`/product/${card.id}`}
+                              className="flex-shrink-0 w-32 bg-white border border-blue-100 rounded-xl overflow-hidden hover:border-blue-300 hover:shadow transition-all"
+                            >
+                              {card.imageUrl && (
+                                <img src={card.imageUrl} alt={card.name} className="w-full h-20 object-cover" />
+                              )}
+                              <div className="p-1.5">
+                                <p className="text-[10px] text-blue-600">{card.brandName}</p>
+                                <p className="text-[11px] font-medium text-gray-800 line-clamp-2 leading-tight">{card.name}</p>
+                                <p className="text-[10px] text-blue-700 font-bold mt-0.5">
+                                  {new Intl.NumberFormat("vi-VN").format(card.price)}đ
+                                </p>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      )}
                       {/* Quick Replies */}
                       {msg.role === "bot" && msg.quickReplies && (
                         <div className="flex flex-wrap gap-1.5 mt-2">

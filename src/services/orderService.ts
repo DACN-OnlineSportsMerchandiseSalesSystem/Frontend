@@ -1,23 +1,30 @@
 import api from './api';
 
 export interface OrderItem {
-  id: number;
+  id?: number;
   productName: string;
-  variantInfo: string;
-  price: number;
+  variantInfo?: string;
+  unitPrice?: number;
+  priceAtPurchase?: number;
   quantity: number;
+  imageUrl: string;
+  size?: string;
+  color?: string;
 }
 
 export interface Order {
   id: number;
-  orderCode: string;
-  totalAmount: number;
+  orderCode?: string;
+  createAt: string;
+  note: string;
+  totalPrice: number;
+  shippingFee: number;
   status: string;
-  orderDate: string;
   receiverName: string;
   phone: string;
-  address: string;
-  items: OrderItem[];
+  paymentMethod: string;
+  orderItems: OrderItem[];
+  billingAddress: any;
 }
 
 const orderService = {
@@ -27,7 +34,12 @@ const orderService = {
   },
 
   getMyOrders: async () => {
-    const response = await api.get<Order[]>('/orders/my-orders');
+    const response = await api.get<Order[]>('/orders');
+    return response.data;
+  },
+
+  getAllOrdersAdmin: async () => {
+    const response = await api.get<Order[]>('/orders/all');
     return response.data;
   },
 
@@ -36,13 +48,13 @@ const orderService = {
     return response.data;
   },
 
-  getAllOrders: async () => {
-    const response = await api.get<Order[]>('/orders');
+  updateOrderStatus: async (id: number, status: string) => {
+    const response = await api.put<Order>(`/orders/${id}/status`, { status });
     return response.data;
   },
-
-  updateOrderStatus: async (id: number, status: string) => {
-    const response = await api.put<Order>(`/orders/${id}/status?status=${status}`, {});
+  
+  deleteOrder: async (id: number) => {
+    const response = await api.delete(`/orders/${id}`);
     return response.data;
   }
 };

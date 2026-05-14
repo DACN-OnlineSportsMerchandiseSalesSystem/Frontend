@@ -30,7 +30,7 @@ export function Account() {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...user });
   const [addAddrMode, setAddAddrMode] = useState(false);
-  const [newAddr, setNewAddr] = useState({ fullName: "", phone: "", province: "", district: "", ward: "", street: "", isDefault: false });
+  const [newAddr, setNewAddr] = useState<Address>({ receiverName: "", phone: "", city: "", state: "", street: "", isDefault: false });
   const [pwForm, setPwForm] = useState({ old: "", new1: "", new2: "" });
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -62,7 +62,7 @@ export function Account() {
     try {
       await addAddress(newAddr);
       setAddAddrMode(false);
-      setNewAddr({ fullName: "", phone: "", province: "", district: "", ward: "", street: "", isDefault: false });
+      setNewAddr({ receiverName: "", phone: "", city: "", state: "", street: "", isDefault: false });
       setAddrMsg("Thêm địa chỉ thành công!");
       setTimeout(() => setAddrMsg(""), 2500);
     } catch {
@@ -182,36 +182,67 @@ export function Account() {
                   { label: "Email", key: "email" },
                   { label: "Số điện thoại", key: "phone" },
                   { label: "Ngày sinh", key: "birthDate" },
+                  { label: "Giới tính", key: "gender" },
+                  { label: "Vai trò", key: "roleName", readOnly: true },
+                  { label: "Hạng thành viên", key: "rank", readOnly: true },
+                  { label: "Điểm tích lũy", key: "level", readOnly: true },
+                  { label: "Trạng thái", key: "status", readOnly: true },
                 ].map((field) => (
-                  <div key={field.key}>
+                  <div key={field.key} className={field.key === "fullName" || field.key === "email" ? "" : ""}>
                     <label className="text-sm text-gray-500 mb-1.5 block">{field.label}</label>
-                    {editMode ? (
-                      <input
-                        type="text"
-                        value={(formData as any)[field.key]}
-                        onChange={(e) => setFormData((f) => ({ ...f, [field.key]: e.target.value }))}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm text-gray-800"
-                      />
+                    {editMode && !field.readOnly ? (
+                      field.key === "gender" ? (
+                        <select
+                          value={formData.gender}
+                          onChange={(e) => setFormData((f) => ({ ...f, gender: e.target.value }))}
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm bg-white text-gray-800"
+                        >
+                          <option value="Nam">Nam</option>
+                          <option value="Nữ">Nữ</option>
+                          <option value="Khác">Khác</option>
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          value={(formData as any)[field.key] || ""}
+                          onChange={(e) => setFormData((f) => ({ ...f, [field.key]: e.target.value }))}
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm text-gray-800"
+                        />
+                      )
                     ) : (
-                      <p className="text-gray-800 bg-gray-50 px-4 py-2.5 rounded-xl text-sm">{(user as any)[field.key]}</p>
+                      <div className="flex items-center gap-2 text-gray-800 bg-gray-50 px-4 py-2.5 rounded-xl text-sm min-h-[42px]">
+                        {(user as any)[field.key] || "---"}
+                        {field.key === "roleName" && (user.roleName === 'ADMIN' || user.roleName === 'ROLE_ADMIN') && (
+                          <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold">ADMIN</span>
+                        )}
+                        {field.key === "rank" && (
+                          <Trophy className="w-3.5 h-3.5 text-yellow-600" />
+                        )}
+                      </div>
                     )}
                   </div>
                 ))}
-                <div>
-                  <label className="text-sm text-gray-500 mb-1.5 block">Giới tính</label>
-                  {editMode ? (
-                    <select
-                      value={formData.gender}
-                      onChange={(e) => setFormData((f) => ({ ...f, gender: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm bg-white text-gray-800"
-                    >
-                      <option value="Nam">Nam</option>
-                      <option value="Nữ">Nữ</option>
-                      <option value="Khác">Khác</option>
-                    </select>
-                  ) : (
-                    <p className="text-gray-800 bg-gray-50 px-4 py-2.5 rounded-xl text-sm">{user.gender}</p>
-                  )}
+                <div className="md:col-span-2">
+                  <label className="text-sm text-gray-500 mb-1.5 block">Địa chỉ mặc định</label>
+                  <div className="text-gray-800 bg-blue-50/50 border border-blue-100 px-4 py-3 rounded-xl text-sm">
+                    {user.addresses.find(a => a.isDefault) ? (
+                      <div className="flex items-start gap-3">
+                        <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold text-gray-900">
+                            {user.addresses.find(a => a.isDefault)?.receiverName} · {user.addresses.find(a => a.isDefault)?.phone}
+                          </p>
+                          <p className="text-gray-600 mt-1">
+                            {user.addresses.find(a => a.isDefault)?.street}, {user.addresses.find(a => a.isDefault)?.state}, {user.addresses.find(a => a.isDefault)?.city}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="flex items-center gap-2 text-gray-500 italic">
+                        <MapPin className="w-4 h-4" /> Chưa thiết lập địa chỉ mặc định
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -275,26 +306,32 @@ export function Account() {
                   <div>
                     <p className="text-blue-200 text-sm mb-1">Điểm tích lũy hiện có</p>
                     <div className="flex items-end gap-2">
-                      <span className="text-5xl font-black text-yellow-400">2.450</span>
+                      <span className="text-5xl font-black text-yellow-400">{(user as any).level || 0}</span>
                       <span className="text-blue-200 mb-1">điểm</span>
                     </div>
                   </div>
                   <div className="bg-yellow-400 text-blue-900 rounded-2xl px-4 py-2 text-center">
                     <Star className="w-5 h-5 mx-auto mb-0.5 fill-blue-900" />
-                    <p className="text-xs font-black">VIP VÀNG</p>
+                    <p className="text-xs font-black">
+                      {user.rank === 'GOLD' ? 'VIP VÀNG' : user.rank === 'SILVER' ? 'VIP BẠC' : user.rank === 'DIAMOND' ? 'VIP KIM CƯƠNG' : 'THÀNH VIÊN'}
+                    </p>
                   </div>
                 </div>
 
                 {/* Rank progress */}
                 <div>
                   <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="text-blue-200">Tiến độ lên hạng Bạch Kim</span>
-                    <span className="text-yellow-300 font-bold">2.450 / 3.000</span>
+                    <span className="text-blue-200">Tiến độ lên hạng tiếp theo</span>
+                    <span className="text-yellow-300 font-bold">{(user as any).level || 0} / 10000</span>
                   </div>
                   <div className="h-3 bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-yellow-400 to-yellow-300 rounded-full transition-all" style={{ width: "81.6%" }} />
+                    <div className="h-full bg-gradient-to-r from-yellow-400 to-yellow-300 rounded-full transition-all" style={{ width: `${Math.min(100, (((user as any).level || 0) / 10000) * 100)}%` }} />
                   </div>
-                  <p className="text-blue-300 text-xs mt-1.5">Còn <strong className="text-yellow-300">550 điểm</strong> nữa để lên hạng Bạch Kim 💎</p>
+                  <p className="text-blue-300 text-xs mt-1.5">
+                    {((user as any).level || 0) < 10000 
+                      ? <>Còn <strong className="text-yellow-300">{10000 - ((user as any).level || 0)} điểm</strong> nữa để lên hạng Vàng ⭐</>
+                      : "Bạn đã đạt hạng Vàng! Tiếp tục tích lũy để lên Kim Cương 💎"}
+                  </p>
                 </div>
 
                 {/* Stats */}
@@ -320,10 +357,10 @@ export function Account() {
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
-                    { rank: "Đồng", icon: "🥉", range: "0 - 500đ", color: "bg-amber-50 border-amber-200", textColor: "text-amber-700", active: false },
-                    { rank: "Bạc", icon: "🥈", range: "500 - 1.500đ", color: "bg-gray-50 border-gray-300", textColor: "text-gray-600", active: false },
-                    { rank: "Vàng ★", icon: "🥇", range: "1.500 - 3.000đ", color: "bg-yellow-50 border-yellow-400", textColor: "text-yellow-700", active: true },
-                    { rank: "Bạch Kim", icon: "💎", range: "3.000đ+", color: "bg-blue-50 border-blue-200", textColor: "text-blue-700", active: false },
+                    { rank: "Đồng", icon: "🥉", range: "0 - 1.000đ", color: "bg-amber-50 border-amber-200", textColor: "text-amber-700", active: user.rank === 'BRONZE' || !user.rank },
+                    { rank: "Bạc", icon: "🥈", range: "1.000 - 5.000đ", color: "bg-gray-50 border-gray-300", textColor: "text-gray-600", active: user.rank === 'SILVER' },
+                    { rank: "Vàng ★", icon: "🥇", range: "5.000 - 10.000đ", color: "bg-yellow-50 border-yellow-400", textColor: "text-yellow-700", active: user.rank === 'GOLD' },
+                    { rank: "Kim cương", icon: "💎", range: "10.000đ+", color: "bg-blue-50 border-blue-200", textColor: "text-blue-700", active: user.rank === 'DIAMOND' },
                   ].map((r) => (
                     <div key={r.rank} className={`border-2 rounded-xl p-3 text-center ${r.color} ${r.active ? "ring-2 ring-yellow-400 ring-offset-1" : ""}`}>
                       <div className="text-2xl mb-1">{r.icon}</div>
@@ -342,7 +379,7 @@ export function Account() {
                     <Gift className="w-4 h-4 text-blue-600" />
                     Đổi điểm lấy quà
                   </h3>
-                  <span className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Bạn có 2.450 điểm</span>
+                  <span className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Bạn có {(user as any).level || 0} điểm</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
@@ -482,25 +519,74 @@ export function Account() {
                 <div className="bg-blue-50 rounded-xl p-4 mb-5 border border-blue-100">
                   <h4 className="text-sm text-gray-800 mb-3">Địa chỉ mới</h4>
                   <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { key: "fullName", label: "Họ tên", placeholder: "Nguyễn Văn A" },
-                      { key: "phone", label: "Điện thoại", placeholder: "0912345678" },
-                      { key: "province", label: "Tỉnh/TP", placeholder: "TP. Hồ Chí Minh" },
-                      { key: "district", label: "Quận/Huyện", placeholder: "Quận 1" },
-                      { key: "ward", label: "Phường/Xã", placeholder: "Phường Bến Nghé" },
-                    ].map((f) => (
-                      <div key={f.key} className={f.key === "street" ? "col-span-2" : ""}>
-                        <label className="text-xs text-gray-500 mb-1 block">{f.label}</label>
-                        <input
-                          placeholder={f.placeholder}
-                          value={(newAddr as any)[f.key]}
-                          onChange={(e) => setNewAddr((a) => ({ ...a, [f.key]: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white"
-                        />
-                      </div>
-                    ))}
                     <div className="col-span-2">
-                      <label className="text-xs text-gray-500 mb-1 block">Địa chỉ cụ thể</label>
+                      <label className="text-xs text-gray-500 mb-1 block">Họ tên người nhận</label>
+                      <input
+                        placeholder="Nguyễn Văn A"
+                        value={newAddr.receiverName}
+                        onChange={(e) => setNewAddr((a) => ({ ...a, receiverName: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Điện thoại</label>
+                      <input
+                        placeholder="0912345678"
+                        value={newAddr.phone}
+                        onChange={(e) => setNewAddr((a) => ({ ...a, phone: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Tỉnh/Thành phố</label>
+                      <select
+                        value={newAddr.city}
+                        onChange={(e) => setNewAddr((a) => ({ ...a, city: e.target.value, state: "" }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white"
+                      >
+                        <option value="">Chọn Tỉnh/TP</option>
+                        <option value="Hà Nội">Hà Nội</option>
+                        <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                        <option value="Đà Nẵng">Đà Nẵng</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Phường/Xã</label>
+                      <select
+                        disabled={!newAddr.city}
+                        value={newAddr.state}
+                        onChange={(e) => setNewAddr((a) => ({ ...a, state: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white disabled:bg-gray-50"
+                      >
+                        <option value="">Chọn Phường/Xã</option>
+                        {newAddr.city === "Hà Nội" && (
+                          <>
+                            <option value="Phường Dịch Vọng">Phường Dịch Vọng</option>
+                            <option value="Phường Mỹ Đình">Phường Mỹ Đình</option>
+                            <option value="Phường Hàng Đào">Phường Hàng Đào</option>
+                            <option value="Phường Tràng Tiền">Phường Tràng Tiền</option>
+                          </>
+                        )}
+                        {newAddr.city === "TP. Hồ Chí Minh" && (
+                          <>
+                            <option value="Phường Bến Nghé">Phường Bến Nghé</option>
+                            <option value="Phường Tân Định">Phường Tân Định</option>
+                            <option value="Phường Đa Kao">Phường Đa Kao</option>
+                            <option value="Phường Thảo Điền">Phường Thảo Điền</option>
+                          </>
+                        )}
+                        {newAddr.city === "Đà Nẵng" && (
+                          <>
+                            <option value="Phường Thạch Thang">Phường Thạch Thang</option>
+                            <option value="Phường Hải Châu I">Phường Hải Châu I</option>
+                            <option value="Phường Hòa Cường">Phường Hòa Cường</option>
+                            <option value="Phường Phước Mỹ">Phường Phước Mỹ</option>
+                          </>
+                        )}
+                      </select>
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-xs text-gray-500 mb-1 block">Địa chỉ cụ thể (Số nhà, tên đường...)</label>
                       <input
                         placeholder="Số nhà, tên đường"
                         value={newAddr.street}
@@ -535,8 +621,8 @@ export function Account() {
                   }`}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <p className="font-medium text-gray-800 text-sm">{addr.fullName} · {addr.phone}</p>
-                        <p className="text-sm text-gray-600 mt-1">{addr.street}, {addr.ward}, {addr.district}, {addr.province}</p>
+                        <p className="font-medium text-gray-800 text-sm">{addr.receiverName} · {addr.phone}</p>
+                        <p className="text-sm text-gray-600 mt-1">{addr.street}, {addr.state}, {addr.city}</p>
                         {addr.isDefault && <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full mt-2 inline-block font-medium">✓ Mặc định</span>}
                       </div>
                       <div className="flex items-center gap-1 ml-3">

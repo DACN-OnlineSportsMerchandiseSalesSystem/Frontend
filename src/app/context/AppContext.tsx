@@ -13,9 +13,12 @@ import cartService, { Cart as ApiCart, CartItem as ApiCartItem } from "../../ser
 import orderService, { Order as ApiOrder } from "../../services/orderService";
 import categoryService, { Category } from "../../services/categoryService";
 import brandService, { Brand } from "../../services/brandService";
+import voucherService from "../../services/voucherService";
 
 export interface CartItem {
-  productId: string;
+  id?: number; // Database CartItem ID
+  productId: string; // ID of the VARIANT (for cart operations)
+  baseProductId?: string; // ID of the PRODUCT (for linking)
   name: string;
   price: number;
   image: string;
@@ -27,11 +30,10 @@ export interface CartItem {
 
 export interface Address {
   id?: number;
-  fullName: string;
+  receiverName: string;
   phone: string;
-  province: string;
-  district: string;
-  ward: string;
+  city: string;
+  state: string;
   street: string;
   isDefault: boolean;
 }
@@ -48,12 +50,17 @@ export interface Order {
   orderCode: string;
   orderDate: string;
   status: string;
-  totalAmount: number;
+  total: number;
+  subtotal?: number;
+  shippingFee?: number;
+  paymentMethod: string;
   receiverName: string;
   phone: string;
-  address: string;
+  address: any;
   items: any[];
   trackingHistory?: TrackingEvent[];
+  cancelReason?: string;
+  returnReason?: string;
 }
 
 export interface User {
@@ -68,6 +75,10 @@ export interface User {
   avatar: string;
   addresses: Address[];
   role?: "user" | "admin";
+  roleName?: string;
+  rank?: string;
+  level?: number;
+  status?: string;
 }
 
 interface AppContextType {
@@ -79,7 +90,7 @@ interface AppContextType {
   isAdmin: boolean;
   isLoading: boolean;
   apiError: string | null;
-  login: (email: string, password: string, role?: "user" | "admin") => Promise<boolean>;
+  login: (email: string, password: string, role?: "user" | "admin", turnstileToken?: string) => Promise<boolean>;
   logout: () => void;
   register: (userData: {
     firstName: string;
@@ -87,6 +98,8 @@ interface AppContextType {
     email: string;
     phone: string;
     password: string;
+    turnstileToken?: string;
+    otp?: string;
   }) => Promise<boolean>;
   addToCart: (item: CartItem) => void;
   removeFromCart: (productId: string, size: string, color: string) => void;
@@ -105,6 +118,10 @@ interface AppContextType {
   refreshProfile: () => Promise<void>;
   categories: Category[];
   brands: Brand[];
+  validVouchers: any[];
+  refreshVouchers: () => Promise<void>;
+  refreshOrders: () => Promise<void>;
+  refreshCart: () => Promise<void>;
   cartCount: number;
   cartTotal: number;
 }
@@ -117,6 +134,10 @@ const defaultUser: User = {
   gender: "Nam",
   avatar: "K",
   addresses: [],
+  roleName: "USER",
+  rank: "NEW",
+  level: 0,
+  status: "ACTIVE",
 };
 
 const sampleOrders: Order[] = [
@@ -160,12 +181,51 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [validVouchers, setValidVouchers] = useState<any[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // Khôi phục session khi app load (nếu token còn trong localStorage)
+  // ==================== CART ====================
+  const refreshCart = useCallback(async () => {
+    if (!isLoggedIn) return;
+    try {
+      const apiCart = await cartService.getMyCart();
+      const mappedItems: CartItem[] = apiCart.items.map(item => ({
+        id: item.id,
+        productId: item.productVariantId.toString(), // Variant ID
+        baseProductId: item.productId.toString(), // Base Product ID
+        name: item.productName,
+        price: Number(item.unitPrice) || 0,
+        image: item.imageUrl,
+        quantity: item.quantity,
+        size: item.variantInfo,
+        color: '',
+        brand: ''
+      }));
+      setCart(mappedItems);
+    } catch (err) {
+      console.error("Failed to load cart", err);
+    }
+  }, [isLoggedIn]);
+
+  const refreshVouchers = useCallback(async () => {
+    if (!isLoggedIn) return;
+    try {
+      const vouchers = await voucherService.getValidVouchers();
+      setValidVouchers(vouchers);
+    } catch (err) {}
+  }, [isLoggedIn]);
+
+    // Khôi phục session khi app load (nếu token còn trong localStorage)
   useEffect(() => {
+    const handleCartUpdate = () => {
+      console.log(">>> [EVENT] Nhận tín hiệu cập nhật giỏ hàng!");
+      refreshCart();
+    };
+
+    window.addEventListener('cart-updated', handleCartUpdate);
+    
     const token = localStorage.getItem('accessToken');
     const role = localStorage.getItem('userRole') as "user" | "admin" | null;
     if (token) {
@@ -180,7 +240,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             ...profile,
             fullName,
             avatar,
-            role: role || 'user',
+            role: (profile.roleName === 'ROLE_ADMIN' || profile.roleName === 'ADMIN') ? 'admin' : 'user',
           }));
         })
         .catch(() => {
@@ -197,9 +257,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         })
         .catch(() => {});
 
-      setOrders(sampleOrders);
+      refreshCart();
+      refreshVouchers();
+      refreshOrders();
     }
-  }, []);
+  }, [refreshCart, refreshVouchers]);
 
   // Load Categories & Brands
   useEffect(() => {
@@ -207,34 +269,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     brandService.getAllBrands().then(setBrands).catch(() => {});
   }, []);
 
-  // ==================== CART ====================
-  const refreshCart = useCallback(async () => {
-    if (!isLoggedIn) return;
-    try {
-      const apiCart = await cartService.getMyCart();
-      const mappedItems: CartItem[] = apiCart.items.map(item => ({
-        productId: item.productVariantId.toString(),
-        name: item.productName,
-        price: item.price,
-        image: item.imageUrl,
-        quantity: item.quantity,
-        size: item.variantInfo,
-        color: '',
-        brand: ''
-      }));
-      setCart(mappedItems);
-    } catch (err) {
-      console.error("Failed to load cart", err);
-    }
-  }, [isLoggedIn]);
-
   const addToCart = useCallback(async (item: CartItem) => {
     if (!isLoggedIn) {
       // Local cart if not logged in
+      const guestItem = { ...item, price: Number(item.price) || 0 };
       setCart((prev) => {
-        const existing = prev.find(c => c.productId === item.productId);
-        if (existing) return prev.map(c => c.productId === item.productId ? { ...c, quantity: c.quantity + item.quantity } : c);
-        return [...prev, item];
+        const existing = prev.find(c => c.productId === guestItem.productId);
+        if (existing) return prev.map(c => c.productId === guestItem.productId ? { ...c, quantity: c.quantity + guestItem.quantity } : c);
+        return [...prev, guestItem];
       });
       return;
     }
@@ -251,35 +293,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setCart((prev) => prev.filter((c) => c.productId !== productId));
       return;
     }
-    // Note: This requires knowing the CartItem ID from the API
-    // For simplicity, we'll need the full cart data to find the item ID
     try {
-      const apiCart = await cartService.getMyCart();
-      const itemToDelete = apiCart.items.find(i => i.productVariantId.toString() === productId);
-      if (itemToDelete) {
+      const itemToDelete = cart.find(i => i.productId === productId);
+      if (itemToDelete && itemToDelete.id) {
         await cartService.removeCartItem(itemToDelete.id);
         await refreshCart();
       }
     } catch (err) {}
-  }, [isLoggedIn, refreshCart]);
+  }, [isLoggedIn, cart, refreshCart]);
 
   const updateCartQty = useCallback(async (productId: string, size: string, color: string, qty: number) => {
     if (!isLoggedIn) {
       setCart((prev) => prev.map((c) => c.productId === productId ? { ...c, quantity: qty } : c));
       return;
     }
-    // Standard update: remove and add or wait for backend update endpoint
-    // For now, let's just clear and refresh if backend doesn't have direct update
     try {
-      const apiCart = await cartService.getMyCart();
-      const item = apiCart.items.find(i => i.productVariantId.toString() === productId);
-      if (item) {
-        await cartService.removeCartItem(item.id);
-        await cartService.addToCart(parseInt(productId), qty);
+      const itemToUpdate = cart.find(i => i.productId === productId);
+      if (itemToUpdate && itemToUpdate.id) {
+        await cartService.updateCartItem(itemToUpdate.id, qty);
         await refreshCart();
       }
     } catch (err) {}
-  }, [isLoggedIn, refreshCart]);
+  }, [isLoggedIn, cart, refreshCart]);
 
   const clearCart = useCallback(async () => {
     if (isLoggedIn) {
@@ -289,68 +324,112 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [isLoggedIn]);
 
   // ==================== ORDERS ====================
+  const mapApiOrderToUI = useCallback((o: any): Order => ({
+    id: o.id.toString(),
+    orderCode: o.orderCode || `SZ${o.id}`, 
+    orderDate: o.createAt ? new Date(o.createAt).toLocaleDateString('vi-VN') : '',
+    status: (o.status || 'pending').toLowerCase(),
+    total: Number(o.totalPrice) || 0,
+    subtotal: (Number(o.totalPrice) || 0) - (o.shippingFee !== undefined ? Number(o.shippingFee) : 30000),
+    shippingFee: o.shippingFee !== undefined ? Number(o.shippingFee) : 30000,
+    paymentMethod: o.paymentMethod || "COD",
+    receiverName: o.receiverName,
+    phone: o.phone,
+    address: {
+      fullName: o.receiverName,
+      phone: o.phone,
+      street: o.billingAddress?.street || '',
+      ward: o.billingAddress?.state || '',
+      district: '',
+      province: o.billingAddress?.city || ''
+    },
+    items: (o.orderItems || []).map((item: any) => ({
+      name: item.productName || 'Sản phẩm',
+      image: item.imageUrl || '',
+      price: Number(item.priceAtPurchase) || 0,
+      quantity: item.quantity || 1,
+      size: item.size || '',
+      color: item.color || ''
+    })),
+    trackingHistory: [
+      { time: o.createAt ? new Date(o.createAt).toLocaleString('vi-VN') : '', status: "Đặt hàng thành công", description: "Đơn hàng đã được xác nhận", done: true },
+      { time: "", status: "Đang xử lý", description: "Người bán đang chuẩn bị hàng", done: o.status !== 'PENDING' },
+      { time: "", status: "Đang giao hàng", description: "Đơn hàng đã được giao cho đơn vị vận chuyển", done: ['SHIPPING', 'DELIVERED'].includes(o.status) },
+      { time: "", status: "Giao hàng thành công", description: "Đơn hàng đã được giao thành công", done: o.status === 'DELIVERED' },
+    ]
+  }), []);
+
   const refreshOrders = useCallback(async () => {
     if (!isLoggedIn) return;
     try {
       const apiOrders = await orderService.getMyOrders();
-      const mappedOrders: Order[] = apiOrders.map(o => ({
-        id: o.id.toString(),
-        orderCode: o.orderCode,
-        orderDate: o.orderDate,
-        status: o.status,
-        totalAmount: o.totalAmount,
-        receiverName: o.receiverName,
-        phone: o.phone,
-        address: o.address,
-        items: o.items
-      }));
+      const mappedOrders: Order[] = apiOrders.map(mapApiOrderToUI)
+        .sort((a, b) => parseInt(b.id) - parseInt(a.id));
       setOrders(mappedOrders);
-    } catch (err) {}
-  }, [isLoggedIn]);
+    } catch (err) {
+      console.error("Failed to load orders", err);
+    }
+  }, [isLoggedIn, mapApiOrderToUI]);
 
-  const placeOrder = useCallback(async (orderData: any): Promise<string> => {
+  const placeOrder = useCallback(async (orderData: any): Promise<any> => {
     try {
       const newOrder = await orderService.createOrder(orderData);
       await refreshOrders();
-      await clearCart();
-      return newOrder.orderCode;
+      await refreshCart();
+      return newOrder;
     } catch (err) {
       throw err;
     }
-  }, [refreshOrders, clearCart]);
+  }, [refreshOrders, refreshCart]);
 
-  const cancelOrder = useCallback((orderId: string, reason: string) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: "cancelled", cancelReason: reason } : o))
-    );
-  }, []);
+  const cancelOrder = useCallback(async (orderId: string, reason: string) => {
+    try {
+      await orderService.deleteOrder(parseInt(orderId));
+      await refreshOrders();
+      // Vẫn cập nhật local để có lý do (dù backend chưa lưu)
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: "canceled", cancelReason: reason } : o))
+      );
+    } catch (err) {
+      console.error("Failed to cancel order", err);
+    }
+  }, [refreshOrders]);
 
-  const requestReturn = useCallback((orderId: string, reason: string) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: "return_requested", returnReason: reason } : o))
-    );
-  }, []);
+  const requestReturn = useCallback(async (orderId: string, reason: string) => {
+    try {
+      await orderService.updateOrderStatus(parseInt(orderId), "RETURN_REQUESTED");
+      await refreshOrders();
+      // Vẫn cập nhật local để có lý do
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: "return_requested", returnReason: reason } : o))
+      );
+    } catch (err) {
+      console.error("Failed to request return", err);
+    }
+  }, [refreshOrders]);
 
   // ==================== AUTH ====================
-  const login = useCallback(async (email: string, password: string, role: "user" | "admin" = "user"): Promise<boolean> => {
+  const login = useCallback(async (email: string, password: string, role: "user" | "admin" = "user", turnstileToken?: string): Promise<boolean> => {
     setIsLoading(true);
     setApiError(null);
     try {
       // Gọi API đăng nhập thực
-      await loginAPI({ email, password });
-      localStorage.setItem('userRole', role);
+      await loginAPI({ email, password, turnstileToken });
 
       // Lấy thông tin profile
       const profile = await getMyProfileAPI();
       const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || email;
       const avatar = fullName.substring(0, 2).toUpperCase();
+      const dbRole = profile.roleName === 'ROLE_ADMIN' || profile.roleName === 'ADMIN' ? 'admin' : 'user';
+      
       setUser({
         ...defaultUser,
         ...profile,
         fullName,
         avatar,
-        role,
+        role: dbRole as "user" | "admin",
       });
+      localStorage.setItem('userRole', dbRole);
 
       // Lấy danh sách địa chỉ
       try {
@@ -359,10 +438,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } catch {}
 
       setIsLoggedIn(true);
-      setOrders(sampleOrders);
+      refreshOrders();
+      refreshVouchers();
       return true;
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Đăng nhập thất bại';
+      const msg = typeof err?.response?.data === 'string' 
+        ? err.response.data 
+        : (err?.response?.data?.message || err?.message || 'Đăng nhập thất bại');
       setApiError(msg);
       return false;
     } finally {
@@ -386,6 +468,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     email: string;
     phone: string;
     password: string;
+    turnstileToken?: string;
+    otp?: string;
   }): Promise<boolean> => {
     setIsLoading(true);
     setApiError(null);
@@ -396,28 +480,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         email: userData.email,
         phone: userData.phone,
         password: userData.password,
+        turnstileToken: userData.turnstileToken,
+        otp: userData.otp,
         roleName: 'ROLE_USER',
         status: 'ACTIVE',
       });
 
       // Sau khi đăng ký thành công, tự động đăng nhập
-      await loginAPI({ email: userData.email, password: userData.password });
-      localStorage.setItem('userRole', 'user');
-
+      await loginAPI({ email: userData.email, password: userData.password, turnstileToken: userData.turnstileToken });
+      
       const profile = await getMyProfileAPI();
       const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || userData.email;
       const avatar = fullName.substring(0, 2).toUpperCase();
-      setUser({
-        ...defaultUser,
-        ...profile,
-        fullName,
-        avatar,
-        role: 'user',
+      const dbRole = profile.roleName === 'ROLE_ADMIN' || profile.roleName === 'ADMIN' ? 'admin' : 'user';
+      setUser({ 
+        ...profile, 
+        fullName: `${profile.firstName} ${profile.lastName}`,
+        avatar: profile.firstName?.charAt(0).toUpperCase() || 'U', 
+        role: dbRole as "user" | "admin",
+        addresses: [] // Addresses will be loaded via refreshProfile or similar if needed
       });
       setIsLoggedIn(true);
+      localStorage.setItem('userRole', dbRole);
       return true;
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Đăng ký thất bại';
+      const msg = typeof err?.response?.data === 'string' 
+        ? err.response.data 
+        : (err?.response?.data?.message || err?.message || 'Đăng ký thất bại');
       setApiError(msg);
       return false;
     } finally {
@@ -569,7 +658,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const isAdmin = isLoggedIn && user.role === "admin";
+  const isAdmin = isLoggedIn && (user.role === "admin" || user.roleName === "ROLE_ADMIN" || user.roleName === "ADMIN");
 
   return (
     <AppContext.Provider
@@ -577,11 +666,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         cart, orders, user, wishlist, isLoggedIn, isAdmin, isLoading, apiError,
         login, logout, register,
         addToCart, removeFromCart, updateCartQty, clearCart,
-        placeOrder, cancelOrder, requestReturn,
+        placeOrder, cancelOrder, requestReturn, mapApiOrderToUI,
         updateUser, addAddress, setDefaultAddress, updateAddress, deleteAddress,
         changePassword, refreshProfile,
         toggleWishlist,
-        categories, brands,
+        categories, brands, validVouchers, refreshVouchers, refreshOrders, refreshCart,
         cartCount, cartTotal,
       }}
     >

@@ -3,6 +3,7 @@ import api from './api';
 export interface LoginRequest {
   email: string;
   password: string;
+  turnstileToken?: string;
 }
 
 export interface LoginResponse {
@@ -16,6 +17,8 @@ export interface RegisterRequest {
   email: string;
   phone: string;
   password: string;
+  turnstileToken?: string;
+  otp?: string;
   roleName?: string;
   status?: string;
 }
@@ -61,4 +64,12 @@ export async function registerAPI(data: RegisterRequest): Promise<RegisterRespon
 export function logoutAPI(): void {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('userRole');
+}
+
+/**
+ * Gửi OTP - POST /api/auth/send-otp
+ */
+export async function sendOtpAPI(email: string): Promise<string> {
+  const response = await api.post('/auth/send-otp', { email });
+  return response.data;
 }

@@ -2,32 +2,54 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   LayoutDashboard, Package, ShoppingCart, Users, TrendingUp,
-  Tag, FileText, Settings, LogOut, Menu, Bell
+  Tag, FileText, Settings, LogOut, Menu, Bell, PercentIcon
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
-import { products } from "../data/products";
+import productService from "../../services/productService";
+import orderService from "../../services/orderService";
 import { AdminDashboard } from "./admin/AdminDashboard";
 import { ProductsManagement } from "./admin/ProductsManagement";
 import { OrdersManagement } from "./admin/OrdersManagement";
 import { CustomersManagement } from "./admin/CustomersManagement";
 import { StatisticsReports } from "./admin/StatisticsReports";
 import { CouponsManagement } from "./admin/CouponsManagement";
+import { DiscountsManagement } from "./admin/DiscountsManagement";
 import { BlogManagement } from "./admin/BlogManagement";
 import { SettingsManagement } from "./admin/SettingsManagement";
+import { BrandsManagement } from "./admin/BrandsManagement";
+import { CategoriesManagement } from "./admin/CategoriesManagement";
 
-type AdminTab = "dashboard" | "products" | "orders" | "customers" | "stats" | "coupons" | "blog" | "settings";
+type AdminTab = "dashboard" | "products" | "orders" | "customers" | "stats" | "vouchers" | "discounts" | "blog" | "settings" | "brands" | "categories";
 
 export function Admin() {
-  const { isLoggedIn, isAdmin, logout, orders, user } = useApp();
+  const { isLoggedIn, isAdmin, logout, user } = useApp();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<AdminTab>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [realProducts, setRealProducts] = useState<any[]>([]);
+  const [realOrders, setRealOrders] = useState<any[]>([]);
 
   useEffect(() => {
     if (!isLoggedIn || !isAdmin) {
       navigate("/login");
     }
   }, [isLoggedIn, isAdmin, navigate]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [productsData, ordersData] = await Promise.all([
+          productService.getAllProducts(),
+          orderService.getAllOrdersAdmin()
+        ]);
+        setRealProducts(productsData);
+        setRealOrders(ordersData);
+      } catch (err) {}
+    };
+    if (isLoggedIn && isAdmin) {
+      fetchData();
+    }
+  }, [isLoggedIn, isAdmin]);
 
   if (!isLoggedIn || !isAdmin) {
     return null;
@@ -41,25 +63,22 @@ export function Admin() {
   const menuItems: { id: AdminTab; icon: any; label: string }[] = [
     { id: "dashboard", icon: LayoutDashboard, label: "Tổng quan" },
     { id: "products", icon: Package, label: "Sản phẩm" },
+    { id: "categories", icon: LayoutDashboard, label: "Danh mục" },
+    { id: "brands", icon: Tag, label: "Thương hiệu" },
     { id: "orders", icon: ShoppingCart, label: "Đơn hàng" },
     { id: "customers", icon: Users, label: "Khách hàng" },
     { id: "stats", icon: TrendingUp, label: "Thống kê" },
-    { id: "coupons", icon: Tag, label: "Mã giảm giá" },
+    { id: "vouchers", icon: Tag, label: "Voucher" },
+    { id: "discounts", icon: PercentIcon, label: "Khuyến mãi" },
     { id: "blog", icon: FileText, label: "Blog" },
     { id: "settings", icon: Settings, label: "Cài đặt" },
   ];
 
-  // Stats
-  const totalRevenue = orders.reduce((sum, o) => sum + (o.status !== "cancelled" ? o.total : 0), 0);
-  const totalOrders = orders.length;
-  const pendingOrders = orders.filter(o => o.status === "pending").length;
-  const completedOrders = orders.filter(o => o.status === "delivered").length;
-
-  // Add stock field to products for management
-  const productsWithStock = products.map(p => ({
-    ...p,
-    stock: Math.floor(Math.random() * 100) + 10, // Mock stock data
-  }));
+  // Stats from real data
+  const totalRevenue = realOrders.reduce((sum, o) => sum + (o.status !== "CANCELLED" ? o.totalPrice : 0), 0);
+  const totalOrdersCount = realOrders.length;
+  const pendingOrders = realOrders.filter(o => o.status === "PENDING").length;
+  const completedOrders = realOrders.filter(o => o.status === "DELIVERED").length;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -145,17 +164,20 @@ export function Admin() {
         <main className="flex-1 p-6">
           {activeTab === "dashboard" && (
             <AdminDashboard
-              stats={{ totalRevenue, totalOrders, pendingOrders, completedOrders }}
-              orders={orders}
-              products={productsWithStock}
+              stats={{ totalRevenue, totalOrders: totalOrdersCount, pendingOrders, completedOrders }}
+              orders={realOrders}
+              products={realProducts}
             />
           )}
           {activeTab === "products" && <ProductsManagement />}
-          {activeTab === "orders" && <OrdersManagement orders={orders} />}
+          {activeTab === "orders" && <OrdersManagement />}
           {activeTab === "customers" && <CustomersManagement />}
           {activeTab === "stats" && <StatisticsReports />}
-          {activeTab === "coupons" && <CouponsManagement />}
+          {activeTab === "vouchers" && <CouponsManagement />}
+          {activeTab === "discounts" && <DiscountsManagement />}
           {activeTab === "blog" && <BlogManagement />}
+          {activeTab === "brands" && <BrandsManagement />}
+          {activeTab === "categories" && <CategoriesManagement />}
           {activeTab === "settings" && <SettingsManagement />}
         </main>
       </div>

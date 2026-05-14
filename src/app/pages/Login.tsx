@@ -2,6 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router";
 import { User, Mail, Lock, Phone, ChevronRight, Eye, EyeOff, Zap, Loader2 } from "lucide-react";
 import { useApp } from "../context/AppContext";
+import { TurnstileWidget } from "../components/TurnstileWidget";
+import { sendOtpAPI } from "../../services/authService";
+
+const TURNSTILE_SITE_KEY = "1x00000000000000000000AA"; // Dummy testing key
 
 export function Login() {
   const { login, register, isLoading, apiError } = useApp();
@@ -15,6 +19,7 @@ export function Login() {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginTurnstileToken, setLoginTurnstileToken] = useState("");
 
   // Register form
   const [registerData, setRegisterData] = useState({
@@ -29,6 +34,30 @@ export function Login() {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [registerSuccess, setRegisterSuccess] = useState(false);
+  const [registerTurnstileToken, setRegisterTurnstileToken] = useState("");
+  
+  // OTP logic
+  const [registerOtp, setRegisterOtp] = useState("");
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [otpSentMessage, setOtpSentMessage] = useState("");
+
+  const handleSendOtp = async () => {
+    if (!registerData.email) {
+      setRegisterError("Vui lòng nhập email trước khi nhận mã OTP");
+      return;
+    }
+    setRegisterError("");
+    setOtpSentMessage("");
+    setIsSendingOtp(true);
+    try {
+      const msg = await sendOtpAPI(registerData.email);
+      setOtpSentMessage(msg || "Mã OTP đã được gửi đến email của bạn.");
+    } catch (err: any) {
+      setRegisterError(err.response?.data || "Lỗi hệ thống khi gửi email OTP!");
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +68,12 @@ export function Login() {
       return;
     }
 
-    const success = await login(loginEmail, loginPassword, loginRole);
+    if (!loginTurnstileToken) {
+      setLoginError("Vui lòng xác thực bạn không phải là robot");
+      return;
+    }
+
+    const success = await login(loginEmail, loginPassword, loginRole, loginTurnstileToken);
     if (success) {
       if (loginRole === "admin") {
         navigate("/admin");
@@ -71,12 +105,19 @@ export function Login() {
       return;
     }
 
+    if (!registerTurnstileToken) {
+      setRegisterError("Vui lòng xác thực bạn không phải là robot");
+      return;
+    }
+
     const success = await register({
       firstName: registerData.firstName,
       lastName: registerData.lastName,
       email: registerData.email,
       phone: registerData.phone,
       password: registerData.password,
+      turnstileToken: registerTurnstileToken,
+      otp: registerOtp,
     });
 
     if (success) {
@@ -217,6 +258,13 @@ export function Login() {
                     <strong>Demo Admin:</strong> admin@sportzone.com / 123456
                   </div>
                 )}
+
+                <div className="flex justify-center">
+                  <TurnstileWidget
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onVerify={(token) => setLoginTurnstileToken(token)}
+                  />
+                </div>
 
                 {loginError && (
                   <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
@@ -389,11 +437,59 @@ export function Login() {
                   </div>
                 </div>
 
+                {/* OTP Section */}
+                <div className="pt-2">
+                  <label className="block text-sm text-gray-700 mb-2">
+                    Mã xác thực (OTP) <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      value={registerOtp}
+                      onChange={(e) => {
+                        setRegisterOtp(e.target.value);
+                        setRegisterError("");
+                      }}
+                      placeholder="Nhập mã OTP (6 số)"
+                      className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition-colors text-center tracking-widest font-mono"
+                      maxLength={6}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSendOtp}
+                      disabled={isSendingOtp || !registerData.email}
+                      className="px-4 py-3 bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:bg-gray-100 disabled:text-gray-400 font-medium rounded-xl transition-colors whitespace-nowrap flex items-center gap-2"
+                    >
+                      {isSendingOtp ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Đang gửi...
+                        </>
+                      ) : (
+                        "Gửi mã"
+                      )}
+                    </button>
+                  </div>
+                  {otpSentMessage && (
+                    <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                      <Zap className="w-3 h-3" /> {otpSentMessage}
+                    </p>
+                  )}
+                </div>
+
                 {registerError && (
                   <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
                     {registerError}
                   </div>
                 )}
+
+                <div className="flex justify-center">
+                  <TurnstileWidget
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onVerify={(token) => setRegisterTurnstileToken(token)}
+                  />
+                </div>
 
                 {registerSuccess && (
                   <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm">

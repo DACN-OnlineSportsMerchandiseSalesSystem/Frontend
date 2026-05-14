@@ -3,9 +3,10 @@ import api from './api';
 export interface CartItem {
   id: number;
   productVariantId: number;
+  productId: number;
   productName: string;
   variantInfo: string;
-  price: number;
+  unitPrice: number;
   quantity: number;
   imageUrl: string;
 }
@@ -32,6 +33,11 @@ const cartService = {
 
   removeCartItem: async (itemId: number) => {
     const response = await api.delete<Cart>(`/carts/items/${itemId}`);
+    return response.data;
+  },
+
+  updateCartItem: async (itemId: number, quantity: number) => {
+    const response = await api.put<Cart>(`/carts/items/${itemId}`, { quantity });
     return response.data;
   },
 

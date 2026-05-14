@@ -3,6 +3,11 @@ import api from './api';
 export interface Category {
   id: number;
   name: string;
+  slug: string;
+  status: string;
+  rating: number;
+  parentId?: number | null;
+  parentName?: string;
 }
 
 const categoryService = {

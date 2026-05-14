@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router";
 import { Search, Package, CheckCircle, Truck, XCircle, Clock, ChevronRight, AlertTriangle, RotateCcw } from "lucide-react";
 import { useApp } from "../context/AppContext";
@@ -9,16 +9,23 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; i
   confirmed: { label: "Đã xác nhận", color: "text-blue-700", bg: "bg-blue-50 border-blue-200", icon: <CheckCircle className="w-4 h-4 text-blue-600" /> },
   shipping: { label: "Đang giao hàng", color: "text-indigo-700", bg: "bg-indigo-50 border-indigo-200", icon: <Truck className="w-4 h-4 text-indigo-600" /> },
   delivered: { label: "Đã giao hàng", color: "text-green-700", bg: "bg-green-50 border-green-200", icon: <CheckCircle className="w-4 h-4 text-green-600" /> },
-  cancelled: { label: "Đã hủy", color: "text-red-700", bg: "bg-red-50 border-red-200", icon: <XCircle className="w-4 h-4 text-red-600" /> },
+  canceled: { label: "Đã hủy", color: "text-red-700", bg: "bg-red-50 border-red-200", icon: <XCircle className="w-4 h-4 text-red-600" /> },
   return_requested: { label: "Yêu cầu đổi trả", color: "text-orange-700", bg: "bg-orange-50 border-orange-200", icon: <RotateCcw className="w-4 h-4 text-orange-600" /> },
   returned: { label: "Đã hoàn hàng", color: "text-gray-700", bg: "bg-gray-50 border-gray-200", icon: <RotateCcw className="w-4 h-4 text-gray-500" /> },
 };
 
 export function OrderTracking() {
   const [searchParams] = useSearchParams();
-  const { orders, cancelOrder, requestReturn } = useApp();
+  const { orders, isLoggedIn, refreshOrders, cancelOrder, requestReturn, mapApiOrderToUI } = useApp();
+  
+  useEffect(() => {
+    if (isLoggedIn) {
+      refreshOrders();
+    }
+  }, [isLoggedIn, refreshOrders]);
+
   const [searchId, setSearchId] = useState(searchParams.get("id") || "");
-  const [foundOrder, setFoundOrder] = useState(() => {
+  const [foundOrder, setFoundOrder] = useState<any>(() => {
     const id = searchParams.get("id");
     return id ? orders.find((o) => o.id === id) : null;
   });
@@ -26,34 +33,67 @@ export function OrderTracking() {
   const [returnModal, setReturnModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [returnReason, setReturnReason] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  const paginatedOrders = orders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const handleSearch = () => {
-    const order = orders.find((o) => o.id === searchId.trim());
-    setFoundOrder(order || null);
-  };
+  const handleSearch = async () => {
+    if (!searchId.trim()) return;
+    setIsSearching(true);
 
-  const handleCancel = () => {
-    if (foundOrder && cancelReason) {
-      cancelOrder(foundOrder.id, cancelReason);
-      setCancelModal(false);
-      setCancelReason("");
-      const updated = orders.find((o) => o.id === foundOrder.id);
-      if (updated) setFoundOrder({ ...updated, status: "cancelled", cancelReason } as any);
+    // 1. Thử tìm trong danh sách cục bộ trước
+    const localOrder = orders.find((o) => o.id === searchId.trim() || o.orderCode === searchId.trim());
+    if (localOrder) {
+      setFoundOrder(localOrder);
+      setIsSearching(false);
+      return;
+    }
+
+    // 2. Nếu không thấy, gọi API tra cứu trực tiếp
+    try {
+      const apiOrder = await orderService.getOrderById(parseInt(searchId.trim()));
+      if (apiOrder) {
+        setFoundOrder(mapApiOrderToUI(apiOrder));
+      } else {
+        setFoundOrder(null);
+      }
+    } catch (err) {
+      console.error("Lỗi tra cứu đơn hàng:", err);
+      setFoundOrder(null);
+    } finally {
+      setIsSearching(false);
     }
   };
 
-  const handleReturn = () => {
+  const handleCancel = async () => {
+    if (foundOrder && cancelReason) {
+      await cancelOrder(foundOrder.id, cancelReason);
+      setCancelModal(false);
+      setCancelReason("");
+      // Refresh local view
+      const updated = orders.find((o) => o.id === foundOrder.id);
+      if (updated) setFoundOrder(updated);
+      else handleSearch(); // Re-search if not in local list
+    }
+  };
+
+  const handleReturn = async () => {
     if (foundOrder && returnReason) {
-      requestReturn(foundOrder.id, returnReason);
+      await requestReturn(foundOrder.id, returnReason);
       setReturnModal(false);
       setReturnReason("");
-      setFoundOrder((prev) => prev ? { ...prev, status: "return_requested", returnReason } as any : null);
+      // Refresh local view
+      const updated = orders.find((o) => o.id === foundOrder.id);
+      if (updated) setFoundOrder(updated);
+      else handleSearch();
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-5">
         <Link to="/" className="hover:text-blue-600">Trang chủ</Link>
         <ChevronRight className="w-3.5 h-3.5" />
@@ -63,7 +103,6 @@ export function OrderTracking() {
       <h1 className="text-gray-900 mb-2">Theo dõi đơn hàng</h1>
       <p className="text-gray-500 text-sm mb-6">Nhập mã đơn hàng để kiểm tra trạng thái giao hàng</p>
 
-      {/* Search */}
       <div className="bg-white rounded-2xl p-5 border border-gray-100 mb-6">
         <div className="flex gap-3">
           <input
@@ -82,7 +121,6 @@ export function OrderTracking() {
             <span className="hidden sm:inline">Tra cứu</span>
           </button>
         </div>
-        <p className="text-xs text-gray-400 mt-2">Mẫu thử: SZ20260315001, SZ20260320002</p>
       </div>
 
       {foundOrder === null && searchId && (
@@ -95,17 +133,24 @@ export function OrderTracking() {
 
       {foundOrder && (
         <div className="space-y-5">
-          {/* Status Card */}
           <div className="bg-white rounded-2xl p-5 border border-gray-100">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <button 
+                onClick={() => setFoundOrder(null)}
+                className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+              >
+                ← Quay lại danh sách
+              </button>
+              <span className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border ${statusConfig[foundOrder.status]?.bg} ${statusConfig[foundOrder.status]?.color}`}>
+                {statusConfig[foundOrder.status]?.icon}
+                {statusConfig[foundOrder.status]?.label}
+              </span>
+            </div>
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
                 <p className="text-sm text-gray-500 mb-1">Mã đơn hàng</p>
                 <p className="font-bold text-gray-800">#{foundOrder.id}</p>
               </div>
-              <span className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border ${statusConfig[foundOrder.status]?.bg} ${statusConfig[foundOrder.status]?.color}`}>
-                {statusConfig[foundOrder.status]?.icon}
-                {statusConfig[foundOrder.status]?.label}
-              </span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
               <div className="bg-gray-50 p-3 rounded-xl">
@@ -123,11 +168,10 @@ export function OrderTracking() {
             </div>
           </div>
 
-          {/* Tracking Timeline */}
           <div className="bg-white rounded-2xl p-5 border border-gray-100">
             <h3 className="text-gray-800 mb-5">Lịch trình đơn hàng</h3>
             <div className="space-y-0">
-              {foundOrder.trackingHistory.map((event, i) => (
+              {foundOrder.trackingHistory?.map((event: any, i: number) => (
                 <div key={i} className="flex gap-4">
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${event.done ? "bg-blue-600" : "bg-gray-200"}`}>
@@ -147,11 +191,10 @@ export function OrderTracking() {
             </div>
           </div>
 
-          {/* Order items */}
           <div className="bg-white rounded-2xl p-5 border border-gray-100">
             <h3 className="text-gray-800 mb-4">Sản phẩm đã đặt</h3>
             <div className="space-y-3">
-              {foundOrder.items.map((item, i) => (
+              {foundOrder.items?.map((item: any, i: number) => (
                 <div key={i} className="flex items-center gap-3">
                   <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
                   <div className="flex-1 min-w-0">
@@ -164,27 +207,30 @@ export function OrderTracking() {
             </div>
             <div className="border-t border-gray-100 mt-4 pt-4 space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
-                <span>Tạm tính</span><span>{formatPrice(foundOrder.subtotal)}</span>
+                <span>Tạm tính</span>
+                <span>{formatPrice(foundOrder.subtotal)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>Phí ship</span>
+                <span>Phí vận chuyển</span>
                 <span>{foundOrder.shippingFee === 0 ? "Miễn phí" : formatPrice(foundOrder.shippingFee)}</span>
               </div>
-              <div className="flex justify-between font-bold text-gray-800 pt-1">
+              <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-50 mt-2">
                 <span>Tổng cộng</span>
-                <span className="text-blue-700">{formatPrice(foundOrder.total)}</span>
+                <span className="text-blue-700 text-lg">{formatPrice(foundOrder.total)}</span>
               </div>
             </div>
           </div>
 
-          {/* Shipping address */}
           <div className="bg-white rounded-2xl p-5 border border-gray-100">
             <h3 className="text-gray-800 mb-3">Địa chỉ nhận hàng</h3>
-            <p className="text-sm font-medium text-gray-800">{foundOrder.address.fullName} · {foundOrder.address.phone}</p>
-            <p className="text-sm text-gray-600">{foundOrder.address.street}, {foundOrder.address.ward}, {foundOrder.address.district}, {foundOrder.address.province}</p>
+            <p className="text-sm font-medium text-gray-800">{foundOrder.address?.fullName} · {foundOrder.address?.phone}</p>
+            <p className="text-sm text-gray-600">
+              {foundOrder.address?.street}
+              {foundOrder.address?.ward ? `, ${foundOrder.address.ward}` : ""}
+              {foundOrder.address?.district ? `, ${foundOrder.address.district}` : ""}
+              {foundOrder.address?.province ? `, ${foundOrder.address.province}` : ""}
+            </p>
           </div>
-
-          {/* Actions */}
           {(foundOrder.status === "pending" || foundOrder.status === "confirmed") && (
             <div className="bg-yellow-50 rounded-2xl p-5 border border-yellow-100">
               <p className="text-sm text-yellow-700 mb-3 flex items-center gap-2">
@@ -222,7 +268,7 @@ export function OrderTracking() {
             </div>
           )}
 
-          {foundOrder.status === "cancelled" && (
+          {foundOrder.status === "canceled" && (
             <div className="bg-red-50 rounded-2xl p-4 border border-red-100">
               <p className="text-sm text-red-700">❌ Đơn hàng đã bị hủy</p>
               {(foundOrder as any).cancelReason && <p className="text-xs text-red-500 mt-1">Lý do: {(foundOrder as any).cancelReason}</p>}
@@ -238,28 +284,81 @@ export function OrderTracking() {
         </div>
       )}
 
-      {/* Recent orders shortcuts */}
+      {/* Paginated Orders List */}
       {!foundOrder && orders.length > 0 && (
-        <div className="bg-white rounded-2xl p-5 border border-gray-100">
-          <h3 className="text-gray-800 mb-4">Đơn hàng gần đây</h3>
-          <div className="space-y-3">
-            {orders.slice(0, 3).map((order) => (
-              <button
-                key={order.id}
-                onClick={() => { setSearchId(order.id); setFoundOrder(order); }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 transition-colors text-left"
-              >
-                <Package className="w-8 h-8 text-blue-400 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-800">#{order.id}</p>
-                  <p className="text-xs text-gray-500">{order.orderDate} · {formatPrice(order.total)}</p>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded-full border ${statusConfig[order.status]?.bg} ${statusConfig[order.status]?.color}`}>
-                  {statusConfig[order.status]?.label}
-                </span>
-              </button>
-            ))}
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+            <h3 className="text-gray-800 mb-4">Danh sách đơn hàng của bạn</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+              {paginatedOrders.map((order) => (
+                <button
+                  key={order.id}
+                  onClick={() => { setSearchId(order.id); setFoundOrder(order); window.scrollTo(0, 0); }}
+                  className="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-all text-left group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Package className="w-5 h-5 text-blue-600" />
+                      <span className="font-bold text-gray-800 text-sm">#{order.id}</span>
+                    </div>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border ${statusConfig[order.status]?.bg} ${statusConfig[order.status]?.color}`}>
+                      {statusConfig[order.status]?.label}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 mb-1">{order.orderDate}</p>
+                    <p className="text-sm font-bold text-blue-700">{formatPrice(order.total)}</p>
+                  </div>
+                  <div className="flex items-center text-xs text-blue-600 font-medium group-hover:translate-x-1 transition-transform">
+                    Chi tiết đơn hàng <ChevronRight className="w-3 h-3 ml-1" />
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 pt-4 border-t border-gray-50">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  className="p-2 rounded-lg border border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  <ChevronRight className="w-4 h-4 rotate-180 text-gray-600" />
+                </button>
+                
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === i + 1 
+                        ? "bg-blue-600 text-white" 
+                        : "text-gray-600 hover:bg-blue-50 hover:text-blue-600 border border-transparent"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  className="p-2 rounded-lg border border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  <ChevronRight className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+            )}
           </div>
+        </div>
+      )}
+
+      {!foundOrder && orders.length === 0 && isLoggedIn && (
+        <div className="text-center py-10 bg-white rounded-2xl border border-gray-100">
+          <Package className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+          <p className="text-gray-600">Bạn chưa có đơn hàng nào</p>
+          <Link to="/products" className="text-blue-600 text-sm hover:underline mt-2 inline-block">Mua sắm ngay</Link>
         </div>
       )}
 

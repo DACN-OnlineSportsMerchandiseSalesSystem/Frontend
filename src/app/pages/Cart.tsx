@@ -73,8 +73,24 @@ function calcDiscount(coupon: Coupon, cartTotal: number, shippingFee: number): n
 }
 
 export function Cart() {
-  const { cart, removeFromCart, updateCartQty, cartTotal } = useApp();
+  const { cart, removeFromCart, updateCartQty, cartTotal, validVouchers } = useApp();
   const navigate = useNavigate();
+
+  // Map backend vouchers to frontend Coupon interface
+  const availableCoupons: Coupon[] = [
+    ...AVAILABLE_COUPONS, // Keep legacy ones for now or remove if wanted
+    ...(validVouchers || []).map((v: any) => ({
+      code: v.code,
+      label: v.name,
+      desc: v.description,
+      type: v.discountType === 'PERCENT' ? 'percent' as const : 'fixed' as const,
+      value: v.discountValue,
+      minOrder: v.minOrderValue,
+      maxDiscount: v.maxDiscountValue,
+      badge: v.discountType === 'PERCENT' ? `GIẢM ${v.discountValue}%` : "MÃ GIẢM GIÁ",
+      badgeColor: "bg-blue-100 text-blue-700",
+    }))
+  ];
 
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
@@ -87,22 +103,22 @@ export function Cart() {
   const [productCouponInputs, setProductCouponInputs] = useState<{[key: string]: string}>({});
   const [productCouponErrors, setProductCouponErrors] = useState<{[key: string]: string}>({});
 
-  const getProductKey = (productId: number, size: string, color: string) => {
+  const getProductKey = (productId: string, size: string, color: string) => {
     return `${productId}-${size}-${color}`;
   };
 
-  const calculateProductDiscount = (productId: number, size: string, color: string): number => {
+  const calculateProductDiscount = (productId: string, size: string, color: string): number => {
     const key = getProductKey(productId, size, color);
     const couponCode = productCoupons[key];
     if (!couponCode) return 0;
 
-    const coupon = AVAILABLE_COUPONS.find(c => c.code === couponCode);
+    const coupon = availableCoupons.find(c => c.code === couponCode);
     if (!coupon) return 0;
 
     const item = cart.find(i => i.productId === productId && i.size === size && i.color === color);
     if (!item) return 0;
 
-    const itemTotal = item.price * item.quantity;
+    const itemTotal = (item.price || 0) * (item.quantity || 0);
     if (itemTotal < coupon.minOrder) return 0;
 
     if (coupon.type === "percent") {
@@ -118,22 +134,23 @@ export function Cart() {
     return sum + calculateProductDiscount(item.productId, item.size, item.color);
   }, 0);
 
-  const cartTotalAfterProductCoupons = cartTotal - totalProductDiscounts;
+  const safeCartTotal = cartTotal || 0;
+  const cartTotalAfterProductCoupons = Math.max(0, safeCartTotal - totalProductDiscounts);
 
   const shippingFee = cartTotalAfterProductCoupons >= 500000 ? 0 : 30000;
   const discountAmount = appliedCoupon ? calcDiscount(appliedCoupon, cartTotalAfterProductCoupons, shippingFee) : 0;
   const shippingAfterCoupon = appliedCoupon?.type === "shipping" ? 0 : shippingFee;
-  const total = cartTotalAfterProductCoupons - (appliedCoupon?.type !== "shipping" ? discountAmount : 0) + shippingAfterCoupon;
+  const total = Math.max(0, cartTotalAfterProductCoupons - (appliedCoupon?.type !== "shipping" ? discountAmount : 0) + shippingAfterCoupon);
 
   const handleApplyCoupon = (code: string) => {
     const trimmed = code.trim().toUpperCase();
-    const found = AVAILABLE_COUPONS.find((c) => c.code === trimmed);
+    const found = availableCoupons.find((c) => c.code === trimmed);
     if (!found) {
       setCouponError("Mã giảm giá không hợp lệ hoặc đã hết hạn");
       setCouponSuccess("");
       return;
     }
-    if (cartTotal < found.minOrder) {
+    if (cartTotalAfterProductCoupons < found.minOrder) {
       setCouponError(`Đơn hàng tối thiểu ${formatPrice(found.minOrder)} để dùng mã này`);
       setCouponSuccess("");
       return;
@@ -152,11 +169,11 @@ export function Cart() {
     setCouponSuccess("");
   };
 
-  const handleApplyProductCoupon = (productId: number, size: string, color: string, code: string) => {
+  const handleApplyProductCoupon = (productId: string, size: string, color: string, code: string) => {
     const key = getProductKey(productId, size, color);
     const trimmed = code.trim().toUpperCase();
 
-    const found = AVAILABLE_COUPONS.find((c) => c.code === trimmed);
+    const found = availableCoupons.find((c) => c.code === trimmed);
     if (!found) {
       setProductCouponErrors({...productCouponErrors, [key]: "Mã không hợp lệ"});
       return;
@@ -165,7 +182,7 @@ export function Cart() {
     const item = cart.find(i => i.productId === productId && i.size === size && i.color === color);
     if (!item) return;
 
-    const itemTotal = item.price * item.quantity;
+    const itemTotal = (item.price || 0) * (item.quantity || 0);
     if (itemTotal < found.minOrder) {
       setProductCouponErrors({...productCouponErrors, [key]: `Cần tối thiểu ${formatPrice(found.minOrder)}`});
       return;
@@ -176,7 +193,7 @@ export function Cart() {
     setProductCouponErrors({...productCouponErrors, [key]: ""});
   };
 
-  const handleRemoveProductCoupon = (productId: number, size: string, color: string) => {
+  const handleRemoveProductCoupon = (productId: string, size: string, color: string) => {
     const key = getProductKey(productId, size, color);
     const newCoupons = {...productCoupons};
     const newInputs = {...productCouponInputs};
@@ -234,7 +251,7 @@ export function Cart() {
                 <div className="flex gap-4">
                   {/* Image + Price block */}
                   <div className="flex-shrink-0 flex flex-col items-center gap-2">
-                    <Link to={`/product/${item.productId}`}>
+                    <Link to={`/product/${item.baseProductId || item.productId}`}>
                       <img
                         src={item.image}
                         alt={item.name}
@@ -255,7 +272,7 @@ export function Cart() {
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-blue-600 mb-0.5">{item.brand}</p>
                         <Link
-                          to={`/product/${item.productId}`}
+                          to={`/product/${item.baseProductId || item.productId}`}
                           className="text-sm text-gray-800 hover:text-blue-700 transition-colors line-clamp-2 leading-snug"
                         >
                           {item.name}
@@ -438,15 +455,15 @@ export function Cart() {
                 className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 text-xs transition-colors w-full"
               >
                 <Ticket className="w-3.5 h-3.5" />
-                <span>Mã có thể áp dụng ({AVAILABLE_COUPONS.filter(c => cartTotal >= c.minOrder).length})</span>
+                <span>Mã có thể áp dụng ({availableCoupons.filter(c => cartTotalAfterProductCoupons >= c.minOrder).length})</span>
                 {showCouponList ? <ChevronUp className="w-3.5 h-3.5 ml-auto" /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" />}
               </button>
 
               {/* Coupon list */}
               {showCouponList && (
                 <div className="mt-3 space-y-2">
-                  {AVAILABLE_COUPONS.map((coupon) => {
-                    const applicable = cartTotal >= coupon.minOrder;
+                  {availableCoupons.map((coupon) => {
+                    const applicable = cartTotalAfterProductCoupons >= coupon.minOrder;
                     const isApplied = appliedCoupon?.code === coupon.code;
                     return (
                       <div

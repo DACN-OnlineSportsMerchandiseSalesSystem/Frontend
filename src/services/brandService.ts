@@ -3,6 +3,10 @@ import api from './api';
 export interface Brand {
   id: number;
   name: string;
+  detail: string;
+  imageUrl: string;
+  status: string;
+  rating: number;
 }
 
 const brandService = {

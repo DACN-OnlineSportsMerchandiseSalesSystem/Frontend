@@ -8,6 +8,8 @@ export interface UserProfile {
   phone: string;
   status?: string;
   roleName?: string;
+  level?: number;
+  rank?: string;
 }
 
 export interface ChangePasswordRequest {

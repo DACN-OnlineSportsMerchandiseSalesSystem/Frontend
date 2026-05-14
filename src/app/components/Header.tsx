@@ -9,7 +9,7 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuOpen }: HeaderProps) {
-  const { cartCount, wishlist, isLoggedIn, logout } = useApp();
+  const { cartCount, wishlist, isLoggedIn, logout, user } = useApp();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<typeof products>([]);
@@ -197,14 +197,14 @@ export function Header({ onMenuOpen }: HeaderProps) {
                     <div className="bg-gradient-to-br from-blue-600 to-blue-800 px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white font-black text-lg flex-shrink-0 border-2 border-white/30">
-                          NK
+                          {user.avatar || "U"}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-white font-semibold text-sm truncate">Nguyễn Văn Khách</p>
-                          <p className="text-blue-200 text-xs truncate">khachhang@email.com</p>
+                          <p className="text-white font-semibold text-sm truncate">{user.fullName || user.email}</p>
+                          <p className="text-blue-200 text-xs truncate">{user.email}</p>
                           <div className="flex items-center gap-1 mt-1">
                             <span className="bg-yellow-400 text-blue-900 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                              ⭐ Thành viên Vàng
+                              ⭐ {user.rank === 'GOLD' ? 'Thành viên Vàng' : user.rank === 'SILVER' ? 'Thành viên Bạc' : user.rank === 'DIAMOND' ? 'Thành viên Kim cương' : 'Thành viên Mới'}
                             </span>
                           </div>
                         </div>
@@ -213,12 +213,14 @@ export function Header({ onMenuOpen }: HeaderProps) {
                       <div className="mt-3">
                         <div className="flex items-center justify-between text-xs mb-1">
                           <span className="text-blue-200">Điểm tích lũy</span>
-                          <span className="text-yellow-300 font-bold">2.450 điểm</span>
+                          <span className="text-yellow-300 font-bold">{(user as any).level || 0} điểm</span>
                         </div>
                         <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
-                          <div className="h-full bg-yellow-400 rounded-full" style={{ width: "65%" }} />
+                          <div className="h-full bg-yellow-400 rounded-full" style={{ width: `${Math.min(100, (((user as any).level || 0) / 10000) * 100)}%` }} />
                         </div>
-                        <p className="text-blue-300 text-[10px] mt-1">Còn 550 điểm để lên hạng Bạch Kim</p>
+                        <p className="text-blue-300 text-[10px] mt-1">
+                          {((user as any).level || 0) < 10000 ? `Còn ${10000 - ((user as any).level || 0)} điểm để lên hạng Vàng` : 'Bạn đã đạt hạng Vàng'}
+                        </p>
                       </div>
                     </div>
 
@@ -248,7 +250,7 @@ export function Header({ onMenuOpen }: HeaderProps) {
                         </div>
                         <div>
                           <p className="text-sm text-gray-800 group-hover:text-blue-700 transition-colors">Tích điểm đổi quà</p>
-                          <p className="text-xs text-gray-400">2.450 điểm khả dụng</p>
+                          <p className="text-xs text-gray-400">{(user as any).level || 0} điểm khả dụng</p>
                         </div>
                       </Link>
 

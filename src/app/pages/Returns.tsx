@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { ChevronRight, RotateCcw, Upload, Package, CheckCircle, AlertTriangle } from "lucide-react";
+import { ChevronRight, RotateCcw, Upload, Package, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { formatPrice } from "../data/products";
+import { returnService } from "../../services/policyService";
 
 const returnReasons = [
   "Sản phẩm bị lỗi / hỏng hóc",
@@ -14,36 +15,68 @@ const returnReasons = [
 ];
 
 export function Returns() {
-  const { orders, requestReturn } = useApp();
+  const { orders, refreshOrders, isLoggedIn } = useApp();
   const [step, setStep] = useState<"form" | "success">("form");
   const [orderId, setOrderId] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectedItems, setSelectedItems] = useState<any[]>([]);
   const [reason, setReason] = useState("");
   const [description, setDescription] = useState("");
   const [returnType, setReturnType] = useState<"exchange" | "refund">("exchange");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isLoggedIn) refreshOrders();
+  }, [isLoggedIn]);
 
   const deliveredOrders = orders.filter((o) => o.status === "delivered");
 
   const handleFindOrder = () => {
     const order = deliveredOrders.find((o) => o.id === orderId.trim());
-    setSelectedOrder(order || null);
+    if (order) {
+        setSelectedOrder(order);
+    } else {
+        setSelectedOrder(null);
+    }
   };
 
-  const toggleItem = (productId: string) => {
-    setSelectedItems((prev) => prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]);
+  const toggleItem = (item: any) => {
+    const isSelected = selectedItems.find(i => i.productVariantId === item.productVariantId);
+    if (isSelected) {
+        setSelectedItems(prev => prev.filter(i => i.productVariantId !== item.productVariantId));
+    } else {
+        setSelectedItems(prev => [...prev, { ...item, quantity: item.quantity }]);
+    }
   };
 
-  const handleSubmit = () => {
-    if (selectedOrder && reason) {
-      requestReturn(selectedOrder.id, reason);
+  const handleSubmit = async () => {
+    if (!selectedOrder || !reason || selectedItems.length === 0) return;
+    
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        orderId: parseInt(selectedOrder.id),
+        reason: reason,
+        note: description,
+        returnType: returnType,
+        items: selectedItems.map(item => ({
+          productVariantId: item.productVariantId || 0, // Fallback if missing
+          quantity: item.quantity
+        }))
+      };
+      
+      await returnService.createReturn(payload);
       setStep("success");
+    } catch (err) {
+      console.error("Failed to submit return request", err);
+      alert("Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-5">
         <Link to="/" className="hover:text-blue-600">Trang chủ</Link>
         <ChevronRight className="w-3.5 h-3.5" />
@@ -54,20 +87,20 @@ export function Returns() {
       <p className="text-gray-500 text-sm mb-6">SportZone hỗ trợ đổi trả miễn phí trong vòng 30 ngày kể từ ngày nhận hàng</p>
 
       {step === "success" ? (
-        <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center">
+        <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center animate-in fade-in zoom-in duration-300">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-green-500" />
           </div>
           <h2 className="text-green-700 mb-2">Yêu cầu đổi trả đã được ghi nhận!</h2>
-          <p className="text-gray-600 text-sm mb-2">Mã đơn: <strong className="text-blue-700">{selectedOrder?.id}</strong></p>
-          <p className="text-gray-500 text-sm mb-6">Nhân viên SportZone sẽ liên hệ với bạn trong vòng 24 giờ để hướng dẫn quy trình đổi trả</p>
+          <p className="text-gray-600 text-sm mb-2">Mã đơn: <strong className="text-blue-700">#{selectedOrder?.id}</strong></p>
+          <p className="text-gray-500 text-sm mb-6">Nhân viên SportZone sẽ liên hệ với bạn trong vòng 24 giờ để hướng dẫn quy trình tiếp theo</p>
           <div className="bg-blue-50 rounded-xl p-4 text-left mb-6">
-            <p className="text-sm text-blue-700 mb-2">📋 Bước tiếp theo:</p>
+            <p className="text-sm text-blue-700 mb-2 font-bold">📋 Quy trình xử lý:</p>
             <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-              <li>Nhân viên xác nhận yêu cầu và hướng dẫn đóng gói</li>
-              <li>Gửi hàng về kho SportZone (phí ship do chúng tôi chi trả)</li>
-              <li>Kiểm tra hàng trong 1-2 ngày làm việc</li>
-              <li>Gửi hàng mới hoặc hoàn tiền trong 3-5 ngày làm việc</li>
+              <li>Nhân viên gọi điện xác nhận trong 24h</li>
+              <li>Bạn đóng gói sản phẩm và gửi về kho</li>
+              <li>Chúng tôi kiểm tra tình trạng hàng (1-2 ngày)</li>
+              <li>Gửi hàng đổi hoặc hoàn tiền (3-5 ngày)</li>
             </ol>
           </div>
           <div className="flex gap-3">
@@ -81,56 +114,52 @@ export function Returns() {
         </div>
       ) : (
         <div className="space-y-5">
-          {/* Policy notice */}
           <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100 flex gap-3">
             <RotateCcw className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-blue-700">
-              <p className="font-medium mb-1">Chính sách đổi trả của SportZone</p>
+              <p className="font-medium mb-1 text-blue-800">Chính sách đổi trả của SportZone</p>
               <ul className="space-y-0.5 text-blue-600">
                 <li>✓ Đổi trả trong 30 ngày kể từ ngày nhận hàng</li>
-                <li>✓ Miễn phí vận chuyển đổi trả</li>
-                <li>✓ Hoàn tiền trong 3-5 ngày làm việc</li>
+                <li>✓ Miễn phí vận chuyển đổi trả toàn quốc</li>
+                <li>✓ Hoàn tiền nhanh chóng trong 3-5 ngày làm việc</li>
                 <li>✓ Sản phẩm cần còn nguyên tem, chưa qua sử dụng</li>
               </ul>
             </div>
           </div>
 
-          {/* Find order */}
           <div className="bg-white rounded-2xl p-5 border border-gray-100">
-            <h3 className="text-gray-800 mb-4">Tìm đơn hàng cần đổi trả</h3>
+            <h3 className="text-gray-800 mb-4 font-bold">Tìm đơn hàng cần đổi trả</h3>
             <div className="flex gap-3 mb-4">
               <input
                 type="text"
                 value={orderId}
                 onChange={(e) => setOrderId(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleFindOrder()}
-                placeholder="Nhập mã đơn hàng đã giao"
+                placeholder="Nhập mã đơn hàng đã giao (vd: 8)"
                 className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm"
               />
-              <button onClick={handleFindOrder} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm hover:bg-blue-700 transition-colors">
+              <button onClick={handleFindOrder} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm hover:bg-blue-700 transition-colors font-medium">
                 Tìm kiếm
               </button>
             </div>
 
-            {/* Quick select from delivered orders */}
             {deliveredOrders.length > 0 && (
               <div>
-                <p className="text-xs text-gray-400 mb-2">Hoặc chọn từ đơn hàng đã giao:</p>
-                <div className="space-y-2">
-                  {deliveredOrders.map((order) => (
+                <p className="text-xs text-gray-400 mb-2">Đơn hàng đã giao gần đây:</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {deliveredOrders.slice(0, 4).map((order) => (
                     <button
                       key={order.id}
                       onClick={() => { setOrderId(order.id); setSelectedOrder(order); }}
-                      className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors text-left ${
-                        selectedOrder?.id === order.id ? "border-blue-400 bg-blue-50" : "border-gray-100 hover:bg-gray-50"
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                        selectedOrder?.id === order.id ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500" : "border-gray-100 hover:border-blue-200 hover:bg-blue-50/30"
                       }`}
                     >
-                      <Package className="w-8 h-8 text-blue-300 flex-shrink-0" />
+                      <Package className={`w-6 h-6 flex-shrink-0 ${selectedOrder?.id === order.id ? "text-blue-600" : "text-gray-300"}`} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-800">#{order.id}</p>
-                        <p className="text-xs text-gray-500">{order.orderDate} · {formatPrice(order.total)}</p>
+                        <p className="text-xs font-bold text-gray-800">#{order.id}</p>
+                        <p className="text-[10px] text-gray-500 truncate">{order.orderDate} · {formatPrice(order.total)}</p>
                       </div>
-                      {selectedOrder?.id === order.id && <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0" />}
                     </button>
                   ))}
                 </div>
@@ -138,105 +167,93 @@ export function Returns() {
             )}
 
             {orderId && !selectedOrder && (
-              <div className="flex items-center gap-2 text-yellow-600 text-sm mt-3 bg-yellow-50 p-3 rounded-xl">
+              <div className="flex items-center gap-2 text-yellow-600 text-sm mt-3 bg-yellow-50 p-3 rounded-xl border border-yellow-100 animate-in slide-in-from-top-1">
                 <AlertTriangle className="w-4 h-4" />
-                Không tìm thấy đơn hàng hoặc đơn hàng chưa được giao
+                Không tìm thấy đơn hàng hoặc đơn hàng chưa ở trạng thái "Đã giao"
               </div>
             )}
           </div>
 
-          {/* Select items */}
           {selectedOrder && (
-            <div className="bg-white rounded-2xl p-5 border border-gray-100">
-              <h3 className="text-gray-800 mb-4">Chọn sản phẩm cần đổi trả</h3>
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 animate-in fade-in slide-in-from-bottom-2">
+              <h3 className="text-gray-800 mb-4 font-bold">Chọn sản phẩm cần đổi trả</h3>
               <div className="space-y-3">
                 {selectedOrder.items.map((item: any) => (
-                  <label key={item.productId} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
-                    selectedItems.includes(item.productId) ? "border-blue-400 bg-blue-50" : "border-gray-100 hover:bg-gray-50"
+                  <label key={item.productVariantId} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    selectedItems.some(si => si.productVariantId === item.productVariantId) ? "border-blue-500 bg-blue-50" : "border-gray-100 hover:bg-gray-50"
                   }`}>
                     <input
                       type="checkbox"
-                      checked={selectedItems.includes(item.productId)}
-                      onChange={() => toggleItem(item.productId)}
+                      checked={selectedItems.some(si => si.productVariantId === item.productVariantId)}
+                      onChange={() => toggleItem(item)}
                       className="w-4 h-4 accent-blue-600"
                     />
                     <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-800 truncate">{item.name}</p>
-                      <p className="text-xs text-gray-500">Size: {item.size} · {item.color} · x{item.quantity}</p>
+                      <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
+                      <p className="text-xs text-gray-500">Size: {item.size} · Màu: {item.color} · SL: {item.quantity}</p>
                     </div>
-                    <p className="text-sm font-medium text-blue-700 flex-shrink-0">{formatPrice(item.price * item.quantity)}</p>
+                    <p className="text-sm font-bold text-blue-700 flex-shrink-0">{formatPrice(item.price * item.quantity)}</p>
                   </label>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Return type & reason */}
           {selectedItems.length > 0 && (
-            <div className="bg-white rounded-2xl p-5 border border-gray-100">
-              <h3 className="text-gray-800 mb-4">Loại yêu cầu & Lý do</h3>
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 animate-in fade-in slide-in-from-bottom-2">
+              <h3 className="text-gray-800 mb-4 font-bold">Loại yêu cầu & Lý do</h3>
 
-              <div className="flex gap-3 mb-5">
+              <div className="flex gap-3 mb-6">
                 {[
                   { key: "exchange", label: "🔄 Đổi sản phẩm", desc: "Nhận sản phẩm khác thay thế" },
-                  { key: "refund", label: "💰 Hoàn tiền", desc: "Nhận lại tiền đã thanh toán" },
+                  { key: "refund", label: "💰 Hoàn tiền", desc: "Nhận lại tiền qua ngân hàng/ví" },
                 ].map((type) => (
                   <label
                     key={type.key}
-                    className={`flex-1 p-4 rounded-xl border-2 cursor-pointer transition-colors ${
-                      returnType === type.key ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
+                    className={`flex-1 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      returnType === type.key ? "border-blue-500 bg-blue-50 shadow-sm" : "border-gray-100 hover:border-gray-200"
                     }`}
                   >
                     <input type="radio" name="returnType" value={type.key} checked={returnType === type.key} onChange={() => setReturnType(type.key as any)} className="hidden" />
-                    <p className="text-sm font-medium text-gray-800">{type.label}</p>
-                    <p className="text-xs text-gray-500 mt-1">{type.desc}</p>
+                    <p className="text-sm font-bold text-gray-800">{type.label}</p>
+                    <p className="text-[10px] text-gray-500 mt-1">{type.desc}</p>
                   </label>
                 ))}
               </div>
 
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-2">Lý do đổi trả <span className="text-red-500">*</span></p>
-                <div className="space-y-2">
+              <div className="mb-5">
+                <p className="text-sm font-bold text-gray-700 mb-3">Lý do đổi trả <span className="text-red-500">*</span></p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {returnReasons.map((r) => (
-                    <label key={r} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
+                    <label key={r} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                       reason === r ? "border-blue-400 bg-blue-50" : "border-gray-100 hover:bg-gray-50"
                     }`}>
-                      <input type="radio" name="reason" value={r} checked={reason === r} onChange={() => setReason(r)} className="accent-blue-600" />
-                      <span className="text-sm text-gray-700">{r}</span>
+                      <input type="radio" name="reason" value={r} checked={reason === r} onChange={() => setReason(r)} className="w-4 h-4 accent-blue-600" />
+                      <span className="text-xs text-gray-700">{r}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-2">Mô tả chi tiết (tùy chọn)</p>
+              <div className="mb-5">
+                <p className="text-sm font-bold text-gray-700 mb-2">Mô tả chi tiết (tùy chọn)</p>
                 <textarea
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Mô tả chi tiết vấn đề của sản phẩm..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm resize-none"
+                  placeholder="Vui lòng mô tả rõ hơn về lỗi sản phẩm hoặc yêu cầu đổi size..."
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm resize-none transition-all"
                 />
-              </div>
-
-              {/* Image upload placeholder */}
-              <div className="mb-5">
-                <p className="text-sm text-gray-600 mb-2">Hình ảnh sản phẩm (tùy chọn)</p>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-blue-300 transition-colors cursor-pointer">
-                  <Upload className="w-6 h-6 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Tải lên hình ảnh sản phẩm lỗi</p>
-                  <p className="text-xs text-gray-400">PNG, JPG tối đa 5MB mỗi ảnh</p>
-                </div>
               </div>
 
               <button
                 onClick={handleSubmit}
-                disabled={!reason}
-                className="w-full py-3.5 bg-blue-700 hover:bg-blue-800 disabled:bg-gray-300 text-white rounded-xl text-sm transition-colors font-medium flex items-center justify-center gap-2"
+                disabled={!reason || isSubmitting}
+                className="w-full py-4 bg-blue-700 hover:bg-blue-800 disabled:bg-gray-200 text-white rounded-xl text-sm transition-all font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
               >
-                <RotateCcw className="w-4 h-4" />
-                Gửi yêu cầu đổi trả
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <RotateCcw className="w-5 h-5" />}
+                {isSubmitting ? "Đang gửi yêu cầu..." : "Gửi yêu cầu đổi trả ngay"}
               </button>
             </div>
           )}

@@ -21,12 +21,16 @@ export interface Product {
   productCode: string;
   description: string;
   status: string;
-  categoryId: number;
-  categoryName: string;
-  brandId: number;
+  categoryIds: number[];
+  categoryNames: string[];
   brandName: string;
   images: ProductImage[];
   variants: ProductVariant[];
+  price: number;
+  originalPrice: number;
+  rating: number;
+  reviewCount: number;
+  discount: number;
 }
 
 const productService = {

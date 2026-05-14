@@ -1,17 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router";
-import { Star, ShoppingCart, Zap, Heart, Truck, RotateCcw, Shield, ChevronRight, Minus, Plus, Check } from "lucide-react";
-import { formatPrice } from "../data/products";
+import { Star, ShoppingCart, Zap, Heart, Truck, RotateCcw, Shield, ChevronRight, Minus, Plus, Check, MessageSquare } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { ProductCard } from "../components/ProductCard";
+import { formatPrice } from "../data/products";
 import productService, { Product } from "../../services/productService";
-import { useEffect } from "react";
+import reviewService, { Review } from "../../services/reviewService";
 
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { addToCart, toggleWishlist, wishlist } = useApp();
+  const { addToCart, toggleWishlist, wishlist, user } = useApp();
   const [product, setProduct] = useState<Product | null>(null);
+  const [related, setRelated] = useState<Product[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [selectedSize, setSelectedSize] = useState("");
@@ -21,24 +23,69 @@ export function ProductDetail() {
   const [activeTab, setActiveTab] = useState<"desc" | "specs" | "reviews">("desc");
   const [addedToCart, setAddedToCart] = useState(false);
   const [reviewText, setReviewText] = useState("");
+  const [reviewTitle, setReviewTitle] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
     if (id) {
+      const pid = parseInt(id);
       setIsLoading(true);
-      productService.getProductById(parseInt(id))
+      
+      // Fetch Product Detail
+      productService.getProductById(pid)
         .then(data => {
           setProduct(data);
           if (data.variants && data.variants.length > 0) {
             setSelectedSize(data.variants[0].size);
             setSelectedColor(data.variants[0].color);
           }
+
+          // Fetch Related Products (using first category)
+          if (data.categoryIds && data.categoryIds.length > 0) {
+            productService.getAllProducts(data.categoryIds[0])
+              .then(items => {
+                setRelated(items.filter(i => i.id !== pid).slice(0, 4));
+              });
+          }
           setIsLoading(false);
         })
         .catch(() => setIsLoading(false));
+
+      // Fetch Reviews
+      reviewService.getReviewsByProduct(pid)
+        .then(setReviews)
+        .catch(console.error);
     }
   }, [id]);
+
+  const handleSubmitReview = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    if (!reviewText.trim()) return;
+
+    setIsSubmittingReview(true);
+    try {
+      await reviewService.createReview(parseInt(id!), {
+        title: reviewTitle || "Đánh giá từ khách hàng",
+        comment: reviewText,
+        rating: reviewRating
+      });
+      // Refresh reviews
+      const updated = await reviewService.getReviewsByProduct(parseInt(id!));
+      setReviews(updated);
+      setReviewText("");
+      setReviewTitle("");
+      setReviewRating(5);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   if (isLoading) return <div className="py-20 text-center">Đang tải...</div>;
 
@@ -54,9 +101,8 @@ export function ProductDetail() {
     );
   }
 
-  const discount = 0;
   const isWishlisted = wishlist.includes(product.id.toString());
-  const related: any[] = [];
+  const categoryName = product.categoryNames?.[0] || "Sản phẩm";
 
   const handleAddToCart = () => {
     const variant = product.variants.find(v => v.size === selectedSize && v.color === selectedColor) || product.variants[0];
@@ -89,8 +135,6 @@ export function ProductDetail() {
         <ChevronRight className="w-3.5 h-3.5" />
         <Link to="/products" className="hover:text-blue-600 transition-colors">Sản phẩm</Link>
         <ChevronRight className="w-3.5 h-3.5" />
-        <Link to={`/products?sport=${encodeURIComponent(product.categoryName)}`} className="hover:text-blue-600 transition-colors">{product.categoryName}</Link>
-        <ChevronRight className="w-3.5 h-3.5" />
         <span className="text-gray-800 truncate max-w-xs">{product.name}</span>
       </div>
 
@@ -99,7 +143,7 @@ export function ProductDetail() {
         <div>
           <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 mb-3 aspect-square">
             <img
-              src={product.images[activeImage] || product.image}
+              src={product.images[activeImage]?.imageUrl || "https://placehold.co/600x600?text=No+Image"}
               alt={product.name}
               className="w-full h-full object-cover"
             />
@@ -121,8 +165,8 @@ export function ProductDetail() {
         <div>
           <div className="flex items-start justify-between gap-4 mb-3">
             <div>
-              <span className="inline-block bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full mb-2">{product.brand}</span>
-              <h1 className="text-gray-900 text-2xl md:text-3xl">{product.name}</h1>
+              <span className="inline-block bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full mb-2">{product.brandName}</span>
+              <h1 className="text-gray-900 text-2xl md:text-3xl font-bold">{product.name}</h1>
             </div>
             <button
               onClick={() => toggleWishlist(product.id)}
@@ -138,11 +182,11 @@ export function ProductDetail() {
           <div className="flex items-center gap-3 mb-4">
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((s) => (
-                <Star key={s} className={`w-4 h-4 ${s <= 5 ? "text-yellow-400 fill-yellow-400" : "text-gray-200 fill-gray-200"}`} />
+                <Star key={s} className={`w-4 h-4 ${s <= Math.round(product.rating || 0) ? "text-yellow-400 fill-yellow-400" : "text-gray-200 fill-gray-200"}`} />
               ))}
             </div>
-            <span className="text-yellow-600 font-medium">5.0</span>
-            <span className="text-gray-400 text-sm">(0 đánh giá)</span>
+            <span className="text-yellow-600 font-medium">{(product.rating || 0).toFixed(1)}</span>
+            <span className="text-gray-400 text-sm">({product.reviewCount || 0} đánh giá)</span>
             <span className="text-green-600 text-sm flex items-center gap-1">✓ Còn hàng</span>
           </div>
 
@@ -150,21 +194,18 @@ export function ProductDetail() {
           <div className="bg-blue-50 rounded-2xl p-4 mb-5">
             <div className="flex items-baseline gap-3 mb-1">
               <span className="text-3xl text-blue-700 font-black">{formatPrice(product.price)}</span>
-              {discount > 0 && (
+              {(product.discount || 0) > 0 && (
                 <>
                   <span className="text-lg text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
-                  <span className="bg-red-500 text-white text-sm px-2 py-0.5 rounded-full font-bold">-{discount}%</span>
+                  <span className="bg-red-500 text-white text-sm px-2 py-0.5 rounded-full font-bold">-{product.discount}%</span>
                 </>
               )}
             </div>
-            {discount > 0 && (
-              <p className="text-sm text-green-600">Tiết kiệm {formatPrice(product.originalPrice - product.price)}</p>
-            )}
           </div>
 
           {/* Variants selection */}
           <div className="mb-5">
-            <p className="text-sm text-gray-600 mb-2">Chọn phiên bản:</p>
+            <p className="text-sm text-gray-600 mb-2">Chọn phiên bản (Kích cỡ - Màu sắc):</p>
             <div className="flex flex-wrap gap-2">
               {product.variants.map((v) => (
                 <button
@@ -175,7 +216,7 @@ export function ProductDetail() {
                   }}
                   className={`px-4 py-2 rounded-xl text-sm border-2 transition-all ${
                     selectedSize === v.size && selectedColor === v.color
-                      ? "border-blue-600 bg-blue-600 text-white font-medium"
+                      ? "border-blue-600 bg-blue-600 text-white font-medium shadow-md"
                       : "border-gray-200 text-gray-700 hover:border-blue-300"
                   }`}
                 >
@@ -241,7 +282,7 @@ export function ProductDetail() {
           {([
             { key: "desc", label: "Mô tả sản phẩm" },
             { key: "specs", label: "Thông số kỹ thuật" },
-            { key: "reviews", label: `Đánh giá (0)` },
+            { key: "reviews", label: `Đánh giá (${reviews.length})` },
           ] as const).map((tab) => (
             <button
               key={tab.key}
@@ -259,9 +300,8 @@ export function ProductDetail() {
 
         <div className="p-6">
           {activeTab === "desc" && (
-            <div>
-              <p className="text-gray-600 leading-relaxed mb-4">{product.description}</p>
-              <p className="text-gray-500 text-sm">{product.shortDescription}</p>
+            <div className="prose max-w-none">
+              <p className="text-gray-600 leading-relaxed whitespace-pre-line">{product.description}</p>
             </div>
           )}
 
@@ -271,7 +311,7 @@ export function ProductDetail() {
                 <tbody>
                   <tr className="bg-gray-50">
                     <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-100">Mã sản phẩm</td>
-                    <td className="py-3 px-4 text-gray-800">{product.productCode}</td>
+                    <td className="py-3 px-4 text-gray-800 font-medium">{product.productCode}</td>
                   </tr>
                   <tr className="bg-white">
                     <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-100">Thương hiệu</td>
@@ -279,7 +319,7 @@ export function ProductDetail() {
                   </tr>
                   <tr className="bg-gray-50">
                     <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-100">Danh mục</td>
-                    <td className="py-3 px-4 text-gray-800">{product.categoryName}</td>
+                    <td className="py-3 px-4 text-gray-800">{product.categoryNames?.join(", ") || "Chưa phân loại"}</td>
                   </tr>
                 </tbody>
               </table>
@@ -289,54 +329,126 @@ export function ProductDetail() {
           {activeTab === "reviews" && (
             <div>
               {/* Summary */}
-              <div className="flex items-center gap-6 pb-6 border-b border-gray-100 mb-6">
-                <div className="text-center">
-                  <div className="text-5xl font-black text-blue-700">5.0</div>
-                  <div className="flex justify-center gap-0.5 my-1">
+              <div className="flex items-center gap-8 pb-6 border-b border-gray-100 mb-6">
+                <div className="text-center bg-blue-50 px-8 py-4 rounded-2xl">
+                  <div className="text-5xl font-black text-blue-700">{(product.rating || 0).toFixed(1)}</div>
+                  <div className="flex justify-center gap-0.5 my-2">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className={`w-4 h-4 text-yellow-400 fill-yellow-400`} />
+                      <Star key={s} className={`w-4 h-4 ${s <= Math.round(product.rating || 0) ? "text-yellow-400 fill-yellow-400" : "text-gray-200 fill-gray-200"}`} />
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500">0 đánh giá</p>
+                  <p className="text-xs text-gray-500">{reviews.length} đánh giá thực tế</p>
+                </div>
+                <div className="flex-1 hidden md:block">
+                  {[5, 4, 3, 2, 1].map(num => {
+                    const count = reviews.filter(r => r.rating === num).length;
+                    const percent = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                    return (
+                      <div key={num} className="flex items-center gap-3 mb-1">
+                        <span className="text-xs text-gray-500 w-4">{num}</span>
+                        <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-600 rounded-full" style={{ width: `${percent}%` }} />
+                        </div>
+                        <span className="text-xs text-gray-400 w-8">{count}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Reviews list - API not implemented for reviews yet */}
-              <div className="space-y-5 mb-8">
-                <p className="text-gray-400 text-sm text-center py-10">Chưa có đánh giá nào cho sản phẩm này.</p>
+              {/* Reviews list */}
+              <div className="space-y-6 mb-10">
+                {reviews.length === 0 ? (
+                  <div className="text-center py-10">
+                    <MessageSquare className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+                    <p className="text-gray-400 text-sm">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
+                  </div>
+                ) : (
+                  reviews.map((r) => (
+                    <div key={r.id} className="border-b border-gray-50 pb-6 last:border-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold">
+                          {r.userFirstName?.charAt(0) || "U"}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-800">{r.userFirstName} {r.userLastName}</p>
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-0.5">
+                              {[1, 2, 3, 4, 5].map((s) => (
+                                <Star key={s} className={`w-3 h-3 ${s <= r.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-200 fill-gray-200"}`} />
+                              ))}
+                            </div>
+                            <span className="text-[10px] text-gray-400">{new Date(r.createdAt).toLocaleDateString("vi-VN")}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <h5 className="text-sm font-bold text-gray-800 mb-1">{r.title}</h5>
+                      <p className="text-gray-600 text-sm leading-relaxed mb-3">{r.comment}</p>
+                      
+                      {r.adminReply && (
+                        <div className="ml-8 bg-gray-50 p-4 rounded-xl border-l-4 border-blue-600">
+                          <p className="text-xs font-bold text-blue-700 mb-1">SportZone Phản hồi:</p>
+                          <p className="text-gray-600 text-sm italic">"{r.adminReply}"</p>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
 
               {/* Write review */}
-              <div className="bg-blue-50 rounded-2xl p-5">
-                <h4 className="text-gray-800 mb-4">Viết đánh giá của bạn</h4>
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 mb-2">Đánh giá:</p>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <button
-                        key={s}
-                        onMouseEnter={() => setHoverRating(s)}
-                        onMouseLeave={() => setHoverRating(0)}
-                        onClick={() => setReviewRating(s)}
-                      >
-                        <Star className={`w-7 h-7 transition-colors ${s <= (hoverRating || reviewRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300 fill-gray-300"}`} />
-                      </button>
-                    ))}
+              <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-6 border border-blue-100 shadow-sm">
+                <h4 className="text-gray-800 font-bold mb-1">Viết đánh giá của bạn</h4>
+                <p className="text-xs text-gray-500 mb-5">Chia sẻ ý kiến của bạn về sản phẩm để giúp người khác lựa chọn tốt hơn.</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Mức độ hài lòng:</p>
+                    <div className="flex gap-1.5">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <button
+                          key={s}
+                          onMouseEnter={() => setHoverRating(s)}
+                          onMouseLeave={() => setHoverRating(0)}
+                          onClick={() => setReviewRating(s)}
+                          className="transition-transform active:scale-90"
+                        >
+                          <Star className={`w-8 h-8 transition-colors ${s <= (hoverRating || reviewRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300 fill-gray-300"}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Tiêu đề:</p>
+                    <input
+                      type="text"
+                      value={reviewTitle}
+                      onChange={(e) => setReviewTitle(e.target.value)}
+                      placeholder="Ví dụ: Sản phẩm rất tốt, Giao hàng nhanh..."
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-blue-400 bg-white text-sm text-gray-700"
+                    />
                   </div>
                 </div>
+                
+                <p className="text-sm font-medium text-gray-700 mb-2">Nội dung chi tiết:</p>
                 <textarea
                   value={reviewText}
                   onChange={(e) => setReviewText(e.target.value)}
-                  placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-blue-400 bg-white text-sm resize-none text-gray-700 placeholder-gray-400"
+                  placeholder="Mô tả cảm nhận của bạn về chất lượng, kiểu dáng, dịch vụ..."
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-blue-400 bg-white text-sm resize-none text-gray-700 placeholder-gray-400 mb-4"
                 />
-                <button
-                  onClick={() => { setReviewText(""); setReviewRating(5); }}
-                  className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-sm transition-colors"
-                >
-                  Gửi đánh giá
-                </button>
+                
+                <div className="flex justify-end">
+                  <button
+                    disabled={isSubmittingReview || !reviewText.trim()}
+                    onClick={handleSubmitReview}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+                  >
+                    {isSubmittingReview ? "Đang gửi..." : "Gửi đánh giá ngay"}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -345,11 +457,14 @@ export function ProductDetail() {
 
       {/* Related products */}
       {related.length > 0 && (
-        <div>
-          <h2 className="text-gray-900 mb-5">Sản phẩm liên quan</h2>
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-gray-900 text-xl font-bold">Sản phẩm liên quan</h2>
+            <Link to="/products" className="text-blue-600 text-sm hover:underline">Xem thêm</Link>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {related.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.id} product={p as any} />
             ))}
           </div>
         </div>

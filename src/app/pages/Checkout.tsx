@@ -47,14 +47,14 @@ export function Checkout() {
   const [note, setNote] = useState("");
   const [useExistingAddr, setUseExistingAddr] = useState(true);
   const [address, setAddress] = useState({
-    fullName: user.fullName,
-    phone: user.phone,
-    province: user.addresses[0]?.province || "",
-    district: user.addresses[0]?.district || "",
-    ward: user.addresses[0]?.ward || "",
-    street: user.addresses[0]?.street || "",
+    receiverName: user.addresses.find(a => a.isDefault)?.receiverName || user.fullName,
+    phone: user.addresses.find(a => a.isDefault)?.phone || user.phone,
+    city: user.addresses.find(a => a.isDefault)?.city || "",
+    state: user.addresses.find(a => a.isDefault)?.state || "",
+    street: user.addresses.find(a => a.isDefault)?.street || "",
     isDefault: false,
   });
+  const [selectedAddrId, setSelectedAddrId] = useState<number | null>(user.addresses.find(a => a.isDefault)?.id || user.addresses[0]?.id || null);
 
   const shippingFee = cartTotal >= 500000 ? 0 : 30000;
   const total = cartTotal + shippingFee;
@@ -67,19 +67,46 @@ export function Checkout() {
 
   const stepIndex = steps.findIndex((s) => s.key === step);
 
-  const handleConfirmOrder = () => {
-    const orderId = placeOrder({
-      status: "pending",
-      items: cart,
-      subtotal: cartTotal,
-      shippingFee,
-      total,
-      address,
-      paymentMethod: payment,
-      note,
-    });
-    clearCart();
-    navigate(`/order-success/${orderId}`);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleConfirmOrder = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const finalAddress = useExistingAddr && selectedAddrId 
+        ? user.addresses.find(a => a.id === selectedAddrId) 
+        : address;
+
+      const orderRequest = {
+        note,
+        receiverName: finalAddress?.receiverName || (finalAddress as any)?.fullName,
+        phone: finalAddress?.phone,
+        status: "PENDING",
+        paymentMethod: payment,
+        billingAddress: {
+          street: finalAddress?.street || "",
+          city: (finalAddress as any)?.city || (finalAddress as any)?.province || "",
+          state: (finalAddress as any)?.state || (finalAddress as any)?.ward || ""
+        },
+        items: cart.map(item => ({
+          productVariantId: parseInt(item.productId),
+          quantity: item.quantity
+        }))
+      };
+
+      const result = await placeOrder(orderRequest);
+      
+      if (!result) {
+        throw new Error("Không nhận được phản hồi từ hệ thống sau khi đặt hàng.");
+      }
+
+      navigate(`/order-success/${result.id || result.orderCode || "unknown"}`);
+    } catch (err: any) {
+      console.error("Lỗi đặt hàng:", err);
+      alert(err.message || "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (cart.length === 0 && step !== "confirm") {
@@ -158,11 +185,21 @@ export function Checkout() {
                   {useExistingAddr && (
                     <div className="space-y-3">
                       {user.addresses.map((addr, i) => (
-                        <label key={i} className="flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-colors border-blue-200 bg-blue-50">
-                          <input type="radio" name="addr" defaultChecked={addr.isDefault} className="mt-1" />
+                        <label 
+                          key={i} 
+                          className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-colors ${selectedAddrId === addr.id ? "border-blue-500 bg-blue-50" : "border-gray-100"}`}
+                          onClick={() => setSelectedAddrId(addr.id || null)}
+                        >
+                          <input 
+                            type="radio" 
+                            name="addr" 
+                            checked={selectedAddrId === addr.id} 
+                            onChange={() => setSelectedAddrId(addr.id || null)}
+                            className="mt-1" 
+                          />
                           <div>
-                            <p className="font-medium text-gray-800 text-sm">{addr.fullName} · {addr.phone}</p>
-                            <p className="text-sm text-gray-600">{addr.street}, {addr.ward}, {addr.district}, {addr.province}</p>
+                            <p className="font-medium text-gray-800 text-sm">{addr.receiverName} · {addr.phone}</p>
+                            <p className="text-sm text-gray-600">{addr.street}, {addr.state}, {addr.city}</p>
                             {addr.isDefault && <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full mt-1 inline-block">Mặc định</span>}
                           </div>
                         </label>
@@ -175,7 +212,7 @@ export function Checkout() {
               {(!useExistingAddr || user.addresses.length === 0) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
-                    { label: "Họ và tên", key: "fullName", placeholder: "Nguyễn Văn A" },
+                    { label: "Họ và tên người nhận", key: "receiverName", placeholder: "Nguyễn Văn A" },
                     { label: "Số điện thoại", key: "phone", placeholder: "0912345678" },
                     { label: "Địa chỉ cụ thể", key: "street", placeholder: "Số nhà, tên đường" },
                   ].map((field) => (
@@ -193,33 +230,46 @@ export function Checkout() {
                   <div>
                     <label className="text-sm text-gray-600 mb-1.5 block">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
                     <select
-                      value={address.province}
-                      onChange={(e) => setAddress((a) => ({ ...a, province: e.target.value }))}
+                      value={address.city}
+                      onChange={(e) => setAddress((a) => ({ ...a, city: e.target.value, state: "" }))}
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm bg-white"
                     >
                       <option value="">Chọn tỉnh/thành</option>
-                      {provinces.map((p) => <option key={p} value={p}>{p}</option>)}
+                      <option value="Hà Nội">Hà Nội</option>
+                      <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                      <option value="Đà Nẵng">Đà Nẵng</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-600 mb-1.5 block">Quận / Huyện <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      placeholder="Quận 1"
-                      value={address.district}
-                      onChange={(e) => setAddress((a) => ({ ...a, district: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm"
-                    />
-                  </div>
-                  <div>
                     <label className="text-sm text-gray-600 mb-1.5 block">Phường / Xã <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      placeholder="Phường Bến Nghé"
-                      value={address.ward}
-                      onChange={(e) => setAddress((a) => ({ ...a, ward: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm"
-                    />
+                    <select
+                      disabled={!address.city}
+                      value={address.state}
+                      onChange={(e) => setAddress((a) => ({ ...a, state: e.target.value }))}
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm bg-white disabled:bg-gray-50"
+                    >
+                      <option value="">Chọn Phường/Xã</option>
+                      {address.city === "Hà Nội" && (
+                        <>
+                          <option value="Phường Dịch Vọng">Phường Dịch Vọng</option>
+                          <option value="Phường Mỹ Đình">Phường Mỹ Đình</option>
+                          <option value="Phường Hàng Đào">Phường Hàng Đào</option>
+                        </>
+                      )}
+                      {address.city === "TP. Hồ Chí Minh" && (
+                        <>
+                          <option value="Phường Bến Nghé">Phường Bến Nghé</option>
+                          <option value="Phường Tân Định">Phường Tân Định</option>
+                          <option value="Phường Đa Kao">Phường Đa Kao</option>
+                        </>
+                      )}
+                      {address.city === "Đà Nẵng" && (
+                        <>
+                          <option value="Phường Thạch Thang">Phường Thạch Thang</option>
+                          <option value="Phường Hải Châu I">Phường Hải Châu I</option>
+                        </>
+                      )}
+                    </select>
                   </div>
                 </div>
               )}
@@ -332,9 +382,18 @@ export function Checkout() {
                 </button>
                 <button
                   onClick={handleConfirmOrder}
-                  className="flex-1 py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-200"
+                  disabled={isSubmitting}
+                  className={`flex-1 py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-200 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
                 >
-                  <Check className="w-5 h-5" /> Đặt hàng ngay
+                  {isSubmitting ? (
+                    <>
+                      <Check className="w-5 h-5 animate-pulse" /> Đang xử lý...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-5 h-5" /> Đặt hàng ngay
+                    </>
+                  )}
                 </button>
               </div>
             </div>

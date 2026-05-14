@@ -2,11 +2,10 @@ import api from './api';
 
 export interface AddressData {
   id?: number;
-  fullName: string;
+  receiverName: string;
   phone: string;
-  province: string;
-  district: string;
-  ward: string;
+  city: string;
+  state: string;
   street: string;
   isDefault: boolean;
 }
