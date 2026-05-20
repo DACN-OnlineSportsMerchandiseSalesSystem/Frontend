@@ -13,9 +13,10 @@ interface DashboardProps {
   };
   orders: Order[];
   products: any[];
+  onNavigate?: (tab: any) => void;
 }
 
-export function AdminDashboard({ stats, orders, products }: DashboardProps) {
+export function AdminDashboard({ stats, orders, products, onNavigate }: DashboardProps) {
   const [dailyStats, setDailyStats] = useState<DailyStatisticDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -137,7 +138,12 @@ export function AdminDashboard({ stats, orders, products }: DashboardProps) {
             <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm">
               <div className="flex items-center justify-between mb-8 px-2">
                 <h3 className="text-gray-900 font-black text-lg">Đơn hàng vừa nhận</h3>
-                <button className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline">Xem tất cả</button>
+                <button 
+                  onClick={() => onNavigate?.("orders")}
+                  className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
+                >
+                  Xem tất cả
+                </button>
               </div>
               <div className="space-y-4">
                 {recentOrders.length === 0 ? (
@@ -168,7 +174,12 @@ export function AdminDashboard({ stats, orders, products }: DashboardProps) {
             <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm">
               <div className="flex items-center justify-between mb-8 px-2">
                 <h3 className="text-gray-900 font-black text-lg">Sản phẩm nổi bật</h3>
-                <button className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline">Quản lý kho</button>
+                <button 
+                  onClick={() => onNavigate?.("products")}
+                  className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
+                >
+                  Quản lý kho
+                </button>
               </div>
               <div className="space-y-4">
                 {topProducts.slice(0, 5).map((product, idx) => (
@@ -196,27 +207,39 @@ export function AdminDashboard({ stats, orders, products }: DashboardProps) {
 
           {/* Quick actions */}
           <div className="bg-white rounded-[40px] p-10 border border-gray-100 shadow-sm mt-8">
-            <h3 className="text-gray-900 font-black mb-8 px-2 text-xl">Thao tác nhanh</h3>
+            <h3 className="text-gray-900 font-black mb-8 px-2 text-xl">Thao tác</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <button className="flex flex-col items-center gap-4 p-8 hover:bg-blue-50 rounded-[40px] transition-all border border-gray-50 group">
+              <button 
+                onClick={() => onNavigate?.("products")}
+                className="flex flex-col items-center gap-4 p-8 hover:bg-blue-50 rounded-[40px] transition-all border border-gray-50 group cursor-pointer"
+              >
                 <div className="w-16 h-16 bg-blue-100 group-hover:bg-blue-600 group-hover:scale-110 rounded-[20px] flex items-center justify-center transition-all shadow-lg shadow-blue-100 group-hover:shadow-blue-200">
                   <Plus className="w-8 h-8 text-blue-600 group-hover:text-white" />
                 </div>
                 <span className="text-[10px] text-gray-900 font-black uppercase tracking-[0.2em]">Sản phẩm</span>
               </button>
-              <button className="flex flex-col items-center gap-4 p-8 hover:bg-emerald-50 rounded-[40px] transition-all border border-gray-50 group">
+              <button 
+                onClick={() => onNavigate?.("vouchers")}
+                className="flex flex-col items-center gap-4 p-8 hover:bg-emerald-50 rounded-[40px] transition-all border border-gray-50 group cursor-pointer"
+              >
                 <div className="w-16 h-16 bg-emerald-100 group-hover:bg-emerald-600 group-hover:scale-110 rounded-[20px] flex items-center justify-center transition-all shadow-lg shadow-emerald-100 group-hover:shadow-emerald-200">
                   <Tag className="w-8 h-8 text-emerald-600 group-hover:text-white" />
                 </div>
                 <span className="text-[10px] text-gray-900 font-black uppercase tracking-[0.2em]">Voucher</span>
               </button>
-              <button className="flex flex-col items-center gap-4 p-8 hover:bg-indigo-50 rounded-[40px] transition-all border border-gray-50 group">
+              <button 
+                onClick={() => onNavigate?.("blog")}
+                className="flex flex-col items-center gap-4 p-8 hover:bg-indigo-50 rounded-[40px] transition-all border border-gray-50 group cursor-pointer"
+              >
                 <div className="w-16 h-16 bg-indigo-100 group-hover:bg-indigo-600 group-hover:scale-110 rounded-[20px] flex items-center justify-center transition-all shadow-lg shadow-indigo-100 group-hover:shadow-indigo-200">
                   <FileText className="w-8 h-8 text-indigo-600 group-hover:text-white" />
                 </div>
                 <span className="text-[10px] text-gray-900 font-black uppercase tracking-[0.2em]">Viết Blog</span>
               </button>
-              <button className="flex flex-col items-center gap-4 p-8 hover:bg-amber-50 rounded-[40px] transition-all border border-gray-50 group">
+              <button 
+                onClick={() => onNavigate?.("stats")}
+                className="flex flex-col items-center gap-4 p-8 hover:bg-amber-50 rounded-[40px] transition-all border border-gray-50 group cursor-pointer"
+              >
                 <div className="w-16 h-16 bg-amber-100 group-hover:bg-amber-600 group-hover:scale-110 rounded-[20px] flex items-center justify-center transition-all shadow-lg shadow-amber-100 group-hover:shadow-amber-200">
                   <TrendingUp className="w-8 h-8 text-amber-600 group-hover:text-white" />
                 </div>

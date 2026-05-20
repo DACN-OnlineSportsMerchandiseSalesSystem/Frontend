@@ -73,23 +73,34 @@ function calcDiscount(coupon: Coupon, cartTotal: number, shippingFee: number): n
 }
 
 export function Cart() {
-  const { cart, removeFromCart, updateCartQty, cartTotal, validVouchers } = useApp();
+  const { cart, removeFromCart, updateCartQty, cartTotal, validVouchers, isLoggedIn } = useApp();
   const navigate = useNavigate();
 
   // Map backend vouchers to frontend Coupon interface
   const availableCoupons: Coupon[] = [
     ...AVAILABLE_COUPONS, // Keep legacy ones for now or remove if wanted
-    ...(validVouchers || []).map((v: any) => ({
-      code: v.code,
-      label: v.name,
-      desc: v.description,
-      type: v.discountType === 'PERCENT' ? 'percent' as const : 'fixed' as const,
-      value: v.discountValue,
-      minOrder: v.minOrderValue,
-      maxDiscount: v.maxDiscountValue,
-      badge: v.discountType === 'PERCENT' ? `GIẢM ${v.discountValue}%` : "MÃ GIẢM GIÁ",
-      badgeColor: "bg-blue-100 text-blue-700",
-    }))
+    ...(validVouchers || []).map((v: any) => {
+      const discountVal = Number(v.discountAmount) || 0;
+      return {
+        code: v.code,
+        label: `Mã ${v.code} - Giảm ${formatPrice(discountVal)}`,
+        desc: v.categoryName 
+          ? `Áp dụng cho danh mục ${v.categoryName}` 
+          : v.brandName 
+            ? `Áp dụng cho thương hiệu ${v.brandName}` 
+            : "Áp dụng cho toàn bộ đơn hàng",
+        type: "fixed" as const,
+        value: discountVal,
+        minOrder: Number(v.minOrderValue) || 0,
+        maxDiscount: discountVal,
+        badge: v.categoryName 
+          ? v.categoryName.toUpperCase() 
+          : v.brandName 
+            ? v.brandName.toUpperCase() 
+            : "TOÀN SÀN",
+        badgeColor: "bg-blue-100 text-blue-700",
+      };
+    })
   ];
 
   const [couponInput, setCouponInput] = useState("");
@@ -239,9 +250,9 @@ export function Cart() {
         {/* Cart items */}
         <div className="lg:col-span-2 space-y-3">
           {cart.map((item) => {
-            const originalPrice = item.price; // We don't have originalPrice in cart item API yet
-            const hasDiscount = false;
-            const discountPct = 0;
+            const originalPrice = item.originalPrice || item.price;
+            const hasDiscount = !!item.originalPrice && item.originalPrice > item.price;
+            const discountPct = item.discount || 0;
 
             return (
               <div
@@ -263,6 +274,16 @@ export function Cart() {
                       <p className="text-blue-700 font-black text-base leading-tight">
                         {formatPrice(item.price)}
                       </p>
+                      {hasDiscount && (
+                        <div className="flex items-center justify-center gap-1 mt-0.5">
+                          <span className="text-gray-400 text-xs line-through">
+                            {formatPrice(originalPrice)}
+                          </span>
+                          <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1 rounded">
+                            -{discountPct}%
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -285,7 +306,7 @@ export function Cart() {
                       </div>
                       <button
                         onClick={() => removeFromCart(item.productId)}
-                        className="text-gray-300 hover:text-red-500 transition-colors flex-shrink-0 p-1"
+                        className="text-blue-600 hover:text-red-600 active:text-red-700 transition-colors flex-shrink-0 p-1"
                         title="Xóa sản phẩm"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -597,12 +618,31 @@ export function Cart() {
               </div>
             </div>
 
-            <button
-              onClick={() => navigate("/checkout")}
-              className="w-full mt-5 py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-200"
-            >
-              Tiến hành thanh toán <ArrowRight className="w-4 h-4" />
-            </button>
+            {!isLoggedIn ? (
+              <div className="space-y-3">
+                <button
+                  disabled
+                  className="w-full mt-5 py-3.5 bg-gray-300 text-gray-500 rounded-xl font-medium flex items-center justify-center gap-2 cursor-not-allowed"
+                >
+                  Tiến hành thanh toán <ArrowRight className="w-4 h-4" />
+                </button>
+                <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2.5 rounded-xl text-center text-xs font-medium">
+                  Vui lòng <Link to="/login" className="underline font-bold hover:text-red-700">đăng nhập</Link> để tiến hành thanh toán
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate("/checkout", { 
+                  state: { 
+                    voucherCode: appliedCoupon?.code, 
+                    discountAmount: discountAmount 
+                  } 
+                })}
+                className="w-full mt-5 py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-200"
+              >
+                Tiến hành thanh toán <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
 
             {/* Payment icons */}
             <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">

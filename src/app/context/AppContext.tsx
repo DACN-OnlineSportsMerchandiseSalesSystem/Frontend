@@ -21,6 +21,8 @@ export interface CartItem {
   baseProductId?: string; // ID of the PRODUCT (for linking)
   name: string;
   price: number;
+  originalPrice?: number;
+  discount?: number;
   image: string;
   quantity: number;
   size: string;
@@ -177,12 +179,18 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [user, setUser] = useState<User>(defaultUser);
+  const [user, setUser] = useState<User>(() => {
+    const role = localStorage.getItem('userRole');
+    if (role === 'admin') {
+      return { ...defaultUser, role: 'admin' };
+    }
+    return defaultUser;
+  });
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [validVouchers, setValidVouchers] = useState<any[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('accessToken'));
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -197,6 +205,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         baseProductId: item.productId.toString(), // Base Product ID
         name: item.productName,
         price: Number(item.unitPrice) || 0,
+        originalPrice: item.originalPrice !== undefined && item.originalPrice !== null ? Number(item.originalPrice) : undefined,
+        discount: item.discount !== undefined && item.discount !== null ? Number(item.discount) : undefined,
         image: item.imageUrl,
         quantity: item.quantity,
         size: item.variantInfo,
@@ -248,6 +258,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('userRole');
           setIsLoggedIn(false);
+          setUser(defaultUser);
         });
 
       // Load addresses
@@ -332,6 +343,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     total: Number(o.totalPrice) || 0,
     subtotal: (Number(o.totalPrice) || 0) - (o.shippingFee !== undefined ? Number(o.shippingFee) : 30000),
     shippingFee: o.shippingFee !== undefined ? Number(o.shippingFee) : 30000,
+    voucherCode: o.voucher?.code || null,
+    voucherDiscount: o.voucher?.discountAmount ? Number(o.voucher.discountAmount) : 0,
     paymentMethod: o.paymentMethod || "COD",
     receiverName: o.receiverName,
     phone: o.phone,
@@ -347,6 +360,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       name: item.productName || 'Sản phẩm',
       image: item.imageUrl || '',
       price: Number(item.priceAtPurchase) || 0,
+      originalPrice: item.originalPrice !== undefined && item.originalPrice !== null ? Number(item.originalPrice) : undefined,
       quantity: item.quantity || 1,
       size: item.size || '',
       color: item.color || ''
@@ -454,6 +468,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => {
     logoutAPI();
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('userRole');
     setIsLoggedIn(false);
     setCart([]);
     setOrders([]);

@@ -1,7 +1,23 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { X, ChevronRight, Home, Package, ShoppingCart, Phone, FileText, RotateCcw, Star, ChevronDown, BookOpen } from "lucide-react";
-import { sportCategories, brands } from "../data/products";
+import { useApp } from "../context/AppContext";
+
+function getCategoryIcon(name: string): string {
+  const normalized = name.toLowerCase().trim();
+  if (normalized.includes("chạy bộ") || normalized.includes("giày")) return "👟";
+  if (normalized.includes("bóng đá") || normalized.includes("đá banh")) return "⚽";
+  if (normalized.includes("bóng rổ")) return "🏀";
+  if (normalized.includes("cầu lông")) return "🏸";
+  if (normalized.includes("gym") || normalized.includes("fitness") || normalized.includes("tạ")) return "💪";
+  if (normalized.includes("bơi")) return "🏊";
+  if (normalized.includes("xe đạp")) return "🚴";
+  if (normalized.includes("yoga")) return "🧘";
+  if (normalized.includes("võ") || normalized.includes("boxing")) return "🥊";
+  if (normalized.includes("áo") || normalized.includes("quần") || normalized.includes("đồ thi đấu")) return "👕";
+  if (normalized.includes("phụ kiện") || normalized.includes("bình nước")) return "🎒";
+  return ""; // Returns empty string to show no icon/logo
+}
 
 interface HamburgerMenuProps {
   isOpen: boolean;
@@ -9,6 +25,7 @@ interface HamburgerMenuProps {
 }
 
 export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
+  const { categories, brands: apiBrands } = useApp();
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
   const [openSection, setOpenSection] = useState<string>("sports");
 
@@ -88,17 +105,28 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
             </button>
             {openSection === "sports" && (
               <div className="px-4 pb-4 grid grid-cols-2 gap-2">
-                {sportCategories.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    to={cat.id === "all" ? "/products" : `/products?sport=${encodeURIComponent(cat.id)}`}
-                    onClick={onClose}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-blue-700 text-gray-700 transition-colors group border border-gray-100 hover:border-blue-200"
-                  >
-                    <span className="text-lg">{cat.icon}</span>
-                    <span className="text-xs">{cat.name}</span>
-                  </Link>
-                ))}
+                <Link
+                  to="/products"
+                  onClick={onClose}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-blue-700 text-gray-700 transition-colors group border border-gray-100 hover:border-blue-200"
+                >
+                  <span className="text-lg">📦</span>
+                  <span className="text-xs">Tất cả</span>
+                </Link>
+                 {categories.map((cat) => {
+                  const icon = getCategoryIcon(cat.name);
+                  return (
+                    <Link
+                      key={cat.id}
+                      to={`/products?sport=${encodeURIComponent(cat.name)}`}
+                      onClick={onClose}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-blue-700 text-gray-700 transition-colors group border border-gray-100 hover:border-blue-200"
+                    >
+                      {icon && <span className="text-lg">{icon}</span>}
+                      <span className="text-xs">{cat.name}</span>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -144,14 +172,14 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
             </button>
             {openSection === "brands" && (
               <div className="px-4 pb-4 flex flex-wrap gap-2">
-                {brands.map((brand) => (
+                {apiBrands.map((brand) => (
                   <Link
-                    key={brand}
-                    to={`/products?brand=${encodeURIComponent(brand)}`}
+                    key={brand.id}
+                    to={`/products?brand=${encodeURIComponent(brand.name)}`}
                     onClick={onClose}
                     className="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-blue-100 hover:text-blue-700 text-gray-700 text-xs transition-colors border border-gray-200 hover:border-blue-300"
                   >
-                    {brand}
+                    {brand.name}
                   </Link>
                 ))}
               </div>

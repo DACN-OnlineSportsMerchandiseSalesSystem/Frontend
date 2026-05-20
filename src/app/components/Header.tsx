@@ -4,12 +4,28 @@ import { ShoppingCart, Search, User, Menu, X, Zap, Heart, Package, Phone, Chevro
 import { useApp } from "../context/AppContext";
 import { products, sportCategories, formatPrice } from "../data/products";
 
+function getCategoryIcon(name: string): string {
+  const normalized = name.toLowerCase().trim();
+  if (normalized.includes("chạy bộ") || normalized.includes("giày")) return "👟";
+  if (normalized.includes("bóng đá") || normalized.includes("đá banh")) return "⚽";
+  if (normalized.includes("bóng rổ")) return "🏀";
+  if (normalized.includes("cầu lông")) return "🏸";
+  if (normalized.includes("gym") || normalized.includes("fitness") || normalized.includes("tạ")) return "💪";
+  if (normalized.includes("bơi")) return "🏊";
+  if (normalized.includes("xe đạp")) return "🚴";
+  if (normalized.includes("yoga")) return "🧘";
+  if (normalized.includes("võ") || normalized.includes("boxing")) return "🥊";
+  if (normalized.includes("áo") || normalized.includes("quần") || normalized.includes("đồ thi đấu")) return "👕";
+  if (normalized.includes("phụ kiện") || normalized.includes("bình nước")) return "🎒";
+  return ""; // Returns empty string to show no icon/logo
+}
+
 interface HeaderProps {
   onMenuOpen: () => void;
 }
 
 export function Header({ onMenuOpen }: HeaderProps) {
-  const { cartCount, wishlist, isLoggedIn, logout, user } = useApp();
+  const { cartCount, wishlist, isLoggedIn, logout, user, categories } = useApp();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<typeof products>([]);
@@ -283,15 +299,24 @@ export function Header({ onMenuOpen }: HeaderProps) {
 
       {/* Nav categories - desktop */}
       <div className="hidden md:flex bg-blue-800 px-4 gap-1 overflow-x-auto scrollbar-hide">
-        {sportCategories.slice(0, 8).map((cat) => (
-          <Link
-            key={cat.id}
-            to={cat.id === "all" ? "/products" : `/products?sport=${encodeURIComponent(cat.id)}`}
-            className="flex items-center gap-1.5 px-3 py-2 text-blue-100 hover:text-white hover:bg-blue-700 rounded-t-lg transition-colors text-sm whitespace-nowrap flex-shrink-0"
-          >
-            <span>{cat.icon}</span> {cat.name}
-          </Link>
-        ))}
+        <Link
+          to="/products"
+          className="flex items-center gap-1.5 px-3 py-2 text-blue-100 hover:text-white hover:bg-blue-700 rounded-t-lg transition-colors text-sm whitespace-nowrap flex-shrink-0"
+        >
+          <span>📦</span> Tất cả
+        </Link>
+        {categories.slice(0, 8).map((cat) => {
+          const icon = getCategoryIcon(cat.name);
+          return (
+            <Link
+              key={cat.id}
+              to={`/products?sport=${encodeURIComponent(cat.name)}`}
+              className="flex items-center gap-1.5 px-3 py-2 text-blue-100 hover:text-white hover:bg-blue-700 rounded-t-lg transition-colors text-sm whitespace-nowrap flex-shrink-0"
+            >
+              {icon && <span>{icon}</span>} {cat.name}
+            </Link>
+          );
+        })}
         <Link
           to="/blog"
           className="flex items-center gap-1.5 px-3 py-2 text-yellow-300 hover:text-yellow-200 hover:bg-blue-700 rounded-t-lg transition-colors text-sm whitespace-nowrap flex-shrink-0 ml-auto"

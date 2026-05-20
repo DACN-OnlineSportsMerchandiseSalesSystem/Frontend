@@ -9,6 +9,8 @@ export function DiscountsManagement() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedDiscount, setSelectedDiscount] = useState<DiscountDTO | null>(null);
 
   const fetchDiscounts = async () => {
     setIsLoading(true);
@@ -94,12 +96,23 @@ export function DiscountsManagement() {
                       </div>
                     </div>
                   </div>
-                  <button 
-                    className="p-3 hover:bg-red-50 rounded-2xl transition-colors text-red-500 hover:scale-110"
-                    onClick={() => discount.id && handleDelete(discount.id)}
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      className="p-3 hover:bg-indigo-50 rounded-2xl transition-colors text-indigo-600 hover:scale-110"
+                      onClick={() => {
+                        setSelectedDiscount(discount);
+                        setShowEditModal(true);
+                      }}
+                    >
+                      <Edit2 className="w-5 h-5" />
+                    </button>
+                    <button 
+                      className="p-3 hover:bg-red-50 rounded-2xl transition-colors text-red-500 hover:scale-110"
+                      onClick={() => discount.id && handleDelete(discount.id)}
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -121,8 +134,8 @@ export function DiscountsManagement() {
                   <div className="pt-4 border-t border-gray-100 flex items-center justify-between px-2">
                     <span className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Đối tượng</span>
                     <span className="font-black text-indigo-600 text-sm">
-                      {discount.scope === "CATEGORY" ? `Danh mục ID: ${discount.categoryId}` : 
-                       discount.scope === "BRAND" ? `Thương hiệu ID: ${discount.brandId}` : "Tất cả sản phẩm"}
+                      {discount.scope === "CATEGORY" ? `Danh mục: ${discount.categoryName || ('#' + discount.categoryId)}` : 
+                       discount.scope === "BRAND" ? `Thương hiệu: ${discount.brandName || ('#' + discount.brandId)}` : "Tất cả sản phẩm"}
                     </span>
                   </div>
                 </div>
@@ -141,25 +154,64 @@ export function DiscountsManagement() {
           }} 
         />
       )}
+
+      {showEditModal && selectedDiscount && (
+        <DiscountFormModal 
+          discount={selectedDiscount}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedDiscount(null);
+          }} 
+          onSuccess={() => {
+            setShowEditModal(false);
+            setSelectedDiscount(null);
+            fetchDiscounts();
+          }} 
+        />
+      )}
     </div>
   );
 }
 
-function DiscountFormModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: () => void }) {
+function DiscountFormModal({ 
+  discount, 
+  onClose, 
+  onSuccess 
+}: { 
+  discount?: DiscountDTO; 
+  onClose: () => void; 
+  onSuccess: () => void; 
+}) {
+  const isEdit = !!discount;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
 
-  const [formData, setFormData] = useState<DiscountDTO>({
-    name: "",
-    discountPercent: 0,
-    scope: "GLOBAL",
-    categoryId: undefined,
-    brandId: undefined,
-    startDate: "",
-    endDate: "",
-    isActive: true
+  // Format date from ISO string to YYYY-MM-DD
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "";
+    return dateStr.substring(0, 10);
+  };
+
+  const [formData, setFormData] = useState<DiscountDTO>(() => {
+    if (discount) {
+      return {
+        ...discount,
+        startDate: formatDate(discount.startDate),
+        endDate: formatDate(discount.endDate)
+      };
+    }
+    return {
+      name: "",
+      discountPercent: 0,
+      scope: "GLOBAL",
+      categoryId: undefined,
+      brandId: undefined,
+      startDate: "",
+      endDate: "",
+      isActive: true
+    };
   });
 
   useEffect(() => {
@@ -181,10 +233,22 @@ function DiscountFormModal({ onClose, onSuccess }: { onClose: () => void, onSucc
     setIsSubmitting(true);
     setError("");
     try {
-      await discountService.createDiscount(formData);
+      const payload = {
+        ...formData,
+        categoryId: formData.scope === "CATEGORY" ? formData.categoryId : undefined,
+        brandId: formData.scope === "BRAND" ? formData.brandId : undefined,
+        startDate: formData.startDate || undefined,
+        endDate: formData.endDate || undefined,
+      };
+
+      if (isEdit && discount?.id) {
+        await discountService.updateDiscount(discount.id, payload);
+      } else {
+        await discountService.createDiscount(payload);
+      }
       onSuccess();
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Tạo khuyến mãi thất bại");
+      setError(err?.response?.data?.message || (isEdit ? "Cập nhật khuyến mãi thất bại" : "Tạo khuyến mãi thất bại"));
     } finally {
       setIsSubmitting(false);
     }
@@ -195,7 +259,9 @@ function DiscountFormModal({ onClose, onSuccess }: { onClose: () => void, onSucc
       <div className="bg-white rounded-[32px] max-w-xl w-full shadow-2xl overflow-hidden border border-white">
         <form onSubmit={handleSubmit}>
           <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-white">
-            <h3 className="text-xl font-black text-gray-900">Tạo khuyến mãi mới</h3>
+            <h3 className="text-xl font-black text-gray-900">
+              {isEdit ? "Cập nhật khuyến mãi" : "Tạo khuyến mãi mới"}
+            </h3>
             <button type="button" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
               <X className="w-5 h-5 text-gray-500" />
             </button>
@@ -302,6 +368,18 @@ function DiscountFormModal({ onClose, onSuccess }: { onClose: () => void, onSucc
                 />
               </div>
             </div>
+
+            <div>
+              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Trạng thái hoạt động</label>
+              <select
+                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 font-bold text-gray-900 appearance-none"
+                value={formData.isActive ? "true" : "false"}
+                onChange={e => setFormData({...formData, isActive: e.target.value === "true"})}
+              >
+                <option value="true">Đang chạy (Kích hoạt)</option>
+                <option value="false">Tạm dừng (Vô hiệu hóa)</option>
+              </select>
+            </div>
           </div>
 
           <div className="px-8 py-6 bg-gray-50 flex items-center justify-end gap-3">
@@ -318,7 +396,7 @@ function DiscountFormModal({ onClose, onSuccess }: { onClose: () => void, onSucc
               className="flex items-center gap-2 px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl transition-all shadow-lg shadow-indigo-200 disabled:opacity-50 font-black uppercase tracking-widest text-xs"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              Tạo khuyến mãi
+              {isEdit ? "Cập nhật khuyến mãi" : "Tạo khuyến mãi"}
             </button>
           </div>
         </form>

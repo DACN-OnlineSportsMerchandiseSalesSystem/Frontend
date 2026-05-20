@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation } from "react-router";
 import { ChevronRight, CreditCard, Banknote, Smartphone, Check, MapPin, Plus } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { formatPrice } from "../data/products";
@@ -40,12 +40,16 @@ const paymentMethods = [
 const provinces = ["TP. Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Hải Phòng", "Cần Thơ", "Nha Trang", "Huế", "Đà Lạt"];
 
 export function Checkout() {
-  const { cart, cartTotal, user, placeOrder, clearCart } = useApp();
+  const { cart, cartTotal, user, placeOrder, clearCart, addAddress } = useApp();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { voucherCode = "", discountAmount = 0 } = location.state || {};
+
   const [step, setStep] = useState<Step>("address");
   const [payment, setPayment] = useState("COD");
   const [note, setNote] = useState("");
-  const [useExistingAddr, setUseExistingAddr] = useState(true);
+  const [useExistingAddr, setUseExistingAddr] = useState(user.addresses && user.addresses.length > 0);
   const [address, setAddress] = useState({
     receiverName: user.addresses.find(a => a.isDefault)?.receiverName || user.fullName,
     phone: user.addresses.find(a => a.isDefault)?.phone || user.phone,
@@ -56,8 +60,22 @@ export function Checkout() {
   });
   const [selectedAddrId, setSelectedAddrId] = useState<number | null>(user.addresses.find(a => a.isDefault)?.id || user.addresses[0]?.id || null);
 
+  useEffect(() => {
+    if (user.addresses && user.addresses.length > 0) {
+      setUseExistingAddr(true);
+      if (!selectedAddrId) {
+        const def = user.addresses.find(a => a.isDefault) || user.addresses[0];
+        setSelectedAddrId(def?.id || null);
+      }
+    } else {
+      setUseExistingAddr(false);
+    }
+  }, [user.addresses]);
+
   const shippingFee = cartTotal >= 500000 ? 0 : 30000;
-  const total = cartTotal + shippingFee;
+  const originalSubtotal = cart.reduce((sum, item) => sum + (item.originalPrice || item.price) * item.quantity, 0);
+  const productDiscount = cart.reduce((sum, item) => sum + ((item.originalPrice || item.price) - item.price) * item.quantity, 0);
+  const total = Math.max(0, cartTotal - discountAmount + shippingFee);
 
   const steps: { key: Step; label: string }[] = [
     { key: "address", label: "Địa chỉ giao hàng" },
@@ -68,6 +86,37 @@ export function Checkout() {
   const stepIndex = steps.findIndex((s) => s.key === step);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [addrError, setAddrError] = useState("");
+
+  const getChosenAddress = () => {
+    if (useExistingAddr && selectedAddrId && user.addresses.length > 0) {
+      return user.addresses.find(a => a.id === selectedAddrId);
+    }
+    return address;
+  };
+  const chosenAddress = getChosenAddress();
+
+  const handleProceedToPayment = () => {
+    setAddrError("");
+    if (useExistingAddr && user.addresses.length > 0) {
+      if (!selectedAddrId) {
+        setAddrError("Vui lòng chọn một địa chỉ giao hàng đã lưu!");
+        return;
+      }
+    } else {
+      if (
+        !address.receiverName.trim() ||
+        !address.phone.trim() ||
+        !address.street.trim() ||
+        !address.city.trim() ||
+        !address.state.trim()
+      ) {
+        setAddrError("Vui lòng điền đầy đủ tất cả thông tin địa chỉ giao hàng bắt buộc (*)");
+        return;
+      }
+    }
+    setStep("payment");
+  };
 
   const handleConfirmOrder = async () => {
     if (isSubmitting) return;
@@ -83,6 +132,7 @@ export function Checkout() {
         phone: finalAddress?.phone,
         status: "PENDING",
         paymentMethod: payment,
+        voucherCode: voucherCode || null,
         billingAddress: {
           street: finalAddress?.street || "",
           city: (finalAddress as any)?.city || (finalAddress as any)?.province || "",
@@ -93,6 +143,22 @@ export function Checkout() {
           quantity: item.quantity
         }))
       };
+
+      // Tự động lưu địa chỉ vào tài khoản nếu tài khoản chưa có địa chỉ nào lưu trong DB
+      if ((!user.addresses || user.addresses.length === 0) && address.receiverName.trim()) {
+        try {
+          await addAddress({
+            receiverName: address.receiverName,
+            phone: address.phone,
+            city: address.city,
+            state: address.state,
+            street: address.street,
+            isDefault: true,
+          });
+        } catch (addrErr) {
+          console.error("Tự động lưu địa chỉ giao hàng thất bại:", addrErr);
+        }
+      }
 
       const result = await placeOrder(orderRequest);
       
@@ -285,8 +351,14 @@ export function Checkout() {
                 />
               </div>
 
+              {addrError && (
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs font-medium">
+                  ⚠️ {addrError}
+                </div>
+              )}
+
               <button
-                onClick={() => setStep("payment")}
+                onClick={handleProceedToPayment}
                 className="mt-5 w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors"
               >
                 Tiếp tục <ChevronRight className="w-4 h-4" />
@@ -350,8 +422,12 @@ export function Checkout() {
               {/* Address summary */}
               <div className="p-4 bg-gray-50 rounded-xl mb-4">
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Địa chỉ giao hàng</p>
-                <p className="text-sm font-medium text-gray-800">{address.fullName} · {address.phone}</p>
-                <p className="text-sm text-gray-600">{address.street}, {address.ward}, {address.district}, {address.province}</p>
+                <p className="text-sm font-medium text-gray-800">
+                  {chosenAddress?.receiverName || (chosenAddress as any)?.fullName} · {chosenAddress?.phone}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {chosenAddress?.street}, {chosenAddress?.state || (chosenAddress as any)?.ward || ""}, {chosenAddress?.city || (chosenAddress as any)?.province || ""}
+                </p>
               </div>
               {/* Payment summary */}
               <div className="p-4 bg-gray-50 rounded-xl mb-5">
@@ -367,7 +443,14 @@ export function Checkout() {
                       <p className="text-sm text-gray-800 truncate">{item.name}</p>
                       <p className="text-xs text-gray-500">Size: {item.size} · {item.color} · x{item.quantity}</p>
                     </div>
-                    <p className="text-sm text-blue-700 font-medium flex-shrink-0">{formatPrice(item.price * item.quantity)}</p>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-sm text-blue-700 font-medium">{formatPrice(item.price * item.quantity)}</p>
+                      {item.originalPrice && item.originalPrice > item.price && (
+                        <p className="text-xs text-gray-400 line-through">
+                          {formatPrice(item.originalPrice * item.quantity)}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -416,14 +499,34 @@ export function Checkout() {
                   <p className="text-xs text-gray-700 truncate">{item.name}</p>
                   <p className="text-xs text-gray-400">{item.size}</p>
                 </div>
-                <p className="text-sm font-medium text-gray-800">{formatPrice(item.price * item.quantity)}</p>
+                <div className="text-right flex-shrink-0">
+                  <p className="text-sm font-medium text-gray-800">{formatPrice(item.price * item.quantity)}</p>
+                  {item.originalPrice && item.originalPrice > item.price && (
+                    <p className="text-[10px] text-gray-400 line-through">
+                      {formatPrice(item.originalPrice * item.quantity)}
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
           <div className="border-t border-gray-100 pt-3 space-y-2 text-sm">
             <div className="flex justify-between text-gray-600">
-              <span>Tạm tính</span><span>{formatPrice(cartTotal)}</span>
+              <span>Tạm tính (Giá gốc)</span>
+              <span>{formatPrice(originalSubtotal)}</span>
             </div>
+            {productDiscount > 0 && (
+              <div className="flex justify-between text-green-600 font-medium">
+                <span>Khuyến mãi giảm giá sản phẩm</span>
+                <span>-{formatPrice(productDiscount)}</span>
+              </div>
+            )}
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-green-600 font-medium">
+                <span>Mã giảm giá {voucherCode && `(${voucherCode})`}</span>
+                <span>-{formatPrice(discountAmount)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-gray-600">
               <span>Phí ship</span>
               <span className={shippingFee === 0 ? "text-green-600" : ""}>{shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}</span>

@@ -59,13 +59,38 @@ export function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    productService.getAllProducts().then(data => {
-      setBestSellers(data.slice(0, 4));
-      setNewProducts(data.slice(4, 8));
-      setSaleProducts(data.slice(0, 4));
-      setAllProducts(data.slice(0, 10));
-      setIsLoading(false);
-    }).catch(() => setIsLoading(false));
+    setIsLoading(true);
+    
+    const fetchTopSelling = productService.getTopSellingProducts(4).catch(err => {
+      console.error("Failed to fetch top selling products", err);
+      return [];
+    });
+    
+    const fetchRecommendations = productService.getRecommendedProducts(10).catch(err => {
+      console.error("Failed to fetch recommendations", err);
+      return [];
+    });
+    
+    const fetchAll = productService.getAllProducts().catch(err => {
+      console.error("Failed to fetch all products", err);
+      return [];
+    });
+
+    Promise.all([fetchTopSelling, fetchRecommendations, fetchAll])
+      .then(([topSellingData, recommendedData, allData]) => {
+        setBestSellers(topSellingData);
+        setAllProducts(recommendedData);
+        
+        // Filter promotion products (discount > 0)
+        const sale = allData.filter(p => (p.discount || 0) > 0);
+        setSaleProducts(sale.slice(0, 4));
+        
+        // New products
+        setNewProducts(allData.slice(0, 4));
+        
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
   }, []);
 
   const changeSlide = (next: number) => {

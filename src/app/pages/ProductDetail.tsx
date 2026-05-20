@@ -42,13 +42,31 @@ export function ProductDetail() {
             setSelectedColor(data.variants[0].color);
           }
 
-          // Fetch Related Products (using first category)
-          if (data.categoryIds && data.categoryIds.length > 0) {
-            productService.getAllProducts(data.categoryIds[0])
-              .then(items => {
-                setRelated(items.filter(i => i.id !== pid).slice(0, 4));
-              });
-          }
+          // Fetch Recommendations (Sản phẩm gợi ý) with fallback to category related
+          productService.getRecommendedProducts(5)
+            .then(items => {
+              const filtered = items.filter(i => i.id !== pid).slice(0, 4);
+              if (filtered.length > 0) {
+                setRelated(filtered);
+              } else {
+                // Fallback to related by category
+                if (data.categoryIds && data.categoryIds.length > 0) {
+                  productService.getAllProducts(data.categoryIds[0])
+                    .then(catItems => {
+                      setRelated(catItems.filter(i => i.id !== pid).slice(0, 4));
+                    });
+                }
+              }
+            })
+            .catch(() => {
+              if (data.categoryIds && data.categoryIds.length > 0) {
+                productService.getAllProducts(data.categoryIds[0])
+                  .then(catItems => {
+                    setRelated(catItems.filter(i => i.id !== pid).slice(0, 4));
+                  });
+              }
+            });
+
           setIsLoading(false);
         })
         .catch(() => setIsLoading(false));
@@ -459,7 +477,7 @@ export function ProductDetail() {
       {related.length > 0 && (
         <div className="mb-10">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-gray-900 text-xl font-bold">Sản phẩm liên quan</h2>
+            <h2 className="text-gray-900 text-xl font-bold">Gợi ý sản phẩm cho bạn</h2>
             <Link to="/products" className="text-blue-600 text-sm hover:underline">Xem thêm</Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

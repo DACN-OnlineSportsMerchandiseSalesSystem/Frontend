@@ -60,7 +60,17 @@ const productService = {
 
   deleteProduct: async (id: number) => {
     await api.delete(`/products/${id}`);
-  }
+  },
+
+  getTopSellingProducts: async (limit: number = 10) => {
+    const response = await api.get<Product[]>(`/products/top-selling?limit=${limit}`);
+    return response.data;
+  },
+
+  getRecommendedProducts: async (limit: number = 10) => {
+    const response = await api.get<Product[]>(`/products/recommendations?limit=${limit}`);
+    return response.data;
+  },
 };
 
 export default productService;

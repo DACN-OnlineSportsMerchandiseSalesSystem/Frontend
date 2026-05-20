@@ -63,7 +63,8 @@ export function Products() {
     setSearchParams(newParams);
   };
 
-  const pageTitle = sport && sport !== "all" ? `${sportCategories.find(c => c.id === sport)?.icon} ${sport}` :
+  const foundCat = sportCategories.find(c => c.id === sport);
+  const pageTitle = sport && sport !== "all" ? (foundCat ? `${foundCat.icon} ${sport}` : sport) :
     search ? `Kết quả tìm kiếm: "${search}"` :
     filter === "sale" ? "🔥 Đang giảm giá" :
     filter === "new" ? "✨ Hàng mới về" :

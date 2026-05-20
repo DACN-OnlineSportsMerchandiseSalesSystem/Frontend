@@ -194,31 +194,62 @@ export function OrderTracking() {
           <div className="bg-white rounded-2xl p-5 border border-gray-100">
             <h3 className="text-gray-800 mb-4">Sản phẩm đã đặt</h3>
             <div className="space-y-3">
-              {foundOrder.items?.map((item: any, i: number) => (
-                <div key={i} className="flex items-center gap-3">
-                  <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-800 truncate">{item.name}</p>
-                    <p className="text-xs text-gray-500">Size: {item.size} · Màu: {item.color} · x{item.quantity}</p>
+              {foundOrder.items?.map((item: any, i: number) => {
+                const originalItemPrice = item.originalPrice || item.price;
+                const hasItemDiscount = !!item.originalPrice && item.originalPrice > item.price;
+
+                return (
+                  <div key={i} className="flex items-center gap-3">
+                    <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-800 truncate">{item.name}</p>
+                      <p className="text-xs text-gray-500">Size: {item.size} · Màu: {item.color} · x{item.quantity}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-sm font-medium text-blue-700">{formatPrice(item.price * item.quantity)}</p>
+                      {hasItemDiscount && (
+                        <p className="text-xs text-gray-400 line-through">
+                          {formatPrice(originalItemPrice * item.quantity)}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-sm font-medium text-blue-700 flex-shrink-0">{formatPrice(item.price * item.quantity)}</p>
+                );
+              })}
+            </div>
+            {(() => {
+              const trackingOriginalSubtotal = foundOrder.items?.reduce((s: number, i: any) => s + (i.originalPrice || i.price) * i.quantity, 0) || foundOrder.subtotal;
+              const trackingProductDiscount = foundOrder.items?.reduce((s: number, i: any) => s + ((i.originalPrice || i.price) - i.price) * i.quantity, 0) || 0;
+
+              return (
+                <div className="border-t border-gray-100 mt-4 pt-4 space-y-2 text-sm">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Tạm tính (Giá gốc)</span>
+                    <span>{formatPrice(trackingOriginalSubtotal)}</span>
+                  </div>
+                  {trackingProductDiscount > 0 && (
+                    <div className="flex justify-between text-green-600 font-medium">
+                      <span>Khuyến mãi giảm giá sản phẩm</span>
+                      <span>-{formatPrice(trackingProductDiscount)}</span>
+                    </div>
+                  )}
+                  {foundOrder.voucherDiscount > 0 && (
+                    <div className="flex justify-between text-green-600 font-medium">
+                      <span>Mã giảm giá {foundOrder.voucherCode && `(${foundOrder.voucherCode})`}</span>
+                      <span>-{formatPrice(foundOrder.voucherDiscount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-gray-600">
+                    <span>Phí vận chuyển</span>
+                    <span>{foundOrder.shippingFee === 0 ? "Miễn phí" : formatPrice(foundOrder.shippingFee)}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-50 mt-2">
+                    <span>Tổng cộng</span>
+                    <span className="text-blue-700 text-lg">{formatPrice(foundOrder.total)}</span>
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="border-t border-gray-100 mt-4 pt-4 space-y-2 text-sm">
-              <div className="flex justify-between text-gray-600">
-                <span>Tạm tính</span>
-                <span>{formatPrice(foundOrder.subtotal)}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Phí vận chuyển</span>
-                <span>{foundOrder.shippingFee === 0 ? "Miễn phí" : formatPrice(foundOrder.shippingFee)}</span>
-              </div>
-              <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-50 mt-2">
-                <span>Tổng cộng</span>
-                <span className="text-blue-700 text-lg">{formatPrice(foundOrder.total)}</span>
-              </div>
-            </div>
+              );
+            })()}
           </div>
 
           <div className="bg-white rounded-2xl p-5 border border-gray-100">

@@ -167,6 +167,7 @@ export function Admin() {
               stats={{ totalRevenue, totalOrders: totalOrdersCount, pendingOrders, completedOrders }}
               orders={realOrders}
               products={realProducts}
+              onNavigate={(tab) => setActiveTab(tab)}
             />
           )}
           {activeTab === "products" && <ProductsManagement />}

@@ -6,7 +6,9 @@ export interface DiscountDTO {
   discountPercent: number;
   scope: string;
   categoryId?: number;
+  categoryName?: string;
   brandId?: number;
+  brandName?: string;
   startDate?: string;
   endDate?: string;
   isActive?: boolean;
