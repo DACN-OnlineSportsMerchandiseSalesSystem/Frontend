@@ -14,6 +14,7 @@ import orderService, { Order as ApiOrder } from "../../services/orderService";
 import categoryService, { Category } from "../../services/categoryService";
 import brandService, { Brand } from "../../services/brandService";
 import voucherService from "../../services/voucherService";
+import returnService from '../../services/returnService';
 
 export interface CartItem {
   id?: number; // Database CartItem ID
@@ -357,6 +358,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       province: o.billingAddress?.city || ''
     },
     items: (o.orderItems || []).map((item: any) => ({
+      orderItemId: item.id || 0,
       name: item.productName || 'Sản phẩm',
       image: item.imageUrl || '',
       price: Number(item.priceAtPurchase) || 0,
@@ -411,16 +413,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const requestReturn = useCallback(async (orderId: string, reason: string) => {
     try {
-      await orderService.updateOrderStatus(parseInt(orderId), "RETURN_REQUESTED");
+      // Lấy đơn hàng để lấy danh sách items
+      const order = orders.find(o => o.id === orderId);
+      const items = (order?.items || []).map((item: any) => ({
+        orderItemId: item.orderItemId || item.id || 0,
+        quantity: item.quantity || 1,
+        imageProof: ''
+      }));
+
+      await returnService.createReturn({
+        orderId: parseInt(orderId),
+        reason,
+        items
+      });
       await refreshOrders();
-      // Vẫn cập nhật local để có lý do
       setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: "return_requested", returnReason: reason } : o))
+        prev.map((o) => (o.id === orderId ? { ...o, status: 'return_requested', returnReason: reason } : o))
       );
     } catch (err) {
-      console.error("Failed to request return", err);
+      console.error('Failed to request return', err);
+      throw err;
     }
-  }, [refreshOrders]);
+  }, [refreshOrders, orders]);
 
   // ==================== AUTH ====================
   const login = useCallback(async (email: string, password: string, role: "user" | "admin" = "user", turnstileToken?: string): Promise<boolean> => {

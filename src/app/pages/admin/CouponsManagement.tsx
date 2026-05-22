@@ -50,7 +50,7 @@ export function CouponsManagement() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-gray-900">Quản lý Voucher</h2>
+          <h2 className="text-2xl font-black text-gray-900">Quản lý Voucher</h2>
           <p className="text-sm text-gray-500 mt-1">Tạo và quản lý các mã giảm giá cho đơn hàng</p>
         </div>
         <button

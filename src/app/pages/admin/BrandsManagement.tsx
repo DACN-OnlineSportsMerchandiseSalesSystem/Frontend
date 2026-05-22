@@ -46,7 +46,7 @@ export function BrandsManagement() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-gray-900 text-2xl font-bold">Quản lý Thương hiệu</h2>
+          <h2 className="text-2xl font-black text-gray-900">Quản lý Thương hiệu</h2>
           <p className="text-sm text-gray-500 mt-1">Quản lý các thương hiệu sản phẩm trong hệ thống</p>
         </div>
         <button
@@ -115,9 +115,9 @@ export function BrandsManagement() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                        brand.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                        brand.status?.toLowerCase() === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
                       }`}>
-                        {brand.status === 'active' ? 'Hoạt động' : 'Ẩn'}
+                        {brand.status?.toLowerCase() === 'active' ? 'Hoạt động' : 'Ẩn'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -181,15 +181,21 @@ export function BrandsManagement() {
 function BrandFormModal({ brand, onClose, onRefresh }: { brand?: Brand; onClose: () => void; onRefresh: () => void }) {
   const isEdit = !!brand;
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [formData, setFormData] = useState<Partial<Brand>>(
-    brand || {
+  const [formData, setFormData] = useState<Partial<Brand>>(() => {
+    if (brand) {
+      return {
+        ...brand,
+        status: brand.status?.toLowerCase() || "active"
+      };
+    }
+    return {
       name: "",
       detail: "",
       imageUrl: "",
       status: "active",
       rating: 5
-    }
-  );
+    };
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -216,10 +222,14 @@ function BrandFormModal({ brand, onClose, onRefresh }: { brand?: Brand; onClose:
     }
     setIsSubmitting(true);
     try {
+      const dataToSubmit = {
+        ...formData,
+        status: formData.status?.toUpperCase()
+      };
       if (isEdit && brand) {
-        await brandService.updateBrand(brand.id, formData);
+        await brandService.updateBrand(brand.id, dataToSubmit);
       } else {
-        await brandService.createBrand(formData);
+        await brandService.createBrand(dataToSubmit);
       }
       onRefresh();
       onClose();

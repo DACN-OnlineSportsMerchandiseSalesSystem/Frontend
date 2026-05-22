@@ -71,6 +71,11 @@ const productService = {
     const response = await api.get<Product[]>(`/products/recommendations?limit=${limit}`);
     return response.data;
   },
+
+  searchProductsAi: async (query: string) => {
+    const response = await api.get<Product[]>(`/products/search-ai?query=${encodeURIComponent(query)}`);
+    return response.data;
+  },
 };
 
 export default productService;

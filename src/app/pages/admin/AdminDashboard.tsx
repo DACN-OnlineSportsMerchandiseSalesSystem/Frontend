@@ -74,7 +74,7 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-gray-900 font-black">Tổng quan hệ thống</h2>
+          <h2 className="text-2xl font-black text-gray-900">Tổng quan hệ thống</h2>
           <p className="text-sm text-gray-500 mt-1">Thống kê hoạt động kinh doanh thực tế tháng {currentMonth}/{currentYear}</p>
         </div>
         <button

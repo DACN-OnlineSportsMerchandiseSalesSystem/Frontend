@@ -1,58 +1,47 @@
 import { useParams, Link } from "react-router";
 import { Clock, ChevronRight, ArrowLeft, Share2, Bookmark, ThumbsUp, Tag } from "lucide-react";
-import { blogPosts, BlogSection } from "../data/blog";
-import { useState } from "react";
-
-function renderSection(section: BlogSection, idx: number) {
-  switch (section.type) {
-    case "heading":
-      return (
-        <h2 key={idx} className="text-gray-900 text-xl mt-7 mb-3">
-          {section.text}
-        </h2>
-      );
-    case "paragraph":
-      return (
-        <p key={idx} className="text-gray-600 leading-relaxed mb-4">
-          {section.text}
-        </p>
-      );
-    case "list":
-      return (
-        <ul key={idx} className="mb-4 space-y-2">
-          {section.items?.map((item, i) => (
-            <li key={i} className="flex items-start gap-2 text-gray-600">
-              <span className="w-5 h-5 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                {i + 1}
-              </span>
-              <span className="leading-relaxed">{item}</span>
-            </li>
-          ))}
-        </ul>
-      );
-    case "tip":
-      return (
-        <div key={idx} className="bg-blue-50 border-l-4 border-blue-500 rounded-r-xl p-4 mb-4">
-          <p className="text-blue-800 text-sm leading-relaxed">{section.text}</p>
-        </div>
-      );
-    case "quote":
-      return (
-        <blockquote key={idx} className="border-l-4 border-gray-200 pl-5 py-1 my-5 bg-gray-50 rounded-r-xl">
-          <p className="text-gray-500 italic text-sm leading-relaxed">{section.text}</p>
-        </blockquote>
-      );
-    default:
-      return null;
-  }
-}
+import { useState, useEffect } from "react";
+import blogService, { BlogPostDTO } from "../../services/blogService";
 
 export function BlogDetail() {
-  const { id } = useParams<{ id: string }>();
-  const post = blogPosts.find((p) => p.id === id);
+  const { id: slug } = useParams<{ id: string }>(); // Using 'id' from router, but it represents the slug
+  const [post, setPost] = useState<BlogPostDTO | null>(null);
+  const [related, setRelated] = useState<BlogPostDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 80) + 20);
   const [bookmarked, setBookmarked] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        if (slug) {
+          const fetchedPost = await blogService.getBlogBySlug(slug);
+          setPost(fetchedPost);
+          
+          // Optionally fetch all to find related
+          const allPosts = await blogService.getAllBlogs();
+          setRelated(allPosts.filter((p) => (p.sport === fetchedPost.sport || p.category === fetchedPost.category) && p.id !== fetchedPost.id).slice(0, 3));
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải chi tiết blog:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="text-center py-40">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <h2 className="text-gray-600">Đang tải nội dung...</h2>
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -65,8 +54,6 @@ export function BlogDetail() {
       </div>
     );
   }
-
-  const related = blogPosts.filter((p) => (p.sport === post.sport || p.category === post.category) && p.id !== post.id).slice(0, 3);
 
   const sportIcons: Record<string, string> = {
     "Chạy bộ": "🏃",
@@ -113,38 +100,41 @@ export function BlogDetail() {
 
           {/* Author + Meta */}
           <div className="flex items-center gap-4 py-4 border-y border-gray-100 mb-6">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold flex-shrink-0">
-              {post.authorAvatar}
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold flex-shrink-0 text-xl">
+              {post.author?.[0]?.toUpperCase() || 'A'}
             </div>
             <div>
               <p className="text-gray-800 text-sm">{post.author}</p>
-              <p className="text-gray-400 text-xs">{post.authorRole}</p>
+              <p className="text-gray-400 text-xs">Biên tập viên</p>
             </div>
             <div className="ml-auto flex items-center gap-4 text-sm text-gray-400">
               <div className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />
-                <span>{post.readTime} phút đọc</span>
+                <span>{Math.ceil(post.content.length / 1000)} phút đọc</span>
               </div>
-              <span>{post.date}</span>
+              <span>{post.publishDate || "Gần đây"}</span>
             </div>
           </div>
 
           {/* Hero Image */}
-          <div className="rounded-2xl overflow-hidden mb-7 aspect-video">
-            <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
-          </div>
+          {post.imageUrl && (
+            <div className="rounded-2xl overflow-hidden mb-7 aspect-video bg-gray-100">
+              <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
+            </div>
+          )}
 
           {/* Content */}
-          <div className="prose max-w-none">
-            {post.content.map((section, idx) => renderSection(section, idx))}
-          </div>
+          <div 
+            className="prose max-w-none prose-blue prose-img:rounded-xl prose-img:shadow-md"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
 
           {/* Tags */}
-          <div className="mt-8 flex flex-wrap gap-2">
+          <div className="mt-12 flex flex-wrap gap-2">
             <Tag className="w-4 h-4 text-gray-400 mt-0.5" />
-            {post.tags.map((tag) => (
+            {post.tags && post.tags.split(',').map((tag) => tag.trim() && (
               <span key={tag} className="bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded-full hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer">
-                #{tag}
+                #{tag.trim()}
               </span>
             ))}
           </div>
@@ -178,11 +168,11 @@ export function BlogDetail() {
           {/* Author Box */}
           <div className="mt-8 bg-blue-50 rounded-2xl p-5 flex gap-4">
             <div className="w-14 h-14 bg-blue-200 rounded-full flex items-center justify-center text-blue-800 font-black text-lg flex-shrink-0">
-              {post.authorAvatar}
+              {post.author?.[0]?.toUpperCase() || 'A'}
             </div>
             <div>
               <p className="text-gray-800 mb-0.5">{post.author}</p>
-              <p className="text-blue-600 text-sm mb-2">{post.authorRole}</p>
+              <p className="text-blue-600 text-sm mb-2">Biên tập viên</p>
               <p className="text-gray-500 text-sm leading-relaxed">
                 Chuyên gia có nhiều năm kinh nghiệm trong lĩnh vực {post.sport}. Đồng hành cùng SportZone để chia sẻ kiến thức và giúp cộng đồng thể thao Việt Nam phát triển.
               </p>
@@ -201,9 +191,9 @@ export function BlogDetail() {
               </h3>
               <div className="space-y-4">
                 {related.map((p) => (
-                  <Link key={p.id} to={`/blog/${p.id}`} className="group flex gap-3">
-                    <div className="w-20 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                      <img src={p.image} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <Link key={p.id} to={`/blog/${p.slug}`} className="group flex gap-3">
+                    <div className="w-20 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                      <img src={p.imageUrl || "https://placehold.co/100x100?text=No+Image"} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-gray-700 text-sm leading-snug group-hover:text-blue-700 transition-colors line-clamp-2 mb-1">
@@ -211,7 +201,7 @@ export function BlogDetail() {
                       </p>
                       <div className="flex items-center gap-1 text-gray-400 text-xs">
                         <Clock className="w-3 h-3" />
-                        <span>{p.readTime} phút</span>
+                        <span>{Math.ceil(p.content.length / 1000)} phút</span>
                       </div>
                     </div>
                   </Link>
@@ -243,7 +233,7 @@ export function BlogDetail() {
                 >
                   <span>{item.label}</span>
                   <span className="text-xs text-gray-400">
-                    {blogPosts.filter((p) => p.sport === item.sport).length} bài
+                    {/* {blogPosts.filter((p) => p.sport === item.sport).length} bài */}
                   </span>
                 </Link>
               ))}
@@ -275,10 +265,11 @@ export function BlogDetail() {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {blogPosts.filter((p) => p.id !== post.id).slice(0, 3).map((p) => (
-            <Link key={p.id} to={`/blog/${p.id}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:border-blue-100 transition-all">
-              <div className="h-40 overflow-hidden">
-                <img src={p.image} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          {/* Note: In a real app we would fetch random posts. For now we use related */}
+          {related.slice(0, 3).map((p) => (
+            <Link key={p.id} to={`/blog/${p.slug}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:border-blue-100 transition-all">
+              <div className="h-40 overflow-hidden bg-gray-100">
+                <img src={p.imageUrl || "https://placehold.co/400x250?text=No+Image"} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               </div>
               <div className="p-4">
                 <span className="text-xs text-blue-600 mb-1 block">{sportIcons[p.sport] || "📝"} {p.category}</span>
@@ -287,7 +278,7 @@ export function BlogDetail() {
                 </h4>
                 <div className="flex items-center gap-1 text-gray-400 text-xs">
                   <Clock className="w-3 h-3" />
-                  <span>{p.readTime} phút đọc</span>
+                  <span>{Math.ceil(p.content.length / 1000)} phút đọc</span>
                 </div>
               </div>
             </Link>

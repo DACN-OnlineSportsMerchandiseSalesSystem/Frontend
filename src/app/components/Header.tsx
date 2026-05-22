@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import { ShoppingCart, Search, User, Menu, X, Zap, Heart, Package, Phone, ChevronDown, Gift, LogOut } from "lucide-react";
 import { useApp } from "../context/AppContext";
-import { products, sportCategories, formatPrice } from "../data/products";
+import productService, { Product } from "../../services/productService";
 
 function getCategoryIcon(name: string): string {
   const normalized = name.toLowerCase().trim();
@@ -28,24 +28,23 @@ export function Header({ onMenuOpen }: HeaderProps) {
   const { cartCount, wishlist, isLoggedIn, logout, user, categories } = useApp();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<typeof products>([]);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (searchQuery.trim().length > 1) {
-      const q = searchQuery.toLowerCase();
-      const results = products.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.brand.toLowerCase().includes(q) ||
-          p.sport.toLowerCase().includes(q)
-      ).slice(0, 5);
-      setSearchResults(results);
-    } else {
-      setSearchResults([]);
-    }
+    const delayDebounceFn = setTimeout(() => {
+      if (searchQuery.trim().length > 1) {
+        productService.searchProductsAi(searchQuery.trim())
+          .then(results => setSearchResults(results.slice(0, 5)))
+          .catch(() => setSearchResults([]));
+      } else {
+        setSearchResults([]);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
   useEffect(() => {
@@ -131,10 +130,10 @@ export function Header({ onMenuOpen }: HeaderProps) {
                   onClick={() => { setSearchOpen(false); setSearchQuery(""); setSearchResults([]); }}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors"
                 >
-                  <img src={p.image} alt={p.name} className="w-10 h-10 object-cover rounded-lg" />
+                  <img src={p.images?.[0]?.imageUrl || "https://placehold.co/400x400/png"} alt={p.name} className="w-10 h-10 object-cover rounded-lg" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-900 truncate">{p.name}</p>
-                    <p className="text-xs text-blue-600">{formatPrice(p.price)}</p>
+                    <p className="text-xs text-blue-600">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.price || 0)}</p>
                   </div>
                 </Link>
               ))}

@@ -57,7 +57,7 @@ export function StatisticsReports() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-gray-900 font-black">Thống kê & Báo cáo</h2>
+          <h2 className="text-2xl font-black text-gray-900">Thống kê & Báo cáo</h2>
           <p className="text-sm text-gray-500 mt-1">Phân tích doanh thu và hiệu suất kinh doanh thực tế</p>
         </div>
         <div className="flex items-center gap-3">
@@ -113,7 +113,7 @@ export function StatisticsReports() {
               const maxValue = Math.max(...dailyStats.map(d => d.revenue)) || 1;
               const heightPercent = (day.revenue / maxValue) * 100;
               return (
-                <div key={idx} className="flex-1 flex flex-col items-center gap-3 group">
+                <div key={idx} className="flex-1 flex flex-col items-center gap-3 group h-full">
                   <div className="w-full flex flex-col items-center justify-end flex-1 relative">
                     <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-20 whitespace-nowrap">
                       {formatPrice(day.revenue)}

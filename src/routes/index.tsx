@@ -6,6 +6,7 @@ import { Cart } from "@/pages/Cart/index";
 import { Checkout } from "@/pages/Checkout/index";
 import { OrderSuccess } from "@/pages/Checkout/OrderSuccess";
 import { NotFound } from "@/pages/NotFound/index";
+import { PolicyPage } from "@/pages/Policy/PolicyPage";
 
 export const router = createBrowserRouter([
   {
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
       { path: "cart", Component: Cart },
       { path: "checkout", Component: Checkout },
       { path: "order-success/:orderId", Component: OrderSuccess },
+      { path: "policy", Component: PolicyPage },
       { path: "*", Component: NotFound },
     ],
   },

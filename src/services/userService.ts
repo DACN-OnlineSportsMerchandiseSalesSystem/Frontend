@@ -88,3 +88,18 @@ export async function adminCreateUserAPI(data: AdminCreateUserRequest): Promise<
   const response = await api.post<UserProfile>('/users', data);
   return response.data;
 }
+
+/**
+ * Lấy danh sách sở thích - GET /api/users/interests
+ */
+export async function getMyInterestsAPI(): Promise<any[]> {
+  const response = await api.get<any[]>('/users/interests');
+  return response.data;
+}
+
+/**
+ * Cập nhật danh sách sở thích - PUT /api/users/interests
+ */
+export async function updateInterestsAPI(categoryIds: number[]): Promise<void> {
+  await api.put('/users/interests', categoryIds);
+}

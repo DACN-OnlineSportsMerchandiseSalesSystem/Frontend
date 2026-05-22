@@ -25,7 +25,7 @@ export function Products() {
 
   const filteredProducts = useMemo(() => {
     let result = [...apiProducts];
-    if (search) result = result.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()) || (p as any).brandName?.toLowerCase().includes(search.toLowerCase()));
+    // Removed strict name filter to allow AI semantic results to pass through
     if (brand) result = result.filter((p) => (p as any).brandName === brand);
     if (minPrice > 0 || maxPrice < 10000000) result = result.filter((p) => p.price >= minPrice && p.price <= maxPrice);
 
@@ -38,15 +38,26 @@ export function Products() {
 
   useEffect(() => {
     setIsLoading(true);
-    // Map sport (id/name) to categoryId if applicable
-    const categoryId = categories.find(c => c.name === sport)?.id;
-    productService.getAllProducts(categoryId)
-      .then(data => {
-        setApiProducts(data);
-        setIsLoading(false);
-      })
-      .catch(() => setIsLoading(false));
-  }, [sport, categories]);
+    
+    if (search) {
+      // Use Hybrid AI Search if searching
+      productService.searchProductsAi(search)
+        .then(data => {
+          setApiProducts(data);
+          setIsLoading(false);
+        })
+        .catch(() => setIsLoading(false));
+    } else {
+      // Normal Category Fetch
+      const categoryId = categories.find(c => c.name === sport)?.id;
+      productService.getAllProducts(categoryId)
+        .then(data => {
+          setApiProducts(data);
+          setIsLoading(false);
+        })
+        .catch(() => setIsLoading(false));
+    }
+  }, [sport, search, categories]);
 
   const activeFilters: { label: string; key: string }[] = [];
   if (sport && sport !== "all") activeFilters.push({ label: `Môn: ${sport}`, key: "sport" });

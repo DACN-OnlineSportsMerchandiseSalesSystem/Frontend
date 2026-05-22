@@ -44,8 +44,8 @@ const returnService = {
     return response.data;
   },
 
-  processReturn: async (id: number, status: string, refundAmount?: number) => {
-    const response = await api.put<ReturnRequestDTO>(`/returns/${id}/process`, { status, refundAmount });
+  processReturn: async (id: number, action: 'APPROVE' | 'REJECT') => {
+    const response = await api.put<ReturnRequestDTO>(`/returns/${id}/process?action=${action}`);
     return response.data;
   }
 };

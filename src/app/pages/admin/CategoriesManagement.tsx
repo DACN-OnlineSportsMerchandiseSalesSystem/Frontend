@@ -10,6 +10,11 @@ export function CategoriesManagement() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
+  // State cho Sắp xếp và Phân trang
+  const [sortBy, setSortBy] = useState("hierarchy");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
@@ -36,9 +41,89 @@ export function CategoriesManagement() {
     }
   };
 
-  const filteredCategories = categories.filter(c => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.slug.toLowerCase().includes(searchQuery.toLowerCase())
+  // Thuật toán sắp xếp và tạo cấu trúc cây danh mục
+  const getSortedCategories = (list: Category[], sortOption: string) => {
+    let filtered = list.filter(c => 
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.slug.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    if (sortOption === "hierarchy") {
+      const roots: Category[] = [];
+      const childrenMap: { [key: number]: Category[] } = {};
+      const allIds = new Set(list.map(c => c.id));
+      
+      list.forEach(c => {
+        if (!c.parentId || !allIds.has(c.parentId)) {
+          roots.push(c);
+        } else {
+          if (!childrenMap[c.parentId]) {
+            childrenMap[c.parentId] = [];
+          }
+          childrenMap[c.parentId].push(c);
+        }
+      });
+
+      // Sắp xếp các danh mục gốc theo số thứ tự (ID) tăng dần
+      roots.sort((a, b) => a.id - b.id);
+
+      const result: (Category & { depth: number })[] = [];
+      const traverse = (cat: Category, depth: number) => {
+        const isMatch = filtered.some(f => f.id === cat.id);
+        if (isMatch) {
+          result.push({ ...cat, depth });
+        }
+        
+        const children = childrenMap[cat.id] || [];
+        // Danh mục con cũng sắp xếp theo số thứ tự (ID) tăng dần
+        children.sort((a, b) => a.id - b.id);
+        
+        children.forEach(child => traverse(child, depth + 1));
+      };
+
+      roots.forEach(root => traverse(root, 0));
+
+      // Đưa các danh mục bị mồ côi (nếu có) vào cuối danh sách
+      const resultIds = new Set(result.map(r => r.id));
+      filtered.forEach(f => {
+        if (!resultIds.has(f.id)) {
+          result.push({ ...f, depth: 0 });
+        }
+      });
+
+      return result;
+    }
+
+    const sorted = [...filtered];
+    switch (sortOption) {
+      case "name_asc":
+        sorted.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+        break;
+      case "name_desc":
+        sorted.sort((a, b) => b.name.localeCompare(a.name, 'vi'));
+        break;
+      case "rating_desc":
+        sorted.sort((a, b) => b.rating - a.rating);
+        break;
+      case "rating_asc":
+        sorted.sort((a, b) => a.rating - b.rating);
+        break;
+      case "id_desc":
+        sorted.sort((a, b) => b.id - a.id);
+        break;
+      case "id_asc":
+        sorted.sort((a, b) => a.id - b.id);
+        break;
+    }
+    return sorted.map(c => ({ ...c, depth: 0 }));
+  };
+
+  const processedCategories = getSortedCategories(categories, sortBy);
+  const totalItems = processedCategories.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const paginatedCategories = processedCategories.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   return (
@@ -58,16 +143,39 @@ export function CategoriesManagement() {
       </div>
 
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-50">
-          <div className="relative max-w-md">
+        <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               placeholder="Tìm kiếm danh mục..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium"
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-gray-500 whitespace-nowrap">Sắp xếp:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-bold text-gray-700 outline-none cursor-pointer"
+            >
+              <option value="hierarchy">Cấu trúc Cha - Con (Mặc định)</option>
+              <option value="id_asc">Số thứ tự (ID tăng dần)</option>
+              <option value="id_desc">Số thứ tự (ID giảm dần)</option>
+              <option value="name_asc">Tên: A - Z</option>
+              <option value="name_desc">Tên: Z - A</option>
+              <option value="rating_desc">Đánh giá: Cao nhất</option>
+              <option value="rating_asc">Đánh giá: Thấp nhất</option>
+            </select>
           </div>
         </div>
 
@@ -94,22 +202,42 @@ export function CategoriesManagement() {
                     </div>
                   </td>
                 </tr>
-              ) : filteredCategories.length === 0 ? (
+              ) : paginatedCategories.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
                     Không tìm thấy danh mục nào
                   </td>
                 </tr>
               ) : (
-                filteredCategories.map((category) => (
+                paginatedCategories.map((category) => (
                   <tr key={category.id} className="hover:bg-gray-50/50 transition-colors group">
                     <td className="px-6 py-4 text-sm text-gray-500 font-medium">#{category.id}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                        {/* Indentation for hierarchy tree */}
+                        {category.depth > 0 && (
+                          <div 
+                            className="flex items-center text-gray-400 shrink-0 select-none"
+                            style={{ width: `${category.depth * 24}px`, paddingLeft: `${(category.depth - 1) * 24}px` }}
+                          >
+                            <span className="text-lg font-bold">↳</span>
+                          </div>
+                        )}
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shrink-0 ${
+                          category.depth > 0 ? "bg-gray-50 text-gray-500" : "bg-blue-50 text-blue-600"
+                        }`}>
                           <Layers className="w-5 h-5" />
                         </div>
-                        <span className="font-bold text-gray-900">{category.name}</span>
+                        <div className="flex flex-col">
+                          <span className={`font-bold text-gray-900 ${category.depth > 0 ? "text-sm text-gray-600 font-semibold" : ""}`}>
+                            {category.name}
+                          </span>
+                          {category.depth > 0 && (
+                            <span className="text-[10px] text-blue-500 font-bold tracking-wide uppercase mt-0.5">
+                              Con của: {category.parentName}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 font-mono">{category.slug}</td>
@@ -124,9 +252,9 @@ export function CategoriesManagement() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        category.status === "active" ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-600"
+                        category.status?.toLowerCase() === "active" ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-600"
                       }`}>
-                        {category.status === "active" ? "Hoạt động" : "Tạm ẩn"}
+                        {category.status?.toLowerCase() === "active" ? "Hoạt động" : "Tạm ẩn"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -155,6 +283,68 @@ export function CategoriesManagement() {
           </table>
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 border border-gray-100 rounded-2xl shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Hiển thị</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="px-2 py-1.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white text-sm font-bold text-gray-700 cursor-pointer"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+            <span className="text-sm text-gray-500">danh mục trên mỗi trang</span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+            >
+              Trước
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+              .map((page, idx, arr) => {
+                const prev = arr[idx - 1];
+                return (
+                  <div key={page} className="flex items-center gap-1.5">
+                    {prev && page - prev > 1 && <span className="px-1 text-gray-400">...</span>}
+                    <button
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
+                        currentPage === page
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-100"
+                          : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  </div>
+                );
+              })}
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+            >
+              Sau
+            </button>
+          </div>
+        </div>
+      )}
 
       {showAddModal && (
         <CategoryFormModal 
@@ -188,15 +378,21 @@ function CategoryFormModal({
   allCategories: Category[];
 }) {
   const isEdit = !!category;
-  const [formData, setFormData] = useState<Partial<Category>>(
-    category || {
+  const [formData, setFormData] = useState<Partial<Category>>(() => {
+    if (category) {
+      return {
+        ...category,
+        status: category.status?.toLowerCase() || "active"
+      };
+    }
+    return {
       name: "",
       slug: "",
       status: "active",
       rating: 5,
       parentId: null
-    }
-  );
+    };
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Auto-generate slug from name
@@ -223,10 +419,14 @@ function CategoryFormModal({
     }
     setIsSubmitting(true);
     try {
+      const dataToSubmit = {
+        ...formData,
+        status: formData.status?.toUpperCase()
+      };
       if (isEdit && category) {
-        await categoryService.updateCategory(category.id, formData);
+        await categoryService.updateCategory(category.id, dataToSubmit);
       } else {
-        await categoryService.createCategory(formData);
+        await categoryService.createCategory(dataToSubmit);
       }
       onRefresh();
       onClose();

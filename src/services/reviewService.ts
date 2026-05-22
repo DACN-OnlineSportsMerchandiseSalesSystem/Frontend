@@ -8,9 +8,8 @@ export interface Review {
   adminReply: string;
   createdAt: string;
   repliedAt: string;
-  userEmail: string;
-  userFirstName: string;
-  userLastName: string;
+  userEmail?: string;
+  userName?: string;
 }
 
 export interface ReviewRequest {
@@ -32,6 +31,11 @@ const reviewService = {
 
   getAllReviews: async () => {
     const response = await api.get<Review[]>('/reviews');
+    return response.data;
+  },
+
+  getLatest5StarReviews: async () => {
+    const response = await api.get<Review[]>('/reviews/latest-5-star');
     return response.data;
   },
 

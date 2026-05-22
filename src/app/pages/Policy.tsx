@@ -1,27 +1,33 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router";
-import { ChevronRight, RotateCcw, Truck, Shield, Lock, HelpCircle, Phone, Loader2 } from "lucide-react";
+import { ChevronRight, RotateCcw, Truck, Shield, Lock, HelpCircle, Phone, Loader2, FileText } from "lucide-react";
 import { policyService, StorePolicy } from "../../services/policyService";
 
-const tabs = [
-  { key: "return", label: "Đổi trả", icon: <RotateCcw className="w-4 h-4" />, apiId: "return-policy" },
-  { key: "shipping", label: "Vận chuyển", icon: <Truck className="w-4 h-4" />, apiId: "shipping-policy" },
-  { key: "warranty", label: "Bảo hành", icon: <Shield className="w-4 h-4" />, apiId: "warranty-policy" },
-  { key: "privacy", label: "Bảo mật", icon: <Lock className="w-4 h-4" />, apiId: "privacy-policy" },
-  { key: "faq", label: "Câu hỏi thường gặp", icon: <HelpCircle className="w-4 h-4" />, apiId: "faq" },
-  { key: "contact", label: "Liên hệ", icon: <Phone className="w-4 h-4" />, apiId: "contact" },
-];
+// Helper function to pick a suitable icon based on category or key
+const getPolicyIcon = (key?: string) => {
+  if (!key) return <FileText className="w-4 h-4" />;
+  const lower = key.toLowerCase();
+  if (lower.includes('return')) return <RotateCcw className="w-4 h-4" />;
+  if (lower.includes('ship')) return <Truck className="w-4 h-4" />;
+  if (lower.includes('warrant')) return <Shield className="w-4 h-4" />;
+  if (lower.includes('priva') || lower.includes('secur')) return <Lock className="w-4 h-4" />;
+  if (lower.includes('faq')) return <HelpCircle className="w-4 h-4" />;
+  if (lower.includes('contact')) return <Phone className="w-4 h-4" />;
+  return <FileText className="w-4 h-4" />;
+};
 
 export function Policy() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [policies, setPolicies] = useState<StorePolicy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const activeTab = searchParams.get("tab") || "return";
+  
+  const activeTab = searchParams.get("tab");
 
   useEffect(() => {
     const fetchPolicies = async () => {
       try {
         const data = await policyService.getAllPolicies();
+        // Optionally sort them if displayOrder exists, otherwise leave as is
         setPolicies(data);
       } catch (err) {
         console.error("Failed to fetch policies", err);
@@ -32,7 +38,9 @@ export function Policy() {
     fetchPolicies();
   }, []);
 
-  const activePolicy = policies.find(p => p.key === tabs.find(t => t.key === activeTab)?.apiId);
+  // Use the activeTab from URL, or default to the first policy if available
+  const activePolicy = policies.find(p => (p.key || (p as any).policyKey) === activeTab) || (policies.length > 0 ? policies[0] : undefined);
+  const currentTabKey = activePolicy?.key || (activePolicy as any)?.policyKey || "";
 
   const setTab = (t: string) => {
     const p = new URLSearchParams(); p.set("tab", t);
@@ -61,18 +69,26 @@ export function Policy() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <aside>
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setTab(tab.key)}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors text-left border-b border-gray-50 last:border-0 ${
-                  activeTab === tab.key ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600" : "text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                <span className={activeTab === tab.key ? "text-blue-600" : "text-gray-400"}>{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
+            {policies.map((policy) => {
+              const pKey = policy.key || (policy as any).policyKey;
+              return (
+                <button
+                  key={pKey}
+                  onClick={() => setTab(pKey)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors text-left border-b border-gray-50 last:border-0 ${
+                    currentTabKey === pKey ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600 font-bold" : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <span className={currentTabKey === pKey ? "text-blue-600" : "text-gray-400"}>
+                    {getPolicyIcon(pKey)}
+                  </span>
+                  {policy.title}
+                </button>
+              );
+            })}
+            {policies.length === 0 && (
+              <div className="p-4 text-sm text-gray-400 text-center">Đang cập nhật...</div>
+            )}
           </div>
         </aside>
 
@@ -80,7 +96,7 @@ export function Policy() {
           {activePolicy ? (
             <div>
               <h2 className="text-gray-900 mb-4 flex items-center gap-2">
-                {tabs.find(t => t.key === activeTab)?.icon}
+                {getPolicyIcon(activePolicy.key || (activePolicy as any).policyKey)}
                 {activePolicy.title}
               </h2>
               <div 

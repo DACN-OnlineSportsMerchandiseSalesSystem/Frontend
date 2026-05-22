@@ -6,11 +6,12 @@ import { ProductCard } from "../components/ProductCard";
 import { formatPrice } from "../data/products";
 import productService, { Product } from "../../services/productService";
 import reviewService, { Review } from "../../services/reviewService";
+import { sortCategoryNamesParentFirst } from "../../utils/categoryHelpers";
 
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { addToCart, toggleWishlist, wishlist, user } = useApp();
+  const { addToCart, toggleWishlist, wishlist, user, categories } = useApp();
   const [product, setProduct] = useState<Product | null>(null);
   const [related, setRelated] = useState<Product[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -120,16 +121,19 @@ export function ProductDetail() {
   }
 
   const isWishlisted = wishlist.includes(product.id.toString());
-  const categoryName = product.categoryNames?.[0] || "Sản phẩm";
+  const sortedCats = sortCategoryNamesParentFirst(product.categoryNames, categories);
+  const categoryName = sortedCats[0] || "Sản phẩm";
 
   const handleAddToCart = () => {
     const variant = product.variants.find(v => v.size === selectedSize && v.color === selectedColor) || product.variants[0];
     if (!variant) return;
 
+    const finalPrice = product.discount > 0 ? variant.price * (1 - product.discount / 100) : variant.price;
+
     addToCart({
       productId: variant.id.toString(),
       name: product.name,
-      price: variant.price,
+      price: finalPrice,
       image: product.images[0]?.imageUrl || "",
       quantity: qty,
       size: variant.size,
@@ -153,6 +157,12 @@ export function ProductDetail() {
         <ChevronRight className="w-3.5 h-3.5" />
         <Link to="/products" className="hover:text-blue-600 transition-colors">Sản phẩm</Link>
         <ChevronRight className="w-3.5 h-3.5" />
+        {categoryName !== "Sản phẩm" && (
+          <>
+            <Link to={`/products?sport=${categoryName}`} className="hover:text-blue-600 transition-colors">{categoryName}</Link>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </>
+        )}
         <span className="text-gray-800 truncate max-w-xs">{product.name}</span>
       </div>
 
@@ -238,7 +248,7 @@ export function ProductDetail() {
                       : "border-gray-200 text-gray-700 hover:border-blue-300"
                   }`}
                 >
-                  {v.size} - {v.color} ({formatPrice(v.price)})
+                  {v.size} - {v.color} ({formatPrice(product.discount > 0 ? v.price * (1 - product.discount / 100) : v.price)})
                 </button>
               ))}
             </div>
@@ -337,7 +347,7 @@ export function ProductDetail() {
                   </tr>
                   <tr className="bg-gray-50">
                     <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-100">Danh mục</td>
-                    <td className="py-3 px-4 text-gray-800">{product.categoryNames?.join(", ") || "Chưa phân loại"}</td>
+                    <td className="py-3 px-4 text-gray-800">{sortedCats.join(", ") || "Chưa phân loại"}</td>
                   </tr>
                 </tbody>
               </table>

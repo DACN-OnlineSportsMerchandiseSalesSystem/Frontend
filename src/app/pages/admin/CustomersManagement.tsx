@@ -21,6 +21,10 @@ export function CustomersManagement() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState({ firstName: "", lastName: "", email: "", phone: "", password: "", roleName: "ROLE_USER", status: "ACTIVE" });
+
+  const [sortBy, setSortBy] = useState("id_desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [createMsg, setCreateMsg] = useState("");
 
   const fetchUsers = async () => {
@@ -73,11 +77,40 @@ export function CustomersManagement() {
     return matchSearch && matchRole && matchStatus;
   });
 
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const idA = a.id || 0;
+    const idB = b.id || 0;
+    switch (sortBy) {
+      case "id_desc":
+        return idB - idA;
+      case "id_asc":
+        return idA - idB;
+      case "name_asc": {
+        const nameA = [a.firstName, a.lastName].filter(Boolean).join(" ");
+        const nameB = [b.firstName, b.lastName].filter(Boolean).join(" ");
+        return nameA.localeCompare(nameB, "vi");
+      }
+      case "name_desc": {
+        const nameA = [a.firstName, a.lastName].filter(Boolean).join(" ");
+        const nameB = [b.firstName, b.lastName].filter(Boolean).join(" ");
+        return nameB.localeCompare(nameA, "vi");
+      }
+      default:
+        return 0;
+    }
+  });
+
+  const paginatedUsers = sortedUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-gray-900">Quản lý người dùng</h2>
+          <h2 className="text-2xl font-black text-gray-900">Quản lý người dùng</h2>
           <p className="text-sm text-gray-500 mt-1">Quản lý thông tin và tài khoản hệ thống</p>
         </div>
         <button
@@ -96,15 +129,21 @@ export function CustomersManagement() {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             placeholder="Tìm kiếm theo tên, email, số điện thoại..."
             className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400"
           />
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <select
             value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
+            onChange={(e) => {
+              setFilterRole(e.target.value);
+              setCurrentPage(1);
+            }}
             className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
           >
             <option value="all">Tất cả vai trò</option>
@@ -113,12 +152,28 @@ export function CustomersManagement() {
           </select>
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => {
+              setFilterStatus(e.target.value);
+              setCurrentPage(1);
+            }}
             className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="ACTIVE">Hoạt động</option>
             <option value="INACTIVE">Đã khóa</option>
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => {
+              setSortBy(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
+          >
+            <option value="id_desc">Mới nhất</option>
+            <option value="id_asc">Cũ nhất</option>
+            <option value="name_asc">Tên: A - Z</option>
+            <option value="name_desc">Tên: Z - A</option>
           </select>
         </div>
         <p className="text-sm text-gray-600">Tìm thấy {filteredUsers.length} người dùng</p>
@@ -169,7 +224,7 @@ export function CustomersManagement() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredUsers.map((user) => {
+                {paginatedUsers.map((user) => {
                   const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
                   const avatar = fullName ? fullName.charAt(0).toUpperCase() : "U";
                   return (
@@ -243,6 +298,68 @@ export function CustomersManagement() {
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {!isLoading && !error && totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 border border-gray-100 rounded-2xl shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Hiển thị</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="px-2 py-1.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white text-sm"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+            <span className="text-sm text-gray-500">người dùng trên mỗi trang</span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+            >
+              Trước
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+              .map((page, idx, arr) => {
+                const prev = arr[idx - 1];
+                return (
+                  <div key={page} className="flex items-center gap-1.5">
+                    {prev && page - prev > 1 && <span className="px-1 text-gray-400">...</span>}
+                    <button
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
+                        currentPage === page
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-100"
+                          : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  </div>
+                );
+              })}
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+            >
+              Sau
+            </button>
           </div>
         </div>
       )}

@@ -1,23 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { Clock, Search, TrendingUp, Bookmark } from "lucide-react";
-import { blogPosts, blogCategories } from "../data/blog";
+import { blogCategories } from "../data/blog";
+import blogService, { BlogPostDTO } from "../../services/blogService";
 
 export function Blog() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [blogs, setBlogs] = useState<BlogPostDTO[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = blogPosts.filter((post) => {
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const data = await blogService.getAllBlogs();
+        setBlogs(data);
+      } catch (error) {
+        console.error("Lỗi khi tải blog:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBlogs();
+  }, []);
+
+  const filtered = blogs.filter((post) => {
     const matchCat = activeCategory === "all" || post.category === activeCategory;
     const matchSearch =
       !searchQuery ||
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
+      (post.excerpt && post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (post.tags && post.tags.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchCat && matchSearch;
   });
 
-  const featured = blogPosts.filter((p) => p.featured);
+  // Pick first 3 blogs as featured (or random, or by views if available)
+  const featured = [...blogs].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 3);
 
   const sportIcons: Record<string, string> = {
     "Chạy bộ": "🏃",
@@ -45,62 +63,64 @@ export function Blog() {
       </div>
 
       {/* Featured Posts */}
-      <div className="mb-12">
-        <h2 className="text-gray-800 mb-5 flex items-center gap-2">
-          <Bookmark className="w-5 h-5 text-blue-600" />
-          Bài Viết Nổi Bật
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Main featured */}
-          <div className="md:col-span-2">
-            <Link to={`/blog/${featured[0].id}`} className="group block h-full">
-              <div className="relative h-72 md:h-80 rounded-2xl overflow-hidden mb-4">
-                <img
-                  src={featured[0].image}
-                  alt={featured[0].title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <span className="inline-block bg-blue-600 text-white text-xs px-3 py-1 rounded-full mb-2">
-                    {sportIcons[featured[0].sport] || "📝"} {featured[0].category}
-                  </span>
-                  <h3 className="text-white text-xl leading-snug group-hover:text-blue-200 transition-colors">
-                    {featured[0].title}
-                  </h3>
-                  <div className="flex items-center gap-3 mt-2 text-white/70 text-sm">
-                    <span>{featured[0].author}</span>
-                    <span>·</span>
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>{featured[0].readTime} phút đọc</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </div>
-
-          {/* Side featured */}
-          <div className="flex flex-col gap-4">
-            {featured.slice(1, 3).map((post) => (
-              <Link key={post.id} to={`/blog/${post.id}`} className="group flex gap-3 bg-white rounded-xl p-3 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all">
-                <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                  <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-xs text-blue-600 mb-1 block">{sportIcons[post.sport] || "📝"} {post.category}</span>
-                  <h4 className="text-gray-800 text-sm leading-snug group-hover:text-blue-700 transition-colors line-clamp-2 mb-2">
-                    {post.title}
-                  </h4>
-                  <div className="flex items-center gap-1 text-gray-400 text-xs">
-                    <Clock className="w-3 h-3" />
-                    <span>{post.readTime} phút đọc</span>
+      {!loading && featured.length > 0 && (
+        <div className="mb-12">
+          <h2 className="text-gray-800 mb-5 flex items-center gap-2">
+            <Bookmark className="w-5 h-5 text-blue-600" />
+            Bài Viết Nổi Bật
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Main featured */}
+            <div className="md:col-span-2">
+              <Link to={`/blog/${featured[0].slug}`} className="group block h-full">
+                <div className="relative h-72 md:h-80 rounded-2xl overflow-hidden mb-4 bg-gray-100">
+                  <img
+                    src={featured[0].imageUrl || "https://placehold.co/800x400?text=No+Image"}
+                    alt={featured[0].title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <span className="inline-block bg-blue-600 text-white text-xs px-3 py-1 rounded-full mb-2">
+                      {sportIcons[featured[0].sport] || "📝"} {featured[0].category}
+                    </span>
+                    <h3 className="text-white text-xl leading-snug group-hover:text-blue-200 transition-colors">
+                      {featured[0].title}
+                    </h3>
+                    <div className="flex items-center gap-3 mt-2 text-white/70 text-sm">
+                      <span>{featured[0].author}</span>
+                      <span>·</span>
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{Math.ceil(featured[0].content.length / 1000)} phút đọc</span>
+                    </div>
                   </div>
                 </div>
               </Link>
-            ))}
+            </div>
+
+            {/* Side featured */}
+            <div className="flex flex-col gap-4">
+              {featured.slice(1, 3).map((post) => (
+                <Link key={post.id} to={`/blog/${post.slug}`} className="group flex gap-3 bg-white rounded-xl p-3 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all">
+                  <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                    <img src={post.imageUrl || "https://placehold.co/100x100?text=No+Image"} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs text-blue-600 mb-1 block">{sportIcons[post.sport] || "📝"} {post.category}</span>
+                    <h4 className="text-gray-800 text-sm leading-snug group-hover:text-blue-700 transition-colors line-clamp-2 mb-2">
+                      {post.title}
+                    </h4>
+                    <div className="flex items-center gap-1 text-gray-400 text-xs">
+                      <Clock className="w-3 h-3" />
+                      <span>{Math.ceil(post.content.length / 1000)} phút đọc</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Search + Filter */}
       <div className="flex flex-col md:flex-row gap-4 mb-7">
@@ -133,7 +153,12 @@ export function Blog() {
       </div>
 
       {/* Posts Grid */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-20 text-gray-400">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Đang tải bài viết...</p>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <div className="text-5xl mb-3">🔍</div>
           <p>Không tìm thấy bài viết phù hợp</p>
@@ -141,10 +166,10 @@ export function Blog() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((post) => (
-            <Link key={post.id} to={`/blog/${post.id}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-blue-100 transition-all">
-              <div className="h-48 overflow-hidden relative">
+            <Link key={post.id} to={`/blog/${post.slug}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-blue-100 transition-all flex flex-col">
+              <div className="h-48 overflow-hidden relative bg-gray-100 shrink-0">
                 <img
-                  src={post.image}
+                  src={post.imageUrl || "https://placehold.co/400x250?text=No+Image"}
                   alt={post.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -152,31 +177,31 @@ export function Blog() {
                   {sportIcons[post.sport] || "📝"} {post.category}
                 </span>
               </div>
-              <div className="p-5">
+              <div className="p-5 flex flex-col flex-1">
                 <h3 className="text-gray-900 mb-2 leading-snug group-hover:text-blue-700 transition-colors line-clamp-2">
                   {post.title}
                 </h3>
-                <p className="text-gray-500 text-sm leading-relaxed mb-4 line-clamp-2">{post.excerpt}</p>
-                <div className="flex items-center justify-between">
+                <p className="text-gray-500 text-sm leading-relaxed mb-4 line-clamp-2 flex-1">{post.excerpt}</p>
+                <div className="flex items-center justify-between mt-auto">
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 text-xs">
-                      {post.authorAvatar}
+                      {post.author?.[0]?.toUpperCase() || 'A'}
                     </div>
                     <div>
-                      <p className="text-xs text-gray-700 truncate max-w-[100px]">{post.author.split(" ").slice(-2).join(" ")}</p>
-                      <p className="text-xs text-gray-400">{post.date}</p>
+                      <p className="text-xs text-gray-700 truncate max-w-[100px]">{post.author}</p>
+                      <p className="text-xs text-gray-400">{post.publishDate || "Gần đây"}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 text-gray-400 text-xs">
                     <Clock className="w-3 h-3" />
-                    <span>{post.readTime} phút</span>
+                    <span>{Math.ceil(post.content.length / 1000)} phút</span>
                   </div>
                 </div>
                 {/* Tags */}
-                <div className="flex gap-1.5 mt-3 flex-wrap">
-                  {post.tags.slice(0, 3).map((tag) => (
+                <div className="flex gap-1.5 mt-4 flex-wrap">
+                  {post.tags && post.tags.split(',').slice(0, 3).map((tag) => tag.trim() && (
                     <span key={tag} className="bg-gray-50 text-gray-500 text-xs px-2 py-0.5 rounded-full border border-gray-100">
-                      #{tag}
+                      #{tag.trim()}
                     </span>
                   ))}
                 </div>

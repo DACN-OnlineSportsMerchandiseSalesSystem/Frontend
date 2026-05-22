@@ -109,6 +109,7 @@ export function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Detect product page
@@ -167,6 +168,18 @@ export function Chatbot() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
+  // Auto-close chat window after 30s inactivity (never hide the toggle button)
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (isOpen) {
+      timeout = setTimeout(() => {
+        setIsOpen(false);
+        setIsMinimized(false);
+      }, 30000);
+    }
+    return () => clearTimeout(timeout);
+  }, [isOpen, messages, inputText]);
+
   const sendMessage = (text: string) => {
     if (!text.trim()) return;
 
@@ -212,6 +225,7 @@ export function Chatbot() {
       );
     });
   };
+
 
   return (
     <>
@@ -361,6 +375,7 @@ export function Chatbot() {
       {/* Toggle Button */}
       <button
         onClick={() => {
+          setHasInteracted(true);
           setIsOpen(!isOpen);
           setIsMinimized(false);
         }}

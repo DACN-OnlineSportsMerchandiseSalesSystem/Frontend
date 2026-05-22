@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   LayoutDashboard, Package, ShoppingCart, Users, TrendingUp,
-  Tag, FileText, Settings, LogOut, Menu, Bell, PercentIcon
+  Tag, FileText, Settings, LogOut, Menu, Bell, PercentIcon, MessageSquare, RotateCcw
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import productService from "../../services/productService";
@@ -18,8 +18,11 @@ import { BlogManagement } from "./admin/BlogManagement";
 import { SettingsManagement } from "./admin/SettingsManagement";
 import { BrandsManagement } from "./admin/BrandsManagement";
 import { CategoriesManagement } from "./admin/CategoriesManagement";
+import { ReviewsManagement } from "./admin/ReviewsManagement";
+import { PoliciesManagement } from "./admin/PoliciesManagement";
+import { ReturnsManagement } from "./admin/ReturnsManagement";
 
-type AdminTab = "dashboard" | "products" | "orders" | "customers" | "stats" | "vouchers" | "discounts" | "blog" | "settings" | "brands" | "categories";
+type AdminTab = "dashboard" | "products" | "orders" | "returns" | "customers" | "stats" | "vouchers" | "discounts" | "blog" | "settings" | "brands" | "categories" | "reviews" | "policies";
 
 export function Admin() {
   const { isLoggedIn, isAdmin, logout, user } = useApp();
@@ -63,14 +66,17 @@ export function Admin() {
   const menuItems: { id: AdminTab; icon: any; label: string }[] = [
     { id: "dashboard", icon: LayoutDashboard, label: "Tổng quan" },
     { id: "products", icon: Package, label: "Sản phẩm" },
+    { id: "reviews", icon: MessageSquare, label: "Đánh giá" },
     { id: "categories", icon: LayoutDashboard, label: "Danh mục" },
     { id: "brands", icon: Tag, label: "Thương hiệu" },
     { id: "orders", icon: ShoppingCart, label: "Đơn hàng" },
+    { id: "returns", icon: RotateCcw, label: "Hoàn trả" },
     { id: "customers", icon: Users, label: "Khách hàng" },
     { id: "stats", icon: TrendingUp, label: "Thống kê" },
     { id: "vouchers", icon: Tag, label: "Voucher" },
     { id: "discounts", icon: PercentIcon, label: "Khuyến mãi" },
     { id: "blog", icon: FileText, label: "Blog" },
+    { id: "policies", icon: FileText, label: "Chính sách" },
     { id: "settings", icon: Settings, label: "Cài đặt" },
   ];
 
@@ -171,7 +177,9 @@ export function Admin() {
             />
           )}
           {activeTab === "products" && <ProductsManagement />}
+          {activeTab === "reviews" && <ReviewsManagement />}
           {activeTab === "orders" && <OrdersManagement />}
+          {activeTab === "returns" && <ReturnsManagement />}
           {activeTab === "customers" && <CustomersManagement />}
           {activeTab === "stats" && <StatisticsReports />}
           {activeTab === "vouchers" && <CouponsManagement />}
@@ -179,6 +187,7 @@ export function Admin() {
           {activeTab === "blog" && <BlogManagement />}
           {activeTab === "brands" && <BrandsManagement />}
           {activeTab === "categories" && <CategoriesManagement />}
+          {activeTab === "policies" && <PoliciesManagement />}
           {activeTab === "settings" && <SettingsManagement />}
         </main>
       </div>

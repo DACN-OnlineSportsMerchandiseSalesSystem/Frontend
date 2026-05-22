@@ -3,8 +3,9 @@ import { Link } from "react-router";
 import { ArrowRight, Truck, RotateCcw, Shield, Headphones, ChevronLeft, ChevronRight, Star, Zap, Clock, BookOpen } from "lucide-react";
 import { formatPrice } from "../data/products";
 import { ProductCard } from "../components/ProductCard";
-import { blogPosts } from "../data/blog";
 import productService, { Product } from "../../services/productService";
+import blogService, { BlogPostDTO } from "../../services/blogService";
+import reviewService, { Review } from "../../services/reviewService";
 import heroVideo1 from "../../imports/_o___u_real.mp4?url";
 import heroVideo2 from "../../imports/___th__thao_victor.mp4?url";
 import heroVideo3 from "../../imports/Video_gi_y.mp4?url";
@@ -56,12 +57,14 @@ export function Home() {
   const [newProducts, setNewProducts] = useState<Product[]>([]);
   const [saleProducts, setSaleProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [blogs, setBlogs] = useState<BlogPostDTO[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
     
-    const fetchTopSelling = productService.getTopSellingProducts(4).catch(err => {
+    const fetchTopSelling = productService.getTopSellingProducts(8).catch(err => {
       console.error("Failed to fetch top selling products", err);
       return [];
     });
@@ -76,17 +79,29 @@ export function Home() {
       return [];
     });
 
-    Promise.all([fetchTopSelling, fetchRecommendations, fetchAll])
-      .then(([topSellingData, recommendedData, allData]) => {
+    const fetchBlogs = blogService.getAllBlogs().catch(err => {
+      console.error("Failed to fetch blogs", err);
+      return [];
+    });
+
+    const fetchReviews = reviewService.getLatest5StarReviews().catch(err => {
+      console.error("Failed to fetch reviews", err);
+      return [];
+    });
+
+    Promise.all([fetchTopSelling, fetchRecommendations, fetchAll, fetchBlogs, fetchReviews])
+      .then(([topSellingData, recommendedData, allData, blogsData, reviewsData]) => {
         setBestSellers(topSellingData);
         setAllProducts(recommendedData);
+        setBlogs(blogsData);
+        setReviews(reviewsData);
         
         // Filter promotion products (discount > 0)
         const sale = allData.filter(p => (p.discount || 0) > 0);
         setSaleProducts(sale.slice(0, 4));
         
         // New products
-        setNewProducts(allData.slice(0, 4));
+        setNewProducts(allData.slice(0, 8));
         
         setIsLoading(false);
       })
@@ -316,11 +331,11 @@ export function Home() {
         </div>
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1,2,3,4].map(i => <div key={i} className="bg-gray-100 rounded-2xl h-64 animate-pulse" />)}
+            {[1,2,3,4,5,6,7,8].map(i => <div key={i} className="bg-gray-100 rounded-2xl h-64 animate-pulse" />)}
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {bestSellers.map((p) => <ProductCard key={p.id} product={p} />)}
+            {bestSellers.slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         )}
       </section>
@@ -388,11 +403,11 @@ export function Home() {
         </div>
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1,2,3,4].map(i => <div key={i} className="bg-gray-100 rounded-2xl h-64 animate-pulse" />)}
+            {[1,2,3,4,5,6,7,8].map(i => <div key={i} className="bg-gray-100 rounded-2xl h-64 animate-pulse" />)}
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {newProducts.map((p) => <ProductCard key={p.id} product={p} />)}
+            {newProducts.slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         )}
       </section>
@@ -409,20 +424,20 @@ export function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {blogPosts.slice(0, 3).map((post) => (
-            <Link key={post.id} to={`/blog/${post.id}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-blue-100 transition-all">
+          {blogs.slice(0, 3).map((post) => (
+            <Link key={post.id} to={`/blog/${post.slug || post.id}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-blue-100 transition-all">
               <div className="h-44 overflow-hidden relative">
-                <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img src={post.imageUrl || '/default-blog.jpg'} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <span className="absolute top-3 left-3 bg-white/95 text-blue-700 text-xs px-2.5 py-1 rounded-full">{post.category}</span>
               </div>
               <div className="p-4">
                 <h3 className="text-gray-900 text-sm leading-snug group-hover:text-blue-700 transition-colors line-clamp-2 mb-2">{post.title}</h3>
                 <p className="text-gray-500 text-xs leading-relaxed line-clamp-2 mb-3">{post.excerpt}</p>
                 <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span>{post.author.split(" ").slice(-2).join(" ")}</span>
+                  <span>{post.author ? post.author.split(" ").slice(-2).join(" ") : "Admin"}</span>
                   <div className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    <span>{post.readTime} phút đọc</span>
+                    <span>5 phút đọc</span>
                   </div>
                 </div>
               </div>
@@ -439,25 +454,22 @@ export function Home() {
             <p className="text-blue-200">Hơn 50,000 khách hàng đã tin dùng SportZone</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { name: "Trần Minh Khoa", text: "Sản phẩm chất lượng, giao hàng nhanh. Mình đã mua nhiều lần và luôn hài lòng!", sport: "🏃 Runner" },
-              { name: "Nguyễn Thu Hà", text: "Áo DryFit mặc rất thoáng, không bị bí khi tập gym. Sẽ tiếp tục ủng hộ SportZone!", sport: "💪 Gym lover" },
-              { name: "Lê Văn Đức", text: "Bóng đá chính hãng, giá tốt. Đội mình đã đặt cả chục quả và rất satisfying!", sport: "⚽ Cầu thủ" },
-            ].map((t, i) => (
-              <div key={i} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            {reviews.length > 0 ? reviews.map((t, i) => (
+              <div key={t.id || i} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
                 <div className="flex gap-1 mb-3">
                   {[1,2,3,4,5].map((s) => <Star key={s} className="w-4 h-4 text-yellow-400 fill-yellow-400" />)}
                 </div>
-                <p className="text-blue-100 text-sm leading-relaxed mb-4">"{t.text}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-sm">{t.name.charAt(0)}</div>
+                <p className="text-white/90 text-sm leading-relaxed mb-4 italic">"{t.comment}"</p>
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium text-sm">{t.name}</p>
-                    <p className="text-blue-300 text-xs">{t.sport}</p>
+                    <p className="text-white font-bold text-sm">{t.userName || "Khách hàng"}</p>
+                    <p className="text-blue-200 text-xs">Đã mua & đánh giá 5 sao</p>
                   </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-blue-200 text-center col-span-3">Chưa có đánh giá nào.</p>
+            )}
           </div>
         </div>
       </section>

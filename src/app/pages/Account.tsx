@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router";
 import { User, Package, Heart, MapPin, Lock, ChevronRight, Edit3, Plus, Trash2, Eye, Gift, Star, Zap, Coffee, ShoppingBag, Shirt, Trophy, Loader2, CheckCircle, AlertCircle, Star as StarDefault } from "lucide-react";
 import { useApp } from "../context/AppContext";
+import { getMyInterestsAPI, updateInterestsAPI } from "../../services/userService";
 import { products, formatPrice } from "../data/products";
 
 const tabs = [
@@ -9,6 +10,7 @@ const tabs = [
   { key: "orders", label: "Đơn hàng của tôi", icon: <Package className="w-4 h-4" /> },
   { key: "loyalty", label: "Tích điểm đổi quà", icon: <Gift className="w-4 h-4" /> },
   { key: "wishlist", label: "Yêu thích", icon: <Heart className="w-4 h-4" /> },
+  { key: "interests", label: "Sở thích", icon: <Zap className="w-4 h-4" /> },
   { key: "addresses", label: "Địa chỉ", icon: <MapPin className="w-4 h-4" /> },
   { key: "password", label: "Đổi mật khẩu", icon: <Lock className="w-4 h-4" /> },
 ];
@@ -26,7 +28,7 @@ const statusLabel: Record<string, { label: string; color: string }> = {
 export function Account() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "profile";
-  const { user, updateUser, addAddress, setDefaultAddress, deleteAddress, changePassword, orders, wishlist, toggleWishlist, isLoading, apiError } = useApp();
+  const { user, updateUser, addAddress, setDefaultAddress, deleteAddress, changePassword, orders, wishlist, toggleWishlist, isLoading, apiError, categories } = useApp();
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({ ...user });
   const [addAddrMode, setAddAddrMode] = useState(false);
@@ -43,6 +45,32 @@ export function Account() {
     const p = new URLSearchParams(searchParams);
     p.set("tab", tab);
     setSearchParams(p);
+  };
+
+  // State for Interests
+  const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
+  const [isFetchingInterests, setIsFetchingInterests] = useState(false);
+  const [interestMsg, setInterestMsg] = useState({ text: "", type: "" });
+
+  useEffect(() => {
+    if (activeTab === "interests") {
+      setIsFetchingInterests(true);
+      getMyInterestsAPI()
+        .then((data) => setSelectedInterests(data.map(d => d.id)))
+        .catch(() => {})
+        .finally(() => setIsFetchingInterests(false));
+    }
+  }, [activeTab]);
+
+  const handleSaveInterests = async () => {
+    setInterestMsg({ text: "", type: "" });
+    try {
+      await updateInterestsAPI(selectedInterests);
+      setInterestMsg({ text: "Lưu sở thích thành công!", type: "success" });
+      setTimeout(() => setInterestMsg({ text: "", type: "" }), 2500);
+    } catch {
+      setInterestMsg({ text: "Lưu sở thích thất bại", type: "error" });
+    }
   };
 
   const handleSave = async () => {
@@ -492,6 +520,77 @@ export function Account() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Interests */}
+          {activeTab === "interests" && (
+            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-5 gap-3">
+                <div>
+                  <h2 className="text-gray-900">Sở thích & Đam mê</h2>
+                  <p className="text-sm text-gray-500 mt-1">Chọn các danh mục thể thao bạn quan tâm để SportZone đưa ra gợi ý sản phẩm phù hợp nhất!</p>
+                </div>
+                <button
+                  onClick={handleSaveInterests}
+                  className="flex-shrink-0 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-1 shadow-md shadow-blue-200"
+                >
+                  Lưu thay đổi
+                </button>
+              </div>
+
+              {interestMsg.text && (
+                <div className={`mb-5 flex items-center gap-2 px-4 py-3 rounded-xl text-sm border ${
+                  interestMsg.type === "success" ? "bg-green-50 border-green-200 text-green-700" : "bg-red-50 border-red-200 text-red-700"
+                }`}>
+                  {interestMsg.type === "success" ? <CheckCircle className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
+                  {interestMsg.text}
+                </div>
+              )}
+
+              {isFetchingInterests ? (
+                <div className="flex flex-col items-center justify-center py-10">
+                  <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
+                  <p className="text-gray-500">Đang tải dữ liệu...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {categories.filter(c => !c.parentId).map((cat) => {
+                    const isSelected = selectedInterests.includes(cat.id);
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => {
+                          setSelectedInterests(prev => 
+                            prev.includes(cat.id) ? prev.filter(id => id !== cat.id) : [...prev, cat.id]
+                          );
+                        }}
+                        className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2 text-center relative overflow-hidden group ${
+                          isSelected 
+                            ? "border-blue-500 bg-blue-50 shadow-md shadow-blue-100/50" 
+                            : "border-gray-100 hover:border-blue-200 hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                          isSelected ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500 group-hover:bg-blue-100 group-hover:text-blue-600"
+                        }`}>
+                          <StarDefault className="w-5 h-5" />
+                        </div>
+                        <span className={`text-sm font-bold ${isSelected ? "text-blue-800" : "text-gray-700"}`}>
+                          {cat.name}
+                        </span>
+                        
+                        {/* Checkmark in corner */}
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 bg-blue-500 text-white p-0.5 rounded-full">
+                            <CheckCircle className="w-3.5 h-3.5" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
