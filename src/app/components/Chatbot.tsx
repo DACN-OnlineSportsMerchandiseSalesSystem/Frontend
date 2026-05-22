@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router";
 import { MessageCircle, X, Send, Bot, User, ChevronDown, Minimize2, Sparkles, Volume2, VolumeX } from "lucide-react";
-import { products, formatPrice } from "../data/products";
+import { formatPrice } from "../data/products";
 import { chatService } from "../../services/chatService";
 import productService, { Product } from "../../services/productService";
 import api from "../../services/api";
@@ -22,87 +22,8 @@ const QUICK_REPLIES_DEFAULT = [
   "Giao hàng bao lâu?",
 ];
 
-const BOT_RESPONSES: Record<string, string> = {
-  "bán chạy": "🔥 Các sản phẩm bán chạy nhất tại SportZone hiện nay:\n• Giày Chạy Bộ ProRun X5 (Nike) - 1.850.000đ\n• Thảm Yoga TPE Cao Cấp (LifeFit) - 420.000đ\n• Bóng Đá Thi Đấu (Adidas) - 650.000đ\n\nBạn quan tâm sản phẩm nào? 😊",
-  "đổi trả": "🔄 Chính sách đổi trả SportZone:\n• Đổi trả miễn phí trong 30 ngày\n• Sản phẩm còn nguyên tem, chưa qua sử dụng\n• Liên hệ hotline 1800-1234 để được hỗ trợ\n• Hoàn tiền 100% nếu sản phẩm lỗi",
-  "thanh toán": "💳 SportZone hỗ trợ các hình thức thanh toán:\n• COD - Thanh toán khi nhận hàng\n• MoMo - Ví điện tử\n• VNPay - Cổng thanh toán\n• Thẻ tín dụng/ghi nợ (Visa, Mastercard)\n• Chuyển khoản ngân hàng",
-  "giao hàng": "🚚 Thông tin giao hàng:\n• Nội thành HCM/HN: 1-2 ngày\n• Tỉnh thành khác: 3-5 ngày\n• Giao hàng toàn quốc\n• Miễn phí giao hàng đơn từ 500.000đ\n• Theo dõi đơn hàng trên website",
-  "giảm giá": "🎁 Ưu đãi hiện có:\n• Giảm đến 30% nhiều sản phẩm hot\n• Flash Sale hàng tuần vào thứ 6\n• Thành viên VIP giảm thêm 5%\n• Đăng ký nhận newsletter để nhận mã giảm giá",
-  "size": "📏 Bảng size tham khảo:\n• Giày: EU 39-44 (tương đương VN)\n• Quần áo: S/M/L/XL/2XL\n• Chọn size lớn hơn nếu chân rộng\n• Xem bảng size chi tiết trên trang sản phẩm",
-  "chính sách": "📋 Chính sách của SportZone:\n• Hàng chính hãng 100%\n• Bảo hành theo hãng\n• Đổi trả trong 30 ngày\n• Bảo mật thông tin khách hàng\n• Hỗ trợ 7/7 từ 8h-22h",
-  "liên hệ": "📞 Liên hệ SportZone:\n• Hotline: 1800-1234 (miễn phí)\n• Email: support@sportzone.vn\n• Facebook: /SportZoneVN\n• Giờ làm việc: 8h-22h, 7 ngày/tuần",
-};
-
 function getTime() {
   return new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
-}
-
-function getBotResponse(text: string, productContext?: typeof products[0] | null): { text: string; quickReplies?: string[] } {
-  const lower = text.toLowerCase();
-
-  // Product specific
-  if (productContext) {
-    if (lower.includes("giá") || lower.includes("bao nhiêu")) {
-      return {
-        text: `💰 Giá sản phẩm **${productContext.name}** là **${formatPrice(productContext.price)}**${productContext.originalPrice > productContext.price ? ` (giảm từ ${formatPrice(productContext.originalPrice)})` : ""}.\n\nBạn có muốn thêm vào giỏ hàng không?`,
-        quickReplies: ["Còn hàng không?", "Có size nào?", "Chính sách đổi trả?"],
-      };
-    }
-    if (lower.includes("size") || lower.includes("cỡ") || lower.includes("kích thước")) {
-      return {
-        text: `📏 ${productContext.name} có các size: **${productContext.sizes.join(", ")}**.\n\nNếu bạn chưa biết chọn size nào, hãy đo và tham khảo bảng size trên trang sản phẩm nhé!`,
-        quickReplies: ["Màu sắc có gì?", "Giá bao nhiêu?", "Cách đặt hàng?"],
-      };
-    }
-    if (lower.includes("màu") || lower.includes("color")) {
-      return {
-        text: `🎨 ${productContext.name} có các màu: **${productContext.colors.map((c) => c.name).join(", ")}**.\n\nMàu nào hợp với bạn nhất? 😊`,
-        quickReplies: ["Có size nào?", "Giá bao nhiêu?", "Thanh toán thế nào?"],
-      };
-    }
-    if (lower.includes("còn hàng") || lower.includes("hàng tồn")) {
-      return {
-        text: productContext.inStock
-          ? `✅ Sản phẩm **${productContext.name}** hiện vẫn còn hàng! Đặt ngay kẻo hết bạn nhé.`
-          : `❌ Rất tiếc, sản phẩm **${productContext.name}** tạm thời hết hàng. Vui lòng để lại SĐT để được thông báo khi có hàng.`,
-        quickReplies: ["Sản phẩm tương tự?", "Giá bao nhiêu?", "Thanh toán thế nào?"],
-      };
-    }
-  }
-
-  // General responses
-  for (const [key, response] of Object.entries(BOT_RESPONSES)) {
-    if (lower.includes(key)) {
-      return { text: response, quickReplies: QUICK_REPLIES_DEFAULT };
-    }
-  }
-
-  // Greetings
-  if (lower.includes("xin chào") || lower.includes("hello") || lower.includes("hi") || lower.includes("chào")) {
-    return {
-      text: "👋 Xin chào! Tôi là SportBot - trợ lý ảo của SportZone!\n\nTôi có thể giúp bạn:\n• Tư vấn sản phẩm phù hợp\n• Thông tin size, màu sắc\n• Chính sách đổi trả, vận chuyển\n• Các ưu đãi đang có\n\nBạn cần hỗ trợ gì? 😊",
-      quickReplies: QUICK_REPLIES_DEFAULT,
-    };
-  }
-
-  if (lower.includes("cảm ơn") || lower.includes("thanks")) {
-    return {
-      text: "😊 Không có gì bạn ơi! Nếu cần hỗ trợ thêm, đừng ngần ngại hỏi tôi nhé. Chúc bạn mua sắm vui vẻ tại SportZone! 🎽",
-      quickReplies: ["Xem sản phẩm mới", "Ưu đãi hiện có", "Liên hệ hỗ trợ"],
-    };
-  }
-
-  if (lower.includes("order") || lower.includes("đặt hàng") || lower.includes("mua")) {
-    return {
-      text: "🛒 Để đặt hàng tại SportZone:\n1. Chọn sản phẩm và size/màu\n2. Thêm vào giỏ hàng\n3. Điền thông tin giao hàng\n4. Chọn phương thức thanh toán\n5. Xác nhận đơn hàng\n\nRất đơn giản phải không? Bắt đầu mua sắm ngay nhé! 😊",
-      quickReplies: ["Thanh toán thế nào?", "Giao hàng bao lâu?", "Đổi trả thế nào?"],
-    };
-  }
-
-  return {
-    text: "🤔 Tôi chưa hiểu rõ câu hỏi của bạn. Bạn có thể hỏi tôi về:\n• Thông tin sản phẩm\n• Chính sách đổi trả\n• Phương thức thanh toán\n• Vận chuyển & giao hàng\n\nHoặc gọi hotline **1800-1234** để được hỗ trợ trực tiếp nhé!",
-    quickReplies: QUICK_REPLIES_DEFAULT,
-  };
 }
 
 export function Chatbot() {
@@ -115,6 +36,7 @@ export function Chatbot() {
   const [hasAutoOpenedHome, setHasAutoOpenedHome] = useState(false);
   const [hasAutoOpenedProduct, setHasAutoOpenedProduct] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // Session ID cho Redis Memory — sinh 1 lần duy nhất khi Chatbot mount
   const sessionIdRef = useRef<string>(crypto.randomUUID());
@@ -139,71 +61,49 @@ export function Chatbot() {
       currentAudioRef.current = null;
     }
     window.speechSynthesis.cancel();
-    
+
     // 2. Reset trạng thái
     audioBuffer.current.clear();
     retryCounts.current.clear();
     nextIndexToPlay.current = 0;
     isCurrentlyPlaying.current = false;
 
-    // 3. LOGIC MỚI: Gộp toàn bộ và chỉ chia làm đôi nếu quá dài
+    // 3. Làm sạch markdown và emoji trước khi gửi lên Backend TTS
     const cleanFullText = text
-      .replace(/\[TEXT\]|\[VOICE\]/gi, '') // Xóa nhãn [TEXT] và [VOICE]
-      .replace(/[*_#`~|\[\]]/g, '') // Xóa các ký tự đặc biệt và ngoặc vuông
+      .replace(/\[TEXT\]|\[VOICE\]/gi, '')
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1') // [Tên](link) → Tên
+      .replace(/[*_#`~|\[\]()]/g, '')
+      .replace(/\//g, ' ')
+      .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2300}-\u{23FF}]/gu, '')
       .replace(/\s+/g, ' ')
       .trim();
 
-    // 3. LOGIC MỚI: Tách thành từng câu hoàn chỉnh (Bắt buộc có khoảng trắng sau dấu câu để không chém đôi giá tiền 2.990.000đ)
-    const rawChunks = cleanFullText.split(/([.!?]\s|\n)/);
-    let chunks: string[] = [];
-    
-    // Hàm phụ để cắt nhỏ chuỗi theo độ dài nếu không có dấu câu
-    const splitByLength = (text: string, maxLength: number) => {
-      const parts: string[] = [];
-      let current = text;
-      while (current.length > maxLength) {
-        let splitIdx = current.lastIndexOf(' ', maxLength);
-        if (splitIdx === -1) splitIdx = maxLength;
-        parts.push(current.substring(0, splitIdx).trim());
-        current = current.substring(splitIdx).trim();
-      }
-      if (current) parts.push(current);
-      return parts;
-    };
+    if (!cleanFullText) return;
 
-    for (let i = 0; i < rawChunks.length; i += 2) {
-      let sentence = (rawChunks[i] + (rawChunks[i+1] || "")).trim();
-      
-      if (sentence.length > 85) {
-        // Cắt theo dấu phẩy trước (Bắt buộc có khoảng trắng để tránh chém nhầm 1,000,000)
-        const subParts = sentence.split(/([,;]\s)/);
-        for (let j = 0; j < subParts.length; j += 2) {
-          const subSentence = (subParts[j] + (subParts[j+1] || "")).trim();
-          if (subSentence.length > 85) {
-            // Nếu vẫn quá dài thì cắt theo độ dài (khoảng trắng)
-            chunks.push(...splitByLength(subSentence, 85));
-          } else if (subSentence.length > 2) {
-            chunks.push(subSentence);
-          }
-        }
-      } else if (sentence.length > 2) {
-        chunks.push(sentence);
+    try {
+      // 4. Gọi 1 lần Backend — Backend sẽ chia < 85 ký tự và trả về mảng URL theo thứ tự
+      console.log(`>>> [TTS] Gửi toàn văn lên Backend để chia đoạn...`);
+      const response = await api.get("/tts", { params: { text: cleanFullText } });
+      const audioUrls: string[] = response.data.audioUrls ?? (response.data.audioUrl ? [response.data.audioUrl] : []);
+
+      if (audioUrls.length === 0) return;
+
+      console.log(`>>> [TTS] Nhận ${audioUrls.length} đoạn âm thanh từ Backend.`);
+
+      // 5. Nạp tất cả URL vào audioBuffer và kích hoạt phát
+      textChunksToProcess.current = audioUrls.map((_, i) => `chunk_${i}`);
+      nextProcessIndex.current = audioUrls.length; // Đã nạp xong hết
+
+      for (let i = 0; i < audioUrls.length; i++) {
+        const url = audioUrls[i];
+        const isReady = await waitAudioReady(url);
+        audioBuffer.current.set(i, isReady ? url : "ERROR");
+        // Kích hoạt phát ngay khi đoạn đầu tiên sẵn sàng
+        if (i === 0) tryPlayNext();
       }
+    } catch (err) {
+      console.error("Lỗi gọi TTS API:", err);
     }
-
-    if (chunks.length === 0 && cleanFullText) chunks = [cleanFullText];
-    if (chunks.length === 0) return;
-    
-    console.log(`>>> Phát cuốn chiếu: ${chunks.length} câu.`);
-    chunks.forEach((c, idx) => console.log(`[Đoạn ${idx + 1}]: ${c}`));
-
-    // Kỹ thuật Gối đầu (Pre-fetching & Pipeline)
-    textChunksToProcess.current = chunks;
-    nextProcessIndex.current = 0;
-
-    // Kích hoạt nạp trước 2 câu đầu tiên vào đường ống (Pipeline)
-    processNextChunk(); 
-    if (chunks.length > 1) processNextChunk();
   };
 
   // Hàm ping URL để đảm bảo file thực sự tồn tại trên server FPT (UX tối đa)
@@ -243,19 +143,21 @@ export function Chatbot() {
         if (attempt > 0) {
           console.warn(`⚠️ [RETRY API] FPT.AI tạo file lỗi, yêu cầu tạo lại đoạn ${idx + 1} (lần ${attempt})...`);
         }
-        
+
         const response = await api.get("/tts", { params: { text } });
-        const url = response.data.audioUrl;
-        
+        // Backend trả về mảng audioUrls; lấy phần tử đầu tiên cho đoạn này (hỗ trợ cả audioUrl string)
+        const urls: string[] = response.data.audioUrls ?? (response.data.audioUrl ? [response.data.audioUrl] : []);
+        const url = urls[0] ?? null;
+
         if (url) {
           const isReady = await waitAudioReady(url);
           if (isReady) {
             audioBuffer.current.set(idx, url);
             isSuccess = true;
-            break; // Đã tạo và load thành công, thoát vòng lặp
+            break;
           }
         } else {
-          // Backend từ chối vì câu chỉ có Emoji, không cần thử lại
+          // Backend từ chối (câu trống / chỉ emoji)
           break;
         }
       } catch (err) {
@@ -343,7 +245,22 @@ export function Chatbot() {
 
   // Nhận diện ID sản phẩm từ URL linh hoạt hơn
   const currentProductId = location.pathname.split("/").find((segment, index, array) => array[index - 1] === "product");
-  const currentProduct = currentProductId ? products.find((p) => p.id === currentProductId) : null;
+  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    if (currentProductId) {
+      productService.getProductById(parseInt(currentProductId))
+        .then((data) => {
+          setCurrentProduct(data);
+        })
+        .catch((err) => {
+          console.error("Lỗi lấy chi tiết sản phẩm cho banner chatbot:", err);
+          setCurrentProduct(null);
+        });
+    } else {
+      setCurrentProduct(null);
+    }
+  }, [currentProductId]);
 
   // 1. Tự động chào tại Trang chủ
   useEffect(() => {
@@ -395,8 +312,8 @@ export function Chatbot() {
               Tình trạng kho (Kích cỡ và màu sắc):
               ${variantInfo}
               
-              Nhiệm vụ: Dựa vào thông tin trên, hãy chủ động giới thiệu nhanh những điểm nổi bật nhất của sản phẩm và hỏi xem khách hàng cần tư vấn thêm về size hay màu sắc nào không.
-              QUY ĐỊNH: Không tự ý phiên âm tiếng Anh. Trả lời tự nhiên, thân thiện. Không cần lặp lại toàn bộ thông tin.`;
+              Nhiệm vụ: Dựa vào thông tin trên, hãy chủ động giới thiệu nhanh những điểm nổi bật nhất của sản phẩm, ĐỒNG THỜI LIỆT KÊ CÁC SIZE/MÀU ĐANG CÓ SẴN (ví dụ: 'Hiện tại shop đang có sẵn size 41, 42 màu Trắng') và hỏi xem khách hàng cần tư vấn thêm không.
+              QUY ĐỊNH: Không tự ý phiên âm tiếng Anh. Trả lời tự nhiên, thân thiện, súc tích.`;
 
             const botResponse = await chatService.chat(detailedPrompt);
             
@@ -451,20 +368,22 @@ export function Chatbot() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // Auto-close chat window after 30s inactivity (never hide the toggle button)
+  // Auto-close chat window after 30s inactivity only if there has been no user interaction
   useEffect(() => {
     let timeout: any;
-    if (isOpen) {
+    if (isOpen && !hasInteracted) {
       timeout = setTimeout(() => {
         setIsOpen(false);
         setIsMinimized(false);
       }, 30000);
     }
     return () => clearTimeout(timeout);
-  }, [isOpen, messages, inputText]);
+  }, [isOpen, hasInteracted]);
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
+
+    setHasInteracted(true);
 
     // 1. Dừng mọi âm thanh cũ ngay khi gửi tin mới
     if (currentAudioRef.current) {
@@ -550,9 +469,9 @@ export function Chatbot() {
           if (eventLine) currentEventName = eventLine.substring(6).trim();
           else currentEventName = 'token';
 
-          const dataLine = lines.find(l => l.startsWith('data:'));
-          if (!dataLine) continue;
-          const data = dataLine.substring(5);
+          const dataLines = lines.filter(l => l.startsWith('data:'));
+          if (dataLines.length === 0) continue;
+          let data = dataLines.map(l => l.substring(5)).join('\n');
 
           if (currentEventName === 'token') {
             fullContent += data;
@@ -561,19 +480,33 @@ export function Chatbot() {
               prev.map((m) => (m.id === botMsgId ? { ...m, text: fullContent.trim() } : m))
             );
             // Rolling TTS: tách câu để đọc cuốn chiếu
-            const sentenceEnders = /([.!?]\s|\n)/;
-            const isTooLong = sentenceBuffer.length > 80 && sentenceBuffer.includes(",");
-            const isExtremelyLong = sentenceBuffer.length > 95;
-            if (sentenceEnders.test(sentenceBuffer) || isTooLong || isExtremelyLong) {
-              let splitRegex = /([.!?]\s|\n)/;
-              if (isTooLong) splitRegex = /([.!?,]\s|\n)/;
-              if (isExtremelyLong && !sentenceBuffer.includes(",")) splitRegex = /(\s)/;
-              const parts = sentenceBuffer.split(splitRegex);
-              for (let i = 0; i < parts.length - 1; i += 2) {
-                const sentence = (parts[i] + (parts[i+1] || "")).trim();
-                if (sentence && sentence.length > 5) speakChunk(sentence, sentenceIndex++);
+            let match = sentenceBuffer.match(/([.!?]\s|\n)/);
+            if (!match && sentenceBuffer.length > 90) {
+              let splitIdx = -1;
+              const commaMatches = [...sentenceBuffer.matchAll(/[,;]\s/g)];
+              if (commaMatches.length > 0) {
+                const lastComma = commaMatches[commaMatches.length - 1];
+                if (lastComma.index !== undefined) {
+                  splitIdx = lastComma.index + lastComma[0].length;
+                }
               }
-              sentenceBuffer = parts[parts.length - 1];
+              if (splitIdx === -1) {
+                splitIdx = sentenceBuffer.lastIndexOf(' ', 80);
+              }
+              if (splitIdx > 10) {
+                const chunk = sentenceBuffer.substring(0, splitIdx).trim();
+                sentenceBuffer = sentenceBuffer.substring(splitIdx);
+                if (chunk.length > 2) {
+                  speakChunk(chunk, sentenceIndex++);
+                }
+              }
+            } else if (match && match.index !== undefined) {
+              const splitIdx = match.index + match[0].length;
+              const chunk = sentenceBuffer.substring(0, splitIdx).trim();
+              sentenceBuffer = sentenceBuffer.substring(splitIdx);
+              if (chunk.length > 2) {
+                speakChunk(chunk, sentenceIndex++);
+              }
             }
           } else if (currentEventName === 'cart_updated') {
             // Thông báo Frontend cập nhật giỏ hàng
@@ -583,7 +516,11 @@ export function Chatbot() {
             try {
               const cards = JSON.parse(data);
               setMessages((prev) =>
-                prev.map((m) => (m.id === botMsgId ? { ...m, productCards: cards } : m))
+                prev.map((m) => (m.id === botMsgId ? { 
+                  ...m, 
+                  productCards: cards,
+                  quickReplies: ["Có size nào?", "Màu sắc thế nào?", "Sản phẩm nào rẻ hơn?", "Chính sách đổi trả?"]
+                } : m))
               );
               console.log(`>>> [UI] Nhận ${cards.length} product cards.`);
             } catch (e) { console.error('Parse product_cards error:', e); }
@@ -611,7 +548,13 @@ export function Chatbot() {
     if (isMuted) return;
 
     const cleanSentence = sentence
-      .replace(/[*_#`~|\[\]]/g, '')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1') // Xóa đường dẫn markdown link [Tên](URL) giữ lại Tên
+      .replace(/\b(product|brand|category|detail)\b[a-zA-Z0-9_/]*/gi, '') // Xóa các từ khóa URL đường dẫn
+      .replace(/\/[0-9]+/g, '') // Xóa các ID dạng /123
+      .replace(/\s*\((https?:\/\/|www\.|\/)[^)]*\)/g, '') // Fallback: Xóa bất kỳ link URL nào trong ngoặc đơn
+      .replace(/[*_#`~|\[\]()]/g, '') // Xóa các ký tự markdown định dạng khác bao gồm cả ngoặc đơn, ngoặc vuông
+      .replace(/\//g, ' ') // Thay thế dấu gạch chéo bằng dấu cách để tránh đọc "xuyệt"
+      .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2300}-\u{23FF}]/gu, '')
       .replace(/\s+/g, ' ')
       .trim();
 
@@ -625,10 +568,12 @@ export function Chatbot() {
         if (attempt > 0) {
           console.warn(`⚠️ [RETRY STREAM] FPT.AI tạo file lỗi, yêu cầu tạo lại đoạn ${index + 1} (lần ${attempt})...`);
         }
-        
+
         const response = await api.get("/tts", { params: { text: cleanSentence } });
-        const url = response.data.audioUrl;
-        
+        // Backend trả về mảng audioUrls; đoạn stream đã nhỏ nên lấy phần tử đầu (hỗ trợ cả audioUrl string)
+        const urls: string[] = response.data.audioUrls ?? (response.data.audioUrl ? [response.data.audioUrl] : []);
+        const url = urls[0] ?? null;
+
         if (url) {
           const isReady = await waitAudioReady(url);
           if (isReady) {
@@ -637,7 +582,7 @@ export function Chatbot() {
             break;
           }
         } else {
-          break; // rỗng
+          break; // rỗng / emoji
         }
       } catch (err) {
         console.error(`Lỗi tải đoạn stream ${index}:`, err);
@@ -658,11 +603,46 @@ export function Chatbot() {
 
   const formatBotText = (text: string) => {
     return text.split("\n").map((line, i) => {
-      const formatted = line
+      let isBullet = false;
+      let isNumbered = false;
+      let numPrefix = "";
+      let cleanLine = line;
+
+      if (line.trim().startsWith("- ") || line.trim().startsWith("* ") || line.trim().startsWith("• ")) {
+        isBullet = true;
+        cleanLine = line.replace(/^\s*[-*•]\s+/, "");
+      } else {
+        const numMatch = line.trim().match(/^(\d+)\.\s+/);
+        if (numMatch) {
+          isNumbered = true;
+          numPrefix = numMatch[1] + ". ";
+          cleanLine = line.replace(/^\s*\d+\.\s+/, "");
+        }
+      }
+
+      const formatted = cleanLine
         .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-        .replace(/^•\s/, "• ");
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold">$1</a>');
+
+      if (isBullet) {
+        return (
+          <span key={i} className="block pl-5 relative before:content-['•'] before:absolute before:left-1.5 before:text-blue-500 before:font-bold">
+            <span dangerouslySetInnerHTML={{ __html: formatted }} />
+          </span>
+        );
+      }
+
+      if (isNumbered) {
+        return (
+          <span key={i} className="block pl-6 relative">
+            <span className="absolute left-0 text-blue-600 font-semibold">{numPrefix}</span>
+            <span dangerouslySetInnerHTML={{ __html: formatted }} />
+          </span>
+        );
+      }
+
       return (
-        <span key={i} className={line.startsWith("•") ? "block pl-1" : "block"}>
+        <span key={i} className="block">
           <span dangerouslySetInnerHTML={{ __html: formatted }} />
           {i < text.split("\n").length - 1 && line === "" && <br />}
         </span>
@@ -676,6 +656,7 @@ export function Chatbot() {
       {/* Chat Window */}
       {isOpen && (
         <div
+          onClick={() => setHasInteracted(true)}
           className={`fixed bottom-20 right-4 md:right-6 z-50 w-[340px] md:w-[380px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col transition-all duration-300 ${
             isMinimized ? "h-14 overflow-hidden" : "h-[520px]"
           }`}
@@ -736,7 +717,11 @@ export function Chatbot() {
               {currentProduct && (
                 <div className="bg-blue-50 border-b border-blue-100 px-4 py-2 flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
-                    <img src={currentProduct.image} alt={currentProduct.name} className="w-full h-full object-cover" />
+                    <img
+                      src={currentProduct.images?.find((img) => img.isThumbnail)?.imageUrl || currentProduct.images?.[0]?.imageUrl || ""}
+                      alt={currentProduct.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-blue-700 text-xs truncate">{currentProduct.name}</p>
@@ -840,7 +825,10 @@ export function Chatbot() {
                   <input
                     type="text"
                     value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
+                    onChange={(e) => {
+                      setInputText(e.target.value);
+                      setHasInteracted(true);
+                    }}
                     placeholder="Nhập tin nhắn..."
                     className="flex-1 px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-blue-400 text-sm text-gray-700 placeholder-gray-400 transition-colors"
                   />
@@ -863,6 +851,7 @@ export function Chatbot() {
         onClick={() => {
           setIsOpen(!isOpen);
           setIsMinimized(false);
+          setHasInteracted(true);
         }}
         className={`fixed bottom-4 right-4 md:right-6 z-50 w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 ${
           isOpen ? "bg-gray-700 hover:bg-gray-800 rotate-0" : "bg-blue-600 hover:bg-blue-700"

@@ -1,7 +1,24 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router";
 import { MessageCircle, X, Send, Bot, User, ChevronDown, Minimize2, Sparkles } from "lucide-react";
-import { products, formatPrice } from "@/constants/productsData";
+import { formatPrice } from "@/constants/productsData";
+import productService from "@/services/productService";
+
+interface ChatProductContext {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice: number;
+  brand: string;
+  rating: number;
+  reviewCount: number;
+  isBestSeller: boolean;
+  isNew: boolean;
+  image: string;
+  sizes: string[];
+  colors: { name: string }[];
+  inStock: boolean;
+}
 
 interface Message {
   id: string;
@@ -33,7 +50,7 @@ function getTime() {
   return new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
 }
 
-function getBotResponse(text: string, productContext?: typeof products[0] | null): { text: string; quickReplies?: string[] } {
+function getBotResponse(text: string, productContext?: ChatProductContext | null): { text: string; quickReplies?: string[] } {
   const lower = text.toLowerCase();
 
   // Product specific
@@ -115,7 +132,43 @@ export function Chatbot() {
   // Detect product page
   const productMatch = location.pathname.match(/^\/product\/(.+)$/);
   const currentProductId = productMatch ? productMatch[1] : null;
-  const currentProduct = currentProductId ? products.find((p) => p.id === currentProductId) : null;
+  const [currentProduct, setCurrentProduct] = useState<ChatProductContext | null>(null);
+
+  useEffect(() => {
+    if (currentProductId) {
+      productService.getProductById(parseInt(currentProductId))
+        .then((data) => {
+          const image = data.images?.find((img) => img.isThumbnail)?.imageUrl || data.images?.[0]?.imageUrl || "";
+          const sizes = Array.from(new Set(data.variants?.map(v => v.size) || []));
+          const colors = Array.from(new Set(data.variants?.map(v => v.color) || [])).map(name => ({ name }));
+          const inStock = (data.variants?.reduce((sum, v) => sum + v.stockQuantity, 0) || 0) > 0;
+          const isBestSeller = data.rating >= 4.5 && data.reviewCount > 50;
+          const isNew = data.status === "Mới" || data.status === "NEW";
+          
+          setCurrentProduct({
+            id: currentProductId,
+            name: data.name,
+            price: data.price,
+            originalPrice: data.originalPrice || data.price,
+            brand: data.brandName || "Unknown",
+            rating: data.rating || 5.0,
+            reviewCount: data.reviewCount || 0,
+            isBestSeller,
+            isNew,
+            image,
+            sizes,
+            colors,
+            inStock
+          });
+        })
+        .catch((err) => {
+          console.error("Lỗi lấy chi tiết sản phẩm cho chatbot:", err);
+          setCurrentProduct(null);
+        });
+    } else {
+      setCurrentProduct(null);
+    }
+  }, [currentProductId]);
 
   // Auto open on product detail page
   useEffect(() => {
