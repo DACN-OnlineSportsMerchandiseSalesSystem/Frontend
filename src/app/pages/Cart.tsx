@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Tag, ChevronRight, Check, X, Ticket, ChevronDown, ChevronUp } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { products, formatPrice } from "../data/products";
+import { ProductCard } from "../components/ProductCard";
+import productService from "../../services/productService";
 
 interface Coupon {
   code: string;
@@ -73,8 +75,119 @@ function calcDiscount(coupon: Coupon, cartTotal: number, shippingFee: number): n
 }
 
 export function Cart() {
-  const { cart, removeFromCart, updateCartQty, cartTotal, validVouchers, isLoggedIn } = useApp();
+  const { cart, removeFromCart, updateCartQty, cartTotal, validVouchers, isLoggedIn, categories } = useApp();
   const navigate = useNavigate();
+
+  const [apiProducts, setApiProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    productService.getAllProducts()
+      .then((data) => {
+        setApiProducts(data);
+      })
+      .catch((err) => {
+        console.error("Failed to load products for recommendations", err);
+      });
+  }, []);
+
+  // Helper to find the top-level root category of a given category
+  const getRootCategory = (catId: number, allCats: any[]) => {
+    let current = allCats.find((c) => c.id === catId);
+    if (!current) return null;
+    const visited = new Set<number>();
+    while (
+      current &&
+      current.parentId !== undefined &&
+      current.parentId !== null &&
+      !visited.has(current.id)
+    ) {
+      visited.add(current.id);
+      const parent = allCats.find((c) => c.id === current.parentId);
+      if (!parent) break;
+      current = parent;
+    }
+    return current;
+  };
+
+  const recommendedProducts = useMemo(() => {
+    if (cart.length === 0) return [];
+
+    // 1. Get all unique root categories/sports of cart items.
+    const cartProductSports = new Set<string>(); // for mock products
+    const cartRootCategoryIds = new Set<number>(); // for API products
+
+    cart.forEach((item) => {
+      // Find matching API product
+      const apiProd = apiProducts.find(
+        (p) =>
+          p.id.toString() === item.baseProductId ||
+          p.id.toString() === item.productId ||
+          p.variants?.some((v: any) => v.id.toString() === item.productId) ||
+          p.name === item.name
+      );
+
+      if (apiProd) {
+        apiProd.categoryIds?.forEach((catId: number) => {
+          const rootCat = getRootCategory(catId, categories);
+          if (rootCat) {
+            cartRootCategoryIds.add(rootCat.id);
+          }
+        });
+      }
+
+      // Find matching mock product
+      const mockProd = products.find(
+        (p) => p.id === item.productId || p.id === item.baseProductId || p.name === item.name
+      );
+      if (mockProd && mockProd.sport) {
+        cartProductSports.add(mockProd.sport);
+      }
+    });
+
+    // 2. Filter products based on root categories or sports
+    let matchedProducts: any[] = [];
+
+    if (apiProducts.length > 0 && cartRootCategoryIds.size > 0) {
+      // Filter API products
+      matchedProducts = apiProducts.filter((p) => {
+        // Exclude if already in cart
+        const isInCart = cart.some(
+          (item) =>
+            item.productId === p.id.toString() ||
+            item.baseProductId === p.id.toString() ||
+            p.variants?.some((v: any) => v.id.toString() === item.productId) ||
+            item.name === p.name
+        );
+        if (isInCart) return false;
+
+        // Check if any of its categoryIds traces to our cart root categories
+        return p.categoryIds?.some((catId: number) => {
+          const rootCat = getRootCategory(catId, categories);
+          return rootCat && cartRootCategoryIds.has(rootCat.id);
+        });
+      });
+    }
+
+    // If no API products matched (or we are using mock data), use mock products
+    if (matchedProducts.length === 0) {
+      matchedProducts = products.filter((p) => {
+        // Exclude if already in cart
+        const isInCart = cart.some(
+          (item) =>
+            item.productId === p.id ||
+            item.baseProductId === p.id ||
+            item.name === p.name
+        );
+        if (isInCart) return false;
+
+        // Check sport matching
+        return p.sport && cartProductSports.has(p.sport);
+      });
+    }
+
+    // Limit results to 4
+    return matchedProducts.slice(0, 4);
+  }, [cart, apiProducts, categories]);
 
   // Map backend vouchers to frontend Coupon interface
   const availableCoupons: Coupon[] = [
@@ -305,7 +418,7 @@ export function Cart() {
                         </div>
                       </div>
                       <button
-                        onClick={() => removeFromCart(item.productId)}
+                        onClick={() => removeFromCart(item.productId, item.size, item.color)}
                         className="text-blue-600 hover:text-red-600 active:text-red-700 transition-colors flex-shrink-0 p-1"
                         title="Xóa sản phẩm"
                       >
@@ -653,6 +766,26 @@ export function Cart() {
           </div>
         </div>
       </div>
+
+      {/* Recommended products */}
+      {recommendedProducts.length > 0 && (
+        <div className="mt-12 pt-8 border-t border-gray-100">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-gray-900 text-xl font-bold flex items-center gap-2">
+              <span className="text-blue-600">✨</span>
+              Sản phẩm có thể bạn quan tâm
+            </h2>
+            <Link to="/products" className="text-blue-600 text-sm hover:underline font-medium">
+              Xem thêm
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {recommendedProducts.map((p) => (
+              <ProductCard key={p.id} product={p as any} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router";
 import { Star, ShoppingCart, Zap, Heart, Truck, RotateCcw, Shield, ChevronRight, Minus, Plus, Check, MessageSquare } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { ProductCard } from "../components/ProductCard";
-import { formatPrice } from "../data/products";
+import { products as mockProducts, formatPrice } from "../data/products";
 import productService, { Product } from "../../services/productService";
 import reviewService, { Review } from "../../services/reviewService";
 import { sortCategoryNamesParentFirst } from "../../utils/categoryHelpers";
@@ -13,7 +13,8 @@ export function ProductDetail() {
   const navigate = useNavigate();
   const { addToCart, toggleWishlist, wishlist, user, categories } = useApp();
   const [product, setProduct] = useState<Product | null>(null);
-  const [related, setRelated] = useState<Product[]>([]);
+  const [recommendedBySport, setRecommendedBySport] = useState<Product[]>([]);
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -29,6 +30,25 @@ export function ProductDetail() {
   const [hoverRating, setHoverRating] = useState(0);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
+  // Helper to find the top-level root category of a given category
+  const getRootCategory = (catId: number, allCats: any[]) => {
+    let current = allCats.find((c) => c.id === catId);
+    if (!current) return null;
+    const visited = new Set<number>();
+    while (
+      current &&
+      current.parentId !== undefined &&
+      current.parentId !== null &&
+      !visited.has(current.id)
+    ) {
+      visited.add(current.id);
+      const parent = allCats.find((c) => c.id === current.parentId);
+      if (!parent) break;
+      current = parent;
+    }
+    return current;
+  };
+
   useEffect(() => {
     if (id) {
       const pid = parseInt(id);
@@ -43,28 +63,70 @@ export function ProductDetail() {
             setSelectedColor(data.variants[0].color);
           }
 
-          // Fetch Recommendations (Sản phẩm gợi ý) with fallback to category related
-          productService.getRecommendedProducts(5)
-            .then(items => {
-              const filtered = items.filter(i => i.id !== pid).slice(0, 4);
-              if (filtered.length > 0) {
-                setRelated(filtered);
+          // Fetch all products to perform filtering for recommendations
+          productService.getAllProducts()
+            .then(allProducts => {
+              // 1. Root categories for sport recommendation
+              const currentRootCatIds = new Set<number>();
+              data.categoryIds?.forEach(catId => {
+                const rootCat = getRootCategory(catId, categories);
+                if (rootCat) currentRootCatIds.add(rootCat.id);
+              });
+
+              // 2. Sub-categories (deepest categories) for similar products
+              const currentSubCatIds = data.categoryIds?.filter(catId => {
+                const cat = categories.find(c => c.id === catId);
+                return cat && cat.parentId !== null && cat.parentId !== undefined;
+              }) || [];
+              const targetCatIdsForSimilar = currentSubCatIds.length > 0 ? currentSubCatIds : (data.categoryIds || []);
+
+              // Filter Recommended by Sport (same root category)
+              const bySport = allProducts.filter(p => {
+                if (p.id === pid) return false;
+                return p.categoryIds?.some(catId => {
+                  const root = getRootCategory(catId, categories);
+                  return root && currentRootCatIds.has(root.id);
+                });
+              });
+
+              // Filter Similar Products (same specific category)
+              const similar = allProducts.filter(p => {
+                if (p.id === pid) return false;
+                return p.categoryIds?.some(catId => targetCatIdsForSimilar.includes(catId));
+              });
+
+              // If API results found, set them
+              if (bySport.length > 0) {
+                setRecommendedBySport(bySport.slice(0, 4));
               } else {
-                // Fallback to related by category
-                if (data.categoryIds && data.categoryIds.length > 0) {
-                  productService.getAllProducts(data.categoryIds[0])
-                    .then(catItems => {
-                      setRelated(catItems.filter(i => i.id !== pid).slice(0, 4));
-                    });
+                // Fallback to mock products by sport
+                const mockCurrent = mockProducts.find(p => p.id === id || p.name === data.name);
+                if (mockCurrent) {
+                  const fallbackBySport = mockProducts.filter(p => p.id !== mockCurrent.id && p.sport === mockCurrent.sport);
+                  setRecommendedBySport(fallbackBySport.slice(0, 4) as any);
+                }
+              }
+
+              if (similar.length > 0) {
+                setSimilarProducts(similar.slice(0, 4));
+              } else {
+                // Fallback to mock products by category
+                const mockCurrent = mockProducts.find(p => p.id === id || p.name === data.name);
+                if (mockCurrent) {
+                  const fallbackSimilar = mockProducts.filter(p => p.id !== mockCurrent.id && p.category === mockCurrent.category);
+                  setSimilarProducts(fallbackSimilar.slice(0, 4) as any);
                 }
               }
             })
             .catch(() => {
-              if (data.categoryIds && data.categoryIds.length > 0) {
-                productService.getAllProducts(data.categoryIds[0])
-                  .then(catItems => {
-                    setRelated(catItems.filter(i => i.id !== pid).slice(0, 4));
-                  });
+              // Fallback to mock products on error
+              const mockCurrent = mockProducts.find(p => p.id === id || p.name === data.name);
+              if (mockCurrent) {
+                const fallbackBySport = mockProducts.filter(p => p.id !== mockCurrent.id && p.sport === mockCurrent.sport);
+                setRecommendedBySport(fallbackBySport.slice(0, 4) as any);
+
+                const fallbackSimilar = mockProducts.filter(p => p.id !== mockCurrent.id && p.category === mockCurrent.category);
+                setSimilarProducts(fallbackSimilar.slice(0, 4) as any);
               }
             });
 
@@ -77,7 +139,7 @@ export function ProductDetail() {
         .then(setReviews)
         .catch(console.error);
     }
-  }, [id]);
+  }, [id, categories]);
 
   const handleSubmitReview = async () => {
     if (!user) {
@@ -197,7 +259,7 @@ export function ProductDetail() {
               <h1 className="text-gray-900 text-2xl md:text-3xl font-bold">{product.name}</h1>
             </div>
             <button
-              onClick={() => toggleWishlist(product.id)}
+              onClick={() => toggleWishlist(product.id.toString())}
               className={`flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center transition-colors ${
                 isWishlisted ? "border-red-500 bg-red-50 text-red-500" : "border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-400"
               }`}
@@ -248,7 +310,7 @@ export function ProductDetail() {
                       : "border-gray-200 text-gray-700 hover:border-blue-300"
                   }`}
                 >
-                  {v.size} - {v.color} ({formatPrice(product.discount > 0 ? v.price * (1 - product.discount / 100) : v.price)})
+                  {v.size} - {v.color}
                 </button>
               ))}
             </div>
@@ -397,10 +459,10 @@ export function ProductDetail() {
                     <div key={r.id} className="border-b border-gray-50 pb-6 last:border-0">
                       <div className="flex items-center gap-3 mb-2">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold">
-                          {r.userFirstName?.charAt(0) || "U"}
+                          {r.userName?.charAt(0) || "U"}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-800">{r.userFirstName} {r.userLastName}</p>
+                          <p className="text-sm font-bold text-gray-800">{r.userName || "Khách hàng"}</p>
                           <div className="flex items-center gap-2">
                             <div className="flex gap-0.5">
                               {[1, 2, 3, 4, 5].map((s) => (
@@ -483,15 +545,30 @@ export function ProductDetail() {
         </div>
       </div>
 
-      {/* Related products */}
-      {related.length > 0 && (
+      {/* Similar products */}
+      {similarProducts.length > 0 && (
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-gray-900 text-xl font-bold">Sản phẩm tương tự</h2>
+            <Link to="/products" className="text-blue-600 text-sm hover:underline">Xem thêm</Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {similarProducts.map((p) => (
+              <ProductCard key={p.id} product={p as any} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recommended by sport */}
+      {recommendedBySport.length > 0 && (
         <div className="mb-10">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-gray-900 text-xl font-bold">Gợi ý sản phẩm cho bạn</h2>
             <Link to="/products" className="text-blue-600 text-sm hover:underline">Xem thêm</Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {related.map((p) => (
+            {recommendedBySport.map((p) => (
               <ProductCard key={p.id} product={p as any} />
             ))}
           </div>

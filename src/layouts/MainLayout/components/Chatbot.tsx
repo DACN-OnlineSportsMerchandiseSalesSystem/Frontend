@@ -170,7 +170,7 @@ export function Chatbot() {
 
   // Auto-close chat window after 30s inactivity (never hide the toggle button)
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
+    let timeout: any;
     if (isOpen) {
       timeout = setTimeout(() => {
         setIsOpen(false);

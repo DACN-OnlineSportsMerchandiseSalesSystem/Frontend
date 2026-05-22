@@ -114,8 +114,6 @@ export function Chatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const [hasAutoOpenedHome, setHasAutoOpenedHome] = useState(false);
   const [hasAutoOpenedProduct, setHasAutoOpenedProduct] = useState<string | null>(null);
-  const [isVisible, setIsVisible] = useState(true);
-  const [hasInteracted, setHasInteracted] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // Session ID cho Redis Memory — sinh 1 lần duy nhất khi Chatbot mount
@@ -453,22 +451,17 @@ export function Chatbot() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // Auto-close after 30s of inactivity
+  // Auto-close chat window after 30s inactivity (never hide the toggle button)
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
+    let timeout: any;
     if (isOpen) {
       timeout = setTimeout(() => {
         setIsOpen(false);
         setIsMinimized(false);
       }, 30000);
-    } else if (!hasInteracted && !currentProduct) {
-      // Nếu mới vào web, chưa tương tác, không ở trang chi tiết -> ẩn hoàn toàn icon sau 30s
-      timeout = setTimeout(() => {
-        setIsVisible(false);
-      }, 30000);
     }
     return () => clearTimeout(timeout);
-  }, [isOpen, messages, inputText, hasInteracted, currentProduct]);
+  }, [isOpen, messages, inputText]);
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
@@ -677,7 +670,6 @@ export function Chatbot() {
     });
   };
 
-  if (!isVisible) return null;
 
   return (
     <>
@@ -869,7 +861,6 @@ export function Chatbot() {
       {/* Toggle Button */}
       <button
         onClick={() => {
-          setHasInteracted(true);
           setIsOpen(!isOpen);
           setIsMinimized(false);
         }}
