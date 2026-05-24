@@ -5,6 +5,7 @@ import { useApp } from "@/context/AppContext";
 import { products, formatPrice } from "@/constants/productsData";
 
 import type { Coupon } from "@/context/AppContext";
+import { optimizeImage } from "@/utils/imageOptimizer";
 
 const AVAILABLE_COUPONS: Coupon[] = [
   {
@@ -135,8 +136,8 @@ export function Cart() {
                   {/* Image + Price block */}
                   <div className="flex-shrink-0 flex flex-col items-center gap-2">
                     <Link to={`/product/${item.productId}`}>
-                      <img
-                        src={item.image}
+                      <img loading="lazy" decoding="async"
+                        src={optimizeImage(item.image)}
                         alt={item.name}
                         className="w-24 h-24 object-cover rounded-xl border border-gray-100"
                       />
@@ -148,7 +149,7 @@ export function Cart() {
                       </p>
                       {hasDiscount && (
                         <>
-                          <p className="text-gray-400 text-xs line-through leading-tight">
+                          <p className="text-gray-500 text-xs line-through leading-tight">
                             {formatPrice(originalPrice)}
                           </p>
                           <span className="inline-block bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-0.5">
@@ -217,12 +218,12 @@ export function Cart() {
                       <div className="text-right">
                         <p className="text-blue-700 font-black">{formatPrice(item.price * item.quantity)}</p>
                         {hasDiscount && (
-                          <p className="text-gray-400 text-xs line-through">
+                          <p className="text-gray-500 text-xs line-through">
                             {formatPrice(originalPrice * item.quantity)}
                           </p>
                         )}
                         {item.quantity > 1 && (
-                          <p className="text-xs text-gray-400">{formatPrice(item.price)} × {item.quantity}</p>
+                          <p className="text-xs text-gray-500">{formatPrice(item.price)} × {item.quantity}</p>
                         )}
                       </div>
                     </div>
@@ -282,7 +283,7 @@ export function Cart() {
                   </div>
                   <button
                     onClick={handleRemoveCoupon}
-                    className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                    className="text-gray-500 hover:text-red-500 transition-colors flex-shrink-0"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -342,7 +343,7 @@ export function Cart() {
                                 Dùng ngay
                               </button>
                             ) : (
-                              <span className="text-xs text-gray-400">Chưa đủ</span>
+                              <span className="text-xs text-gray-500">Chưa đủ</span>
                             )}
                           </div>
                         </div>
@@ -404,7 +405,7 @@ export function Cart() {
               {/* Divider + Total */}
               <div className="border-t border-gray-100 pt-3 space-y-1">
                 {appliedCoupon && (
-                  <div className="flex justify-between text-xs text-gray-400">
+                  <div className="flex justify-between text-xs text-gray-500">
                     <span>Giá gốc</span>
                     <span className="line-through">{formatPrice(cartTotal + shippingFee)}</span>
                   </div>
@@ -433,7 +434,7 @@ export function Cart() {
             {/* Payment icons */}
             <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
               {["COD", "MoMo", "VNPay", "Thẻ"].map((m) => (
-                <span key={m} className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded border border-gray-100">{m}</span>
+                <span key={m} className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded border border-gray-100">{m}</span>
               ))}
             </div>
           </div>

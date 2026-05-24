@@ -691,20 +691,20 @@ export function Chatbot() {
                     window.speechSynthesis?.cancel();
                   }
                 }}
-                className="w-7 h-7 rounded-lg hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                aria-label="Thu nhỏ/Đóng" className="w-7 h-7 rounded-lg hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition-colors"
                 title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
               >
                 {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               </button>
               <button
                 onClick={() => setIsMinimized(!isMinimized)}
-                className="w-7 h-7 rounded-lg hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                aria-label="Thu nhỏ/Đóng" className="w-7 h-7 rounded-lg hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition-colors"
               >
                 {isMinimized ? <Sparkles className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-7 h-7 rounded-lg hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                aria-label="Thu nhỏ/Đóng" className="w-7 h-7 rounded-lg hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -717,7 +717,7 @@ export function Chatbot() {
               {currentProduct && (
                 <div className="bg-blue-50 border-b border-blue-100 px-4 py-2 flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={currentProduct.images?.find((img) => img.isThumbnail)?.imageUrl || currentProduct.images?.[0]?.imageUrl || ""}
                       alt={currentProduct.name}
                       className="w-full h-full object-cover"
@@ -750,7 +750,7 @@ export function Chatbot() {
                       >
                         {msg.role === "bot" ? formatBotText(msg.text) : msg.text}
                       </div>
-                      <span className="text-xs text-gray-400 mt-1 px-1">{msg.time}</span>
+                      <span className="text-xs text-gray-500 mt-1 px-1">{msg.time}</span>
                       {/* Generative UI: Product Cards */}
                       {msg.role === "bot" && msg.productCards && msg.productCards.length > 0 && (
                         <div className="mt-2 flex gap-2 overflow-x-auto pb-1 max-w-[260px]">
@@ -761,7 +761,7 @@ export function Chatbot() {
                               className="flex-shrink-0 w-32 bg-white border border-blue-100 rounded-xl overflow-hidden hover:border-blue-300 hover:shadow transition-all"
                             >
                               {card.imageUrl && (
-                                <img src={card.imageUrl} alt={card.name} className="w-full h-20 object-cover" />
+                                <img loading="lazy" decoding="async" src={card.imageUrl} alt={card.name} className="w-full h-20 object-cover" />
                               )}
                               <div className="p-1.5">
                                 <p className="text-[10px] text-blue-600">{card.brandName}</p>
@@ -832,12 +832,12 @@ export function Chatbot() {
                     placeholder="Nhập tin nhắn..."
                     className="flex-1 px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-blue-400 text-sm text-gray-700 placeholder-gray-400 transition-colors"
                   />
-                  <button
+                  <button aria-label="Gửi tin nhắn"
                     type="submit"
                     disabled={!inputText.trim()}
                     className="w-10 h-10 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 rounded-xl flex items-center justify-center transition-colors flex-shrink-0"
                   >
-                    <Send className="w-4 h-4 text-white disabled:text-gray-400" />
+                    <Send className="w-4 h-4 text-white disabled:text-gray-500" />
                   </button>
                 </form>
               </div>

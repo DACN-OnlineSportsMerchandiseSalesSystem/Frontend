@@ -145,7 +145,7 @@ export function CategoriesManagement() {
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
               type="text"
               placeholder="Tìm kiếm danh mục..."
@@ -195,7 +195,7 @@ export function CategoriesManagement() {
             <tbody className="divide-y divide-gray-50">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
                       <p>Đang tải dữ liệu...</p>
@@ -204,7 +204,7 @@ export function CategoriesManagement() {
                 </tr>
               ) : paginatedCategories.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     Không tìm thấy danh mục nào
                   </td>
                 </tr>
@@ -217,7 +217,7 @@ export function CategoriesManagement() {
                         {/* Indentation for hierarchy tree */}
                         {category.depth > 0 && (
                           <div 
-                            className="flex items-center text-gray-400 shrink-0 select-none"
+                            className="flex items-center text-gray-500 shrink-0 select-none"
                             style={{ width: `${category.depth * 24}px`, paddingLeft: `${(category.depth - 1) * 24}px` }}
                           >
                             <span className="text-lg font-bold">↳</span>
@@ -320,7 +320,7 @@ export function CategoriesManagement() {
                 const prev = arr[idx - 1];
                 return (
                   <div key={page} className="flex items-center gap-1.5">
-                    {prev && page - prev > 1 && <span className="px-1 text-gray-400">...</span>}
+                    {prev && page - prev > 1 && <span className="px-1 text-gray-500">...</span>}
                     <button
                       onClick={() => setCurrentPage(page)}
                       className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${

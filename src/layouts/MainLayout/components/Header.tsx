@@ -100,7 +100,7 @@ export function Header({ onMenuOpen }: HeaderProps) {
                 placeholder="Tìm kiếm sản phẩm, thương hiệu..."
                 className="w-full pl-4 pr-12 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:bg-white focus:text-gray-900 focus:placeholder-gray-400 transition-all text-sm"
               />
-              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white transition-colors">
+              <button type="submit" aria-label="Tìm kiếm" className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white transition-colors">
                 <Search className="w-5 h-5" />
               </button>
             </div>
@@ -115,7 +115,7 @@ export function Header({ onMenuOpen }: HeaderProps) {
                   onClick={() => { setSearchOpen(false); setSearchQuery(""); setSearchResults([]); }}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors"
                 >
-                  <img src={p.image} alt={p.name} className="w-10 h-10 object-cover rounded-lg" />
+                  <img loading="lazy" decoding="async" src={p.image} alt={p.name} className="w-10 h-10 object-cover rounded-lg" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-900 truncate">{p.name}</p>
                     <p className="text-xs text-blue-600">{formatPrice(p.price)}</p>
@@ -143,7 +143,7 @@ export function Header({ onMenuOpen }: HeaderProps) {
           </button>
 
           {/* Wishlist */}
-          <Link to="/account?tab=wishlist" className="relative p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
+          <Link to="/account?tab=wishlist" aria-label="Menu icon" className="relative p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
             <Heart className="w-5 h-5" />
             {wishlist.length > 0 && (
               <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
@@ -153,12 +153,12 @@ export function Header({ onMenuOpen }: HeaderProps) {
           </Link>
 
           {/* Track order */}
-          <Link to="/track-order" className="hidden sm:flex p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
+          <Link to="/track-order" aria-label="Menu icon desktop" className="hidden sm:flex p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
             <Package className="w-5 h-5" />
           </Link>
 
           {/* Cart */}
-          <Link to="/cart" className="relative p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
+          <Link to="/cart" aria-label="Menu icon" className="relative p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
             <ShoppingCart className="w-5 h-5" />
             {cartCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 bg-yellow-400 text-blue-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-black">
@@ -225,7 +225,7 @@ export function Header({ onMenuOpen }: HeaderProps) {
                       </div>
                       <div>
                         <p className="text-sm text-gray-800 group-hover:text-blue-700 transition-colors">Tài khoản của tôi</p>
-                        <p className="text-xs text-gray-400">Thông tin & đơn hàng</p>
+                        <p className="text-xs text-gray-500">Thông tin & đơn hàng</p>
                       </div>
                     </Link>
 
@@ -239,7 +239,7 @@ export function Header({ onMenuOpen }: HeaderProps) {
                       </div>
                       <div>
                         <p className="text-sm text-gray-800 group-hover:text-blue-700 transition-colors">Tích điểm đổi quà</p>
-                        <p className="text-xs text-gray-400">2.450 điểm khả dụng</p>
+                        <p className="text-xs text-gray-500">2.450 điểm khả dụng</p>
                       </div>
                     </Link>
 
@@ -254,7 +254,7 @@ export function Header({ onMenuOpen }: HeaderProps) {
                       </div>
                       <div className="text-left">
                         <p className="text-sm text-red-500 group-hover:text-red-600 transition-colors">Đăng xuất</p>
-                        <p className="text-xs text-gray-400">Thoát khỏi tài khoản</p>
+                        <p className="text-xs text-gray-500">Thoát khỏi tài khoản</p>
                       </div>
                     </button>
                   </div>

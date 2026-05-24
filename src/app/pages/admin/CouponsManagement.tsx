@@ -99,7 +99,7 @@ export function CouponsManagement() {
                           {copiedCode === coupon.code ? (
                             <CheckCircle className="w-4 h-4 text-green-600" />
                           ) : (
-                            <Copy className="w-4 h-4 text-gray-400" />
+                            <Copy className="w-4 h-4 text-gray-500" />
                           )}
                         </button>
                       </div>
@@ -250,7 +250,7 @@ function VoucherFormModal({ voucher, onClose, onSuccess }: { voucher?: Voucher |
 
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Mã Voucher *</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Mã Voucher *</label>
                 <input
                   type="text"
                   required
@@ -261,7 +261,7 @@ function VoucherFormModal({ voucher, onClose, onSuccess }: { voucher?: Voucher |
                 />
               </div>
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Mức giảm (VNĐ) *</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Mức giảm (VNĐ) *</label>
                 <input
                   type="number"
                   required
@@ -274,7 +274,7 @@ function VoucherFormModal({ voucher, onClose, onSuccess }: { voucher?: Voucher |
 
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Đơn tối thiểu *</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Đơn tối thiểu *</label>
                 <input
                   type="number"
                   required
@@ -284,7 +284,7 @@ function VoucherFormModal({ voucher, onClose, onSuccess }: { voucher?: Voucher |
                 />
               </div>
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Giới hạn sử dụng *</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Giới hạn sử dụng *</label>
                 <input
                   type="number"
                   required
@@ -297,9 +297,9 @@ function VoucherFormModal({ voucher, onClose, onSuccess }: { voucher?: Voucher |
             </div>
 
             <div>
-              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Ngày hết hạn *</label>
+              <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Ngày hết hạn *</label>
               <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
                   type="date"
                   required
@@ -312,7 +312,7 @@ function VoucherFormModal({ voucher, onClose, onSuccess }: { voucher?: Voucher |
 
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Áp dụng Danh mục</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Áp dụng Danh mục</label>
                 <select
                   value={formData.categoryId || ""}
                   onChange={e => setFormData({...formData, categoryId: e.target.value ? Number(e.target.value) : undefined})}
@@ -325,7 +325,7 @@ function VoucherFormModal({ voucher, onClose, onSuccess }: { voucher?: Voucher |
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Áp dụng Thương hiệu</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Áp dụng Thương hiệu</label>
                 <select
                   value={formData.brandId || ""}
                   onChange={e => setFormData({...formData, brandId: e.target.value ? Number(e.target.value) : undefined})}

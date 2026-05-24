@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router";
 import { ChevronRight, CreditCard, Banknote, Smartphone, Check, MapPin, Plus } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { formatPrice } from "@/constants/productsData";
+import { optimizeImage } from "@/utils/imageOptimizer";
 
 type Step = "address" | "payment" | "confirm";
 
@@ -110,11 +111,11 @@ export function Checkout() {
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                 i < stepIndex ? "bg-green-500 text-white" :
                 i === stepIndex ? "bg-blue-600 text-white" :
-                "bg-gray-200 text-gray-400"
+                "bg-gray-200 text-gray-500"
               }`}>
                 {i < stepIndex ? <Check className="w-4 h-4" /> : i + 1}
               </div>
-              <span className={`text-xs text-center leading-tight ${i === stepIndex ? "text-blue-700 font-medium" : "text-gray-400"}`}>
+              <span className={`text-xs text-center leading-tight ${i === stepIndex ? "text-blue-700 font-medium" : "text-gray-500"}`}>
                 {s.label}
               </span>
             </div>
@@ -310,7 +311,7 @@ export function Checkout() {
               <div className="space-y-3 mb-5">
                 {cart.map((item) => (
                   <div key={`${item.productId}-${item.size}-${item.color}`} className="flex items-center gap-3">
-                    <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
+                    <img loading="lazy" decoding="async" src={optimizeImage(item.image)} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-800 truncate">{item.name}</p>
                       <p className="text-xs text-gray-500">Size: {item.size} · {item.color} · x{item.quantity}</p>
@@ -346,14 +347,14 @@ export function Checkout() {
             {cart.map((item) => (
               <div key={`${item.productId}-${item.size}`} className="flex items-center gap-3">
                 <div className="relative">
-                  <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded-lg" />
+                  <img loading="lazy" decoding="async" src={optimizeImage(item.image)} alt={item.name} className="w-12 h-12 object-cover rounded-lg" />
                   <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
                     {item.quantity}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-700 truncate">{item.name}</p>
-                  <p className="text-xs text-gray-400">{item.size}</p>
+                  <p className="text-xs text-gray-500">{item.size}</p>
                 </div>
                 <p className="text-sm font-medium text-gray-800">{formatPrice(item.price * item.quantity)}</p>
               </div>

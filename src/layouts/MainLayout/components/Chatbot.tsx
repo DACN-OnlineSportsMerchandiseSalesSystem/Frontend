@@ -326,7 +326,7 @@ export function Chatbot() {
               {currentProduct && (
                 <div className="bg-blue-50 border-b border-blue-100 px-4 py-2 flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
-                    <img src={currentProduct.image} alt={currentProduct.name} className="w-full h-full object-cover" />
+                    <img loading="lazy" decoding="async" src={currentProduct.image} alt={currentProduct.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-blue-700 text-xs truncate">{currentProduct.name}</p>
@@ -355,7 +355,7 @@ export function Chatbot() {
                       >
                         {msg.role === "bot" ? formatBotText(msg.text) : msg.text}
                       </div>
-                      <span className="text-xs text-gray-400 mt-1 px-1">{msg.time}</span>
+                      <span className="text-xs text-gray-500 mt-1 px-1">{msg.time}</span>
                       {/* Quick Replies */}
                       {msg.role === "bot" && msg.quickReplies && (
                         <div className="flex flex-wrap gap-1.5 mt-2">
@@ -416,7 +416,7 @@ export function Chatbot() {
                     disabled={!inputText.trim()}
                     className="w-10 h-10 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 rounded-xl flex items-center justify-center transition-colors flex-shrink-0"
                   >
-                    <Send className="w-4 h-4 text-white disabled:text-gray-400" />
+                    <Send className="w-4 h-4 text-white disabled:text-gray-500" />
                   </button>
                 </form>
               </div>

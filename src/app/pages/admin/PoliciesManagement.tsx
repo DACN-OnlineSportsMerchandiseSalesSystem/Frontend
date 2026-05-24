@@ -113,7 +113,7 @@ export function PoliciesManagement() {
 
       <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
         <div className="relative max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
           <input
             type="text"
             placeholder="Tìm kiếm chính sách..."
@@ -144,7 +144,7 @@ export function PoliciesManagement() {
                 </tr>
               ) : filteredPolicies.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-10 text-gray-400 font-bold">
+                  <td colSpan={6} className="text-center py-10 text-gray-500 font-bold">
                     Không tìm thấy chính sách nào.
                   </td>
                 </tr>
@@ -238,7 +238,7 @@ export function PoliciesManagement() {
                     className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-mono disabled:opacity-50"
                     placeholder="VD: shipping-policy"
                   />
-                  <p className="text-xs text-gray-400 mt-1">Dùng để làm URL. Không có dấu, không khoảng trắng.</p>
+                  <p className="text-xs text-gray-500 mt-1">Dùng để làm URL. Không có dấu, không khoảng trắng.</p>
                 </div>
                 
                 <div>

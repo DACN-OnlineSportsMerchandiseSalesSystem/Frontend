@@ -232,7 +232,7 @@ export function ProductDetail() {
         {/* Images */}
         <div>
           <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 mb-3 aspect-square">
-            <img
+            <img loading="lazy" decoding="async"
               src={product.images[activeImage]?.imageUrl || "https://placehold.co/600x600?text=No+Image"}
               alt={product.name}
               className="w-full h-full object-cover"
@@ -245,7 +245,7 @@ export function ProductDetail() {
                 onClick={() => setActiveImage(i)}
                 className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors flex-shrink-0 ${activeImage === i ? "border-blue-600" : "border-gray-200 hover:border-gray-300"}`}
               >
-                <img src={img.imageUrl} alt="" className="w-full h-full object-cover" />
+                <img loading="lazy" decoding="async" src={img.imageUrl} alt="" className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
@@ -261,7 +261,7 @@ export function ProductDetail() {
             <button
               onClick={() => toggleWishlist(product.id.toString())}
               className={`flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center transition-colors ${
-                isWishlisted ? "border-red-500 bg-red-50 text-red-500" : "border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-400"
+                isWishlisted ? "border-red-500 bg-red-50 text-red-500" : "border-gray-200 text-gray-500 hover:border-red-300 hover:text-red-400"
               }`}
             >
               <Heart className={`w-5 h-5 ${isWishlisted ? "fill-red-500" : ""}`} />
@@ -276,7 +276,7 @@ export function ProductDetail() {
               ))}
             </div>
             <span className="text-yellow-600 font-medium">{(product.rating || 0).toFixed(1)}</span>
-            <span className="text-gray-400 text-sm">({product.reviewCount || 0} đánh giá)</span>
+            <span className="text-gray-500 text-sm">({product.reviewCount || 0} đánh giá)</span>
             <span className="text-green-600 text-sm flex items-center gap-1">✓ Còn hàng</span>
           </div>
 
@@ -286,7 +286,7 @@ export function ProductDetail() {
               <span className="text-3xl text-blue-700 font-black">{formatPrice(product.price)}</span>
               {(product.discount || 0) > 0 && (
                 <>
-                  <span className="text-lg text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+                  <span className="text-lg text-gray-500 line-through">{formatPrice(product.originalPrice)}</span>
                   <span className="bg-red-500 text-white text-sm px-2 py-0.5 rounded-full font-bold">-{product.discount}%</span>
                 </>
               )}
@@ -320,11 +320,11 @@ export function ProductDetail() {
           <div className="flex items-center gap-4 mb-6">
             <p className="text-sm text-gray-600">Số lượng:</p>
             <div className="flex items-center gap-0 border border-gray-200 rounded-xl overflow-hidden">
-              <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
+              <button onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Giảm" className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
                 <Minus className="w-4 h-4 text-gray-600" />
               </button>
               <span className="w-12 text-center text-gray-800 font-medium">{qty}</span>
-              <button onClick={() => setQty(qty + 1)} className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
+              <button onClick={() => setQty(qty + 1)} aria-label="Tăng" className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
                 <Plus className="w-4 h-4 text-gray-600" />
               </button>
             </div>
@@ -440,7 +440,7 @@ export function ProductDetail() {
                         <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                           <div className="h-full bg-blue-600 rounded-full" style={{ width: `${percent}%` }} />
                         </div>
-                        <span className="text-xs text-gray-400 w-8">{count}</span>
+                        <span className="text-xs text-gray-500 w-8">{count}</span>
                       </div>
                     );
                   })}
@@ -452,7 +452,7 @@ export function ProductDetail() {
                 {reviews.length === 0 ? (
                   <div className="text-center py-10">
                     <MessageSquare className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-                    <p className="text-gray-400 text-sm">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
+                    <p className="text-gray-500 text-sm">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
                   </div>
                 ) : (
                   reviews.map((r) => (
@@ -469,7 +469,7 @@ export function ProductDetail() {
                                 <Star key={s} className={`w-3 h-3 ${s <= r.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-200 fill-gray-200"}`} />
                               ))}
                             </div>
-                            <span className="text-[10px] text-gray-400">{new Date(r.createdAt).toLocaleDateString("vi-VN")}</span>
+                            <span className="text-[10px] text-gray-500">{new Date(r.createdAt).toLocaleDateString("vi-VN")}</span>
                           </div>
                         </div>
                       </div>

@@ -87,7 +87,7 @@ export function ProductDetail() {
         {/* Images */}
         <div>
           <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 mb-3 aspect-square">
-            <img
+            <img loading="lazy" decoding="async"
               src={product.images[activeImage] || product.image}
               alt={product.name}
               className="w-full h-full object-cover"
@@ -100,7 +100,7 @@ export function ProductDetail() {
                 onClick={() => setActiveImage(i)}
                 className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors flex-shrink-0 ${activeImage === i ? "border-blue-600" : "border-gray-200 hover:border-gray-300"}`}
               >
-                <img src={img} alt="" className="w-full h-full object-cover" />
+                <img loading="lazy" decoding="async" src={img} alt="" className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
@@ -116,7 +116,7 @@ export function ProductDetail() {
             <button
               onClick={() => toggleWishlist(product.id)}
               className={`flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center transition-colors ${
-                isWishlisted ? "border-red-500 bg-red-50 text-red-500" : "border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-400"
+                isWishlisted ? "border-red-500 bg-red-50 text-red-500" : "border-gray-200 text-gray-500 hover:border-red-300 hover:text-red-400"
               }`}
             >
               <Heart className={`w-5 h-5 ${isWishlisted ? "fill-red-500" : ""}`} />
@@ -131,7 +131,7 @@ export function ProductDetail() {
               ))}
             </div>
             <span className="text-yellow-600 font-medium">{product.rating}</span>
-            <span className="text-gray-400 text-sm">({product.reviewCount} đánh giá)</span>
+            <span className="text-gray-500 text-sm">({product.reviewCount} đánh giá)</span>
             <span className="text-green-600 text-sm flex items-center gap-1">✓ {product.isBestSeller ? "Bán chạy" : "Còn hàng"}</span>
           </div>
 
@@ -141,7 +141,7 @@ export function ProductDetail() {
               <span className="text-3xl text-blue-700 font-black">{formatPrice(product.price)}</span>
               {discount > 0 && (
                 <>
-                  <span className="text-lg text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+                  <span className="text-lg text-gray-500 line-through">{formatPrice(product.originalPrice)}</span>
                   <span className="bg-red-500 text-white text-sm px-2 py-0.5 rounded-full font-bold">-{discount}%</span>
                 </>
               )}
@@ -193,11 +193,11 @@ export function ProductDetail() {
           <div className="flex items-center gap-4 mb-6">
             <p className="text-sm text-gray-600">Số lượng:</p>
             <div className="flex items-center gap-0 border border-gray-200 rounded-xl overflow-hidden">
-              <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
+              <button onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Giảm" className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
                 <Minus className="w-4 h-4 text-gray-600" />
               </button>
               <span className="w-12 text-center text-gray-800 font-medium">{qty}</span>
-              <button onClick={() => setQty(qty + 1)} className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
+              <button onClick={() => setQty(qty + 1)} aria-label="Tăng" className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
                 <Plus className="w-4 h-4 text-gray-600" />
               </button>
             </div>
@@ -307,7 +307,7 @@ export function ProductDetail() {
                         <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                           <div className="h-full bg-yellow-400 rounded-full" style={{ width: `${count}%` }} />
                         </div>
-                        <span className="text-xs text-gray-400 w-8">{count}%</span>
+                        <span className="text-xs text-gray-500 w-8">{count}%</span>
                       </div>
                     );
                   })}
@@ -326,7 +326,7 @@ export function ProductDetail() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium text-gray-800 text-sm">{r.author}</span>
                           {r.verified && <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✓ Đã mua hàng</span>}
-                          <span className="text-xs text-gray-400 ml-auto">{r.date}</span>
+                          <span className="text-xs text-gray-500 ml-auto">{r.date}</span>
                         </div>
                         <div className="flex gap-0.5 mb-2">
                           {[1, 2, 3, 4, 5].map((s) => (

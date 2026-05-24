@@ -91,7 +91,7 @@ export function StatisticsReports() {
             <p className="text-sm text-gray-500 mt-1">Thống kê chi tiết theo từng ngày</p>
           </div>
           <div className="text-right">
-            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Tổng doanh thu tháng</p>
+            <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Tổng doanh thu tháng</p>
             <p className="text-3xl font-black text-blue-600">
               {formatPrice(totalRevenue)}
             </p>
@@ -123,7 +123,7 @@ export function StatisticsReports() {
                       style={{ height: `${Math.max(heightPercent, 5)}%` }}
                     />
                   </div>
-                  <span className="text-[10px] font-black text-gray-400 uppercase">
+                  <span className="text-[10px] font-black text-gray-500 uppercase">
                     {day.statDate.split('-')[2]}
                   </span>
                 </div>
@@ -146,7 +146,7 @@ export function StatisticsReports() {
           </div>
           <div className="space-y-5">
             {topProducts.length === 0 ? (
-              <p className="text-center py-10 text-gray-400 font-medium italic">Chưa có dữ liệu bán hàng</p>
+              <p className="text-center py-10 text-gray-500 font-medium italic">Chưa có dữ liệu bán hàng</p>
             ) : topProducts.map((product, idx) => (
               <div key={idx} className="flex items-center gap-4 group">
                 <div className="w-10 h-10 bg-gray-50 group-hover:bg-blue-600 group-hover:text-white rounded-xl flex items-center justify-center text-gray-500 font-black transition-all">
@@ -154,7 +154,7 @@ export function StatisticsReports() {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-black text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">{product.productName}</p>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">{product.quantitySold} sản phẩm đã bán</p>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-0.5">{product.quantitySold} sản phẩm đã bán</p>
                 </div>
                 <p className="text-sm font-black text-blue-600">{formatPrice(product.totalRevenue)}</p>
               </div>
@@ -174,7 +174,7 @@ export function StatisticsReports() {
           </div>
           <div className="space-y-6">
             {revenueData.length === 0 ? (
-              <p className="text-center py-10 text-gray-400 font-medium italic">Chưa có dữ liệu doanh thu năm</p>
+              <p className="text-center py-10 text-gray-500 font-medium italic">Chưa có dữ liệu doanh thu năm</p>
             ) : revenueData.map((data, idx) => (
               <div key={idx} className="relative">
                 <div className="flex items-center justify-between mb-2">
@@ -190,7 +190,7 @@ export function StatisticsReports() {
                   />
                 </div>
                 <div className="mt-1 flex justify-end">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{data.orderCount} đơn hàng</span>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">{data.orderCount} đơn hàng</span>
                 </div>
               </div>
             ))}

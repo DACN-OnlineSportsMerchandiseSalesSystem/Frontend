@@ -155,13 +155,13 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
                   <div key={order.id} className="flex items-center justify-between p-5 hover:bg-gray-50 rounded-3xl transition-all border border-transparent hover:border-gray-100 group">
                     <div className="flex-1">
                       <p className="text-sm font-black text-gray-900 group-hover:text-blue-600 transition-colors">#{order.id}</p>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter mt-1">
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter mt-1">
                         {order.receiverName || "Khách hàng"}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-black text-blue-600">{formatPrice(order.totalPrice)}</p>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">
+                      <p className="text-[10px] font-bold text-gray-500 uppercase mt-1">
                         {new Date(order.createAt).toLocaleDateString('vi-VN')}
                       </p>
                     </div>
@@ -184,17 +184,17 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
               <div className="space-y-4">
                 {topProducts.slice(0, 5).map((product, idx) => (
                   <div key={product.id || idx} className="flex items-center gap-5 p-4 hover:bg-gray-50 rounded-3xl transition-all border border-transparent hover:border-gray-100 group">
-                    <div className="w-10 h-10 bg-gray-50 group-hover:bg-blue-600 group-hover:text-white rounded-2xl flex items-center justify-center text-gray-400 font-black text-xs transition-all">
+                    <div className="w-10 h-10 bg-gray-50 group-hover:bg-blue-600 group-hover:text-white rounded-2xl flex items-center justify-center text-gray-500 font-black text-xs transition-all">
                       {idx + 1}
                     </div>
-                    <img 
+                    <img loading="lazy" decoding="async" 
                       src={product.images?.[0]?.imageUrl || product.image || "/placeholder.png"} 
                       alt={product.name} 
                       className="w-14 h-14 rounded-2xl object-cover border border-gray-50 shadow-sm" 
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-black text-gray-900 truncate group-hover:text-blue-600 transition-colors">{product.name}</p>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">
                         {product.brandName || product.brand || "Đang cập nhật"}
                       </p>
                     </div>

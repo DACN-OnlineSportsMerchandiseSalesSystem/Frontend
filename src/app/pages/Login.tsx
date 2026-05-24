@@ -216,7 +216,7 @@ export function Login() {
                     Email <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
                       type="email"
                       value={loginEmail}
@@ -234,7 +234,7 @@ export function Login() {
                     Mật khẩu <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
                       type={showLoginPassword ? "text" : "password"}
                       value={loginPassword}
@@ -246,7 +246,7 @@ export function Login() {
                     <button
                       type="button"
                       onClick={() => setShowLoginPassword(!showLoginPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600"
                     >
                       {showLoginPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -310,7 +310,7 @@ export function Login() {
                       Họ <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                       <input
                         type="text"
                         value={registerData.firstName}
@@ -345,7 +345,7 @@ export function Login() {
                     Email <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
                       type="email"
                       value={registerData.email}
@@ -366,7 +366,7 @@ export function Login() {
                     Số điện thoại <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
                       type="tel"
                       value={registerData.phone}
@@ -387,7 +387,7 @@ export function Login() {
                     Mật khẩu <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
                       type={showRegisterPassword ? "text" : "password"}
                       value={registerData.password}
@@ -402,7 +402,7 @@ export function Login() {
                     <button
                       type="button"
                       onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600"
                     >
                       {showRegisterPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -415,7 +415,7 @@ export function Login() {
                     Xác nhận mật khẩu <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       value={registerData.confirmPassword}
@@ -430,7 +430,7 @@ export function Login() {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600"
                     >
                       {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -459,7 +459,7 @@ export function Login() {
                       type="button"
                       onClick={handleSendOtp}
                       disabled={isSendingOtp || !registerData.email}
-                      className="px-4 py-3 bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:bg-gray-100 disabled:text-gray-400 font-medium rounded-xl transition-colors whitespace-nowrap flex items-center gap-2"
+                      className="px-4 py-3 bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:bg-gray-100 disabled:text-gray-500 font-medium rounded-xl transition-colors whitespace-nowrap flex items-center gap-2"
                     >
                       {isSendingOtp ? (
                         <>

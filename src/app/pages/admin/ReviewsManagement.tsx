@@ -145,7 +145,7 @@ export function ReviewsManagement() {
       <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
         <div className="flex flex-col lg:flex-row gap-4 justify-between">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
             <input
               type="text"
               placeholder="Tìm kiếm người dùng, email, nội dung..."
@@ -204,7 +204,7 @@ export function ReviewsManagement() {
             <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
           </div>
         ) : filteredAndSortedReviews.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+          <div className="flex flex-col items-center justify-center py-20 text-gray-500">
             <MessageSquare className="w-16 h-16 mb-4 text-gray-200" />
             <p className="text-lg font-bold">Không tìm thấy đánh giá nào.</p>
           </div>
@@ -240,7 +240,7 @@ export function ReviewsManagement() {
                           <Star key={star} className={`w-3.5 h-3.5 ${star <= review.rating ? "fill-yellow-400" : "text-gray-200 fill-gray-200"}`} />
                         ))}
                       </div>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-500">
                         {new Date(review.createdAt).toLocaleDateString("vi-VN")}
                       </p>
                     </td>
@@ -271,7 +271,7 @@ export function ReviewsManagement() {
                         </button>
                         <button
                           onClick={() => handleDeleteReview(review.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Xóa đánh giá"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -316,7 +316,7 @@ export function ReviewsManagement() {
                         <Star key={star} className={`w-4 h-4 ${star <= selectedReview.rating ? "fill-yellow-400" : "text-gray-200 fill-gray-200"}`} />
                       ))}
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-500">
                       {new Date(selectedReview.createdAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>

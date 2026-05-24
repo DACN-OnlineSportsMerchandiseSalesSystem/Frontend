@@ -18,13 +18,13 @@ export function Footer() {
             Chuyên cung cấp dụng cụ và trang phục thể thao chính hãng chất lượng cao. Đồng hành cùng bạn trên mọi sân chơi.
           </p>
           <div className="flex gap-3">
-            <a href="#" className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white hover:bg-blue-500 transition-colors font-bold text-xs">
+            <a href="#" aria-label="Facebook" className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white hover:bg-blue-500 transition-colors font-bold text-xs">
               FB
             </a>
-            <a href="#" className="w-9 h-9 bg-red-600 rounded-lg flex items-center justify-center text-white hover:bg-red-500 transition-colors font-bold text-xs">
+            <a href="#" aria-label="YouTube" className="w-9 h-9 bg-red-600 rounded-lg flex items-center justify-center text-white hover:bg-red-500 transition-colors font-bold text-xs">
               YT
             </a>
-            <a href="#" className="w-9 h-9 bg-pink-600 rounded-lg flex items-center justify-center text-white hover:bg-pink-500 transition-colors font-bold text-xs">
+            <a href="#" aria-label="Instagram" className="w-9 h-9 bg-pink-600 rounded-lg flex items-center justify-center text-white hover:bg-pink-500 transition-colors font-bold text-xs">
               IG
             </a>
           </div>
@@ -32,7 +32,7 @@ export function Footer() {
 
         {/* Links */}
         <div>
-          <h4 className="text-white mb-4">Danh mục sản phẩm</h4>
+          <h3 className="text-white mb-4">Danh mục sản phẩm</h3>
           <ul className="space-y-2 text-sm">
             {["Giày thể thao", "Quần áo thể thao", "Dụng cụ gym", "Bóng đá", "Bóng rổ", "Cầu lông & Tennis", "Bơi lội", "Phụ kiện"].map((item) => (
               <li key={item}>
@@ -46,7 +46,7 @@ export function Footer() {
 
         {/* Policies */}
         <div>
-          <h4 className="text-white mb-4">Hỗ trợ khách hàng</h4>
+          <h3 className="text-white mb-4">Hỗ trợ khách hàng</h3>
           <ul className="space-y-2 text-sm">
             {[
               { label: "Chính sách đổi trả", to: "/returns" },
@@ -69,7 +69,7 @@ export function Footer() {
 
         {/* Contact */}
         <div>
-          <h4 className="text-white mb-4">Liên hệ</h4>
+          <h3 className="text-white mb-4">Liên hệ</h3>
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-2">
               <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
@@ -107,13 +107,13 @@ export function Footer() {
           <div className="flex items-center gap-2 flex-wrap justify-center">
             <span className="text-sm text-gray-500">Phương thức thanh toán:</span>
             {["COD", "MoMo", "VNPay", "Thẻ ngân hàng", "Visa/MC"].map((m) => (
-              <span key={m} className="px-3 py-1 bg-gray-800 rounded text-xs text-gray-400 border border-gray-700">{m}</span>
+              <span key={m} className="px-3 py-1 bg-gray-800 rounded text-xs text-gray-500 border border-gray-700">{m}</span>
             ))}
           </div>
           <div className="flex items-center gap-2 flex-wrap justify-center">
             <span className="text-sm text-gray-500">Vận chuyển:</span>
             {["GHN", "GHTK", "Viettel Post"].map((m) => (
-              <span key={m} className="px-3 py-1 bg-gray-800 rounded text-xs text-gray-400 border border-gray-700">{m}</span>
+              <span key={m} className="px-3 py-1 bg-gray-800 rounded text-xs text-gray-500 border border-gray-700">{m}</span>
             ))}
           </div>
         </div>

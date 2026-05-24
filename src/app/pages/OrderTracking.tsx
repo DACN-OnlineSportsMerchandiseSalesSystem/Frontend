@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router";
 import { Search, Package, CheckCircle, Truck, XCircle, Clock, ChevronRight, AlertTriangle, RotateCcw } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { formatPrice } from "../data/products";
+import { optimizeImage } from "@/utils/imageOptimizer";
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
   pending: { label: "Chờ xác nhận", color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200", icon: <Clock className="w-4 h-4 text-yellow-600" /> },
@@ -127,7 +128,7 @@ export function OrderTracking() {
         <div className="text-center py-10 bg-white rounded-2xl border border-gray-100">
           <AlertTriangle className="w-10 h-10 text-yellow-400 mx-auto mb-3" />
           <p className="text-gray-600">Không tìm thấy đơn hàng với mã <strong>{searchId}</strong></p>
-          <p className="text-gray-400 text-sm mt-1">Kiểm tra lại mã đơn hàng và thử lại</p>
+          <p className="text-gray-500 text-sm mt-1">Kiểm tra lại mã đơn hàng và thử lại</p>
         </div>
       )}
 
@@ -182,9 +183,9 @@ export function OrderTracking() {
                     )}
                   </div>
                   <div className="pb-6 flex-1">
-                    <p className={`text-sm font-medium ${event.done ? "text-gray-800" : "text-gray-400"}`}>{event.status}</p>
+                    <p className={`text-sm font-medium ${event.done ? "text-gray-800" : "text-gray-500"}`}>{event.status}</p>
                     <p className={`text-xs mt-0.5 ${event.done ? "text-gray-500" : "text-gray-300"}`}>{event.description}</p>
-                    {event.time && <p className="text-xs text-gray-400 mt-1">{event.time}</p>}
+                    {event.time && <p className="text-xs text-gray-500 mt-1">{event.time}</p>}
                   </div>
                 </div>
               ))}
@@ -200,7 +201,7 @@ export function OrderTracking() {
 
                 return (
                   <div key={i} className="flex items-center gap-3">
-                    <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
+                    <img loading="lazy" decoding="async" src={optimizeImage(item.image)} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-800 truncate">{item.name}</p>
                       <p className="text-xs text-gray-500">Size: {item.size} · Màu: {item.color} · x{item.quantity}</p>
@@ -208,7 +209,7 @@ export function OrderTracking() {
                     <div className="text-right flex-shrink-0">
                       <p className="text-sm font-medium text-blue-700">{formatPrice(item.price * item.quantity)}</p>
                       {hasItemDiscount && (
-                        <p className="text-xs text-gray-400 line-through">
+                        <p className="text-xs text-gray-500 line-through">
                           {formatPrice(originalItemPrice * item.quantity)}
                         </p>
                       )}

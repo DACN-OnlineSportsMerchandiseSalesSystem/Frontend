@@ -72,7 +72,7 @@ export function PolicyPage() {
             {/* Sidebar Navigation */}
             <div className="w-full lg:w-1/4 flex-shrink-0">
               <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sticky top-24">
-                <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4 px-4 pt-2">Danh mục</h3>
+                <h3 className="text-sm font-black text-gray-500 uppercase tracking-widest mb-4 px-4 pt-2">Danh mục</h3>
                 <nav className="space-y-1">
                   {policies.map(policy => (
                     <button
@@ -84,7 +84,7 @@ export function PolicyPage() {
                           : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                       }`}
                     >
-                      <span className={activePolicy?.id === policy.id ? "text-blue-600" : "text-gray-400"}>
+                      <span className={activePolicy?.id === policy.id ? "text-blue-600" : "text-gray-500"}>
                         {getIconForCategory(policy.category)}
                       </span>
                       {policy.title}
@@ -112,7 +112,7 @@ export function PolicyPage() {
                   />
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-400 font-medium">
+                <div className="flex items-center justify-center h-full text-gray-500 font-medium">
                   Vui lòng chọn một chính sách bên trái để xem
                 </div>
               )}

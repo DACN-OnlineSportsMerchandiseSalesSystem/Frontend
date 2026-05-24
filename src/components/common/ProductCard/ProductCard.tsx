@@ -49,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <Link to={`/product/${product.id}`} className="block">
         {/* Image */}
         <div className="relative overflow-hidden bg-gray-50 aspect-square">
-          <img
+          <img loading="lazy" decoding="async"
             src={product.image}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -134,7 +134,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex items-baseline gap-2">
             <span className="text-blue-700 font-bold">{formatPrice(product.price)}</span>
             {product.originalPrice > product.price && (
-              <span className="text-xs text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+              <span className="text-xs text-gray-500 line-through">{formatPrice(product.originalPrice)}</span>
             )}
           </div>
         </div>

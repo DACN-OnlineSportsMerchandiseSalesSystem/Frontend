@@ -125,7 +125,7 @@ export function CustomersManagement() {
       {/* Filters */}
       <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input
             type="text"
             value={searchQuery}
@@ -338,7 +338,7 @@ export function CustomersManagement() {
                 const prev = arr[idx - 1];
                 return (
                   <div key={page} className="flex items-center gap-1.5">
-                    {prev && page - prev > 1 && <span className="px-1 text-gray-400">...</span>}
+                    {prev && page - prev > 1 && <span className="px-1 text-gray-500">...</span>}
                     <button
                       onClick={() => setCurrentPage(page)}
                       className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
@@ -501,11 +501,11 @@ function UserDetailModal({ user, onClose, onUpdate }: { user: UserProfile; onClo
               </h5>
               <div className="space-y-4 text-sm">
                 <div>
-                  <label className="text-xs text-gray-400 block mb-1">Email (Không thể sửa)</label>
+                  <label className="text-xs text-gray-500 block mb-1">Email (Không thể sửa)</label>
                   <p className="font-medium text-gray-800">{user.email}</p>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 block mb-1">Số điện thoại</label>
+                  <label className="text-xs text-gray-500 block mb-1">Số điện thoại</label>
                   {isEditing ? (
                     <input 
                       className="w-full px-3 py-2 border rounded-lg" 
@@ -525,7 +525,7 @@ function UserDetailModal({ user, onClose, onUpdate }: { user: UserProfile; onClo
               </h5>
               <div className="space-y-4 text-sm">
                 <div>
-                  <label className="text-xs text-gray-400 block mb-1">Vai trò</label>
+                  <label className="text-xs text-gray-500 block mb-1">Vai trò</label>
                   {isEditing ? (
                     <select 
                       className="w-full px-3 py-2 border rounded-lg bg-white" 
@@ -540,7 +540,7 @@ function UserDetailModal({ user, onClose, onUpdate }: { user: UserProfile; onClo
                   )}
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 block mb-1">Hạng thành viên / Điểm tích lũy</label>
+                  <label className="text-xs text-gray-500 block mb-1">Hạng thành viên / Điểm tích lũy</label>
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center px-2 py-0.5 rounded bg-yellow-100 text-yellow-700 font-bold text-xs">
                       {user.rank || 'NEW'}
@@ -551,7 +551,7 @@ function UserDetailModal({ user, onClose, onUpdate }: { user: UserProfile; onClo
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 block mb-1">Trạng thái tài khoản</label>
+                  <label className="text-xs text-gray-500 block mb-1">Trạng thái tài khoản</label>
                   {isEditing ? (
                     <select 
                       className="w-full px-3 py-2 border rounded-lg bg-white" 

@@ -79,7 +79,7 @@ export function Policy() {
                     currentTabKey === pKey ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600 font-bold" : "text-gray-600 hover:bg-gray-50"
                   }`}
                 >
-                  <span className={currentTabKey === pKey ? "text-blue-600" : "text-gray-400"}>
+                  <span className={currentTabKey === pKey ? "text-blue-600" : "text-gray-500"}>
                     {getPolicyIcon(pKey)}
                   </span>
                   {policy.title}
@@ -87,7 +87,7 @@ export function Policy() {
               );
             })}
             {policies.length === 0 && (
-              <div className="p-4 text-sm text-gray-400 text-center">Đang cập nhật...</div>
+              <div className="p-4 text-sm text-gray-500 text-center">Đang cập nhật...</div>
             )}
           </div>
         </aside>
@@ -104,7 +104,7 @@ export function Policy() {
                 dangerouslySetInnerHTML={{ __html: activePolicy.content }}
               />
               {activePolicy.lastUpdated && (
-                <p className="text-[10px] text-gray-400 mt-8 border-t pt-4">
+                <p className="text-[10px] text-gray-500 mt-8 border-t pt-4">
                   Cập nhật lần cuối: {new Date(activePolicy.lastUpdated).toLocaleDateString('vi-VN')}
                 </p>
               )}
@@ -113,7 +113,7 @@ export function Policy() {
              <div className="text-center py-10">
                 <HelpCircle className="w-12 h-12 text-gray-200 mx-auto mb-3" />
                 <p className="text-gray-500">Nội dung này đang được cập nhật...</p>
-                <p className="text-xs text-gray-400 mt-1">Vui lòng quay lại sau hoặc liên hệ hỗ trợ</p>
+                <p className="text-xs text-gray-500 mt-1">Vui lòng quay lại sau hoặc liên hệ hỗ trợ</p>
              </div>
           )}
         </div>

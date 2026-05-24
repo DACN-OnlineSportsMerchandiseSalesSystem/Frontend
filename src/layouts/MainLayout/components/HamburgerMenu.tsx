@@ -40,7 +40,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
             <span className="text-2xl">🏆</span>
             <span className="font-black text-lg">SportZone</span>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-blue-600 rounded-lg transition-colors">
+          <button onClick={onClose} aria-label="Đóng" className="p-1.5 hover:bg-blue-600 rounded-lg transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -49,7 +49,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
         <div className="flex-1 overflow-y-auto">
           {/* Quick links */}
           <div className="p-4 border-b border-gray-100">
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-3 px-1">Điều hướng nhanh</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-3 px-1">Điều hướng nhanh</p>
             <div className="space-y-1">
               {[
                 { icon: <Home className="w-4 h-4" />, label: "Trang chủ", to: "/" },
@@ -67,7 +67,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
                   onClick={onClose}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-700 transition-colors group"
                 >
-                  <span className="text-gray-400 group-hover:text-blue-600 transition-colors">{item.icon}</span>
+                  <span className="text-gray-500 group-hover:text-blue-600 transition-colors">{item.icon}</span>
                   <span className="text-sm">{item.label}</span>
                   <ChevronRight className="w-3.5 h-3.5 ml-auto text-gray-300 group-hover:text-blue-400 transition-colors" />
                 </Link>
@@ -160,7 +160,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
 
           {/* Promotion badges */}
           <div className="p-4">
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-3 px-1">Ưu đãi đặc biệt</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-3 px-1">Ưu đãi đặc biệt</p>
             <div className="space-y-2">
               <Link to="/products?filter=sale" onClick={onClose} className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 transition-colors text-sm">
                 🔥 Đang giảm giá

@@ -90,7 +90,7 @@ export function DiscountsManagement() {
                         }`}>
                           {discount.isActive ? "Đang chạy" : "Tạm dừng"}
                         </span>
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-2 py-1 rounded-lg">
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest bg-gray-50 px-2 py-1 rounded-lg">
                           {discount.scope === "CATEGORY" ? "Danh mục" : discount.scope === "BRAND" ? "Thương hiệu" : "Toàn hệ thống"}
                         </span>
                       </div>
@@ -276,7 +276,7 @@ function DiscountFormModal({
             )}
 
             <div>
-              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Tên chương trình *</label>
+              <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Tên chương trình *</label>
               <input
                 type="text"
                 required
@@ -289,7 +289,7 @@ function DiscountFormModal({
 
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Mức giảm (%) *</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Mức giảm (%) *</label>
                 <input
                   type="number"
                   required
@@ -301,7 +301,7 @@ function DiscountFormModal({
                 />
               </div>
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Phạm vi áp dụng *</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Phạm vi áp dụng *</label>
                 <select
                   className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 font-bold text-gray-900 appearance-none"
                   value={formData.scope}
@@ -316,7 +316,7 @@ function DiscountFormModal({
 
             {formData.scope === "CATEGORY" && (
               <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Chọn Danh mục *</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Chọn Danh mục *</label>
                 <select
                   required
                   className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 font-bold text-gray-900 appearance-none"
@@ -333,7 +333,7 @@ function DiscountFormModal({
 
             {formData.scope === "BRAND" && (
               <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Chọn Thương hiệu *</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Chọn Thương hiệu *</label>
                 <select
                   required
                   className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 font-bold text-gray-900 appearance-none"
@@ -350,7 +350,7 @@ function DiscountFormModal({
 
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Ngày bắt đầu</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Ngày bắt đầu</label>
                 <input
                   type="date"
                   className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 font-bold text-gray-900"
@@ -359,7 +359,7 @@ function DiscountFormModal({
                 />
               </div>
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Ngày kết thúc</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Ngày kết thúc</label>
                 <input
                   type="date"
                   className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 font-bold text-gray-900"
@@ -370,7 +370,7 @@ function DiscountFormModal({
             </div>
 
             <div>
-              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Trạng thái hoạt động</label>
+              <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Trạng thái hoạt động</label>
               <select
                 className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 font-bold text-gray-900 appearance-none"
                 value={formData.isActive ? "true" : "false"}

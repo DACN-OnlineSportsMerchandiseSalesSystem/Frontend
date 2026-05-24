@@ -111,7 +111,7 @@ export function ReturnsManagement() {
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
           <RotateCcw className="w-12 h-12 text-gray-200 mb-4" />
-          <p className="text-gray-400">Không có yêu cầu hoàn trả nào</p>
+          <p className="text-gray-500">Không có yêu cầu hoàn trả nào</p>
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -221,7 +221,7 @@ export function ReturnsManagement() {
                         {st.icon} {st.label}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-500">
                       {selectedReturn.createdAt ? new Date(selectedReturn.createdAt).toLocaleString("vi-VN") : ""}
                     </p>
                   </div>
@@ -245,10 +245,10 @@ export function ReturnsManagement() {
                     {selectedReturn.returnItems.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
                         {item.imageProof ? (
-                          <img src={item.imageProof} alt="" className="w-14 h-14 rounded-lg object-cover border border-gray-200" />
+                          <img loading="lazy" decoding="async" src={item.imageProof} alt="" className="w-14 h-14 rounded-lg object-cover border border-gray-200" />
                         ) : (
                           <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center">
-                            <Package className="w-5 h-5 text-gray-400" />
+                            <Package className="w-5 h-5 text-gray-500" />
                           </div>
                         )}
                         <div className="flex-1">

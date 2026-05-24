@@ -233,10 +233,10 @@ export function Products() {
               </select>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => setViewMode("grid")} className={`p-1.5 rounded-lg transition-colors ${viewMode === "grid" ? "bg-blue-100 text-blue-700" : "text-gray-400 hover:text-gray-600"}`}>
+              <button onClick={() => setViewMode("grid")} className={`p-1.5 rounded-lg transition-colors ${viewMode === "grid" ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:text-gray-600"}`}>
                 <Grid3X3 className="w-4 h-4" />
               </button>
-              <button onClick={() => setViewMode("list")} className={`p-1.5 rounded-lg transition-colors ${viewMode === "list" ? "bg-blue-100 text-blue-700" : "text-gray-400 hover:text-gray-600"}`}>
+              <button onClick={() => setViewMode("list")} className={`p-1.5 rounded-lg transition-colors ${viewMode === "list" ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:text-gray-600"}`}>
                 <List className="w-4 h-4" />
               </button>
             </div>
@@ -246,7 +246,7 @@ export function Products() {
             <div className="text-center py-16">
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-gray-600 mb-2">Không tìm thấy sản phẩm</h3>
-              <p className="text-gray-400 text-sm mb-4">Thử điều chỉnh bộ lọc hoặc tìm kiếm từ khóa khác</p>
+              <p className="text-gray-500 text-sm mb-4">Thử điều chỉnh bộ lọc hoặc tìm kiếm từ khóa khác</p>
               <button onClick={() => setSearchParams({})} className="bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-colors">
                 Xóa bộ lọc
               </button>

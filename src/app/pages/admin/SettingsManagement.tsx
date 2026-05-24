@@ -68,7 +68,7 @@ function StoreSettings() {
 
       <div className="space-y-6">
         <div>
-          <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Tên cửa hàng</label>
+          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Tên cửa hàng</label>
           <input
             type="text"
             defaultValue="SportZone"
@@ -77,7 +77,7 @@ function StoreSettings() {
         </div>
 
         <div>
-          <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Mô tả cửa hàng</label>
+          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Mô tả cửa hàng</label>
           <textarea
             rows={3}
             defaultValue="Chuyên cung cấp đồ thể thao chất lượng cao, phục vụ mọi nhu cầu tập luyện của bạn."
@@ -87,7 +87,7 @@ function StoreSettings() {
 
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Email liên hệ</label>
+            <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Email liên hệ</label>
             <input
               type="email"
               defaultValue="contact@sportzone.com"
@@ -95,7 +95,7 @@ function StoreSettings() {
             />
           </div>
           <div>
-            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Số điện thoại</label>
+            <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Số điện thoại</label>
             <input
               type="tel"
               defaultValue="1900 1234"
@@ -105,7 +105,7 @@ function StoreSettings() {
         </div>
 
         <div>
-          <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Địa chỉ trụ sở</label>
+          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Địa chỉ trụ sở</label>
           <input
             type="text"
             defaultValue="123 Nguyễn Huệ, Quận 1, TP.HCM"
@@ -142,7 +142,7 @@ function PaymentSettings() {
           <div key={method.name} className="flex items-center justify-between p-6 border border-gray-100 rounded-3xl hover:bg-gray-50 transition-all">
             <div>
               <p className="font-black text-gray-900">{method.label}</p>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">Phương thức: {method.name}</p>
+              <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1">Phương thức: {method.name}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" defaultChecked={method.enabled} className="sr-only peer" />
@@ -166,7 +166,7 @@ function ShippingSettings() {
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Phí vận chuyển mặc định</label>
+            <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Phí vận chuyển mặc định</label>
             <input
               type="number"
               defaultValue="30000"
@@ -174,7 +174,7 @@ function ShippingSettings() {
             />
           </div>
           <div>
-            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Miễn phí từ đơn hàng</label>
+            <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Miễn phí từ đơn hàng</label>
             <input
               type="number"
               defaultValue="500000"
@@ -184,7 +184,7 @@ function ShippingSettings() {
         </div>
 
         <div>
-          <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-4 px-1">Đối tác vận chuyển được phép</label>
+          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-4 px-1">Đối tác vận chuyển được phép</label>
           <div className="grid grid-cols-2 gap-4">
             {["Giao hàng nhanh", "Giao hàng tiết kiệm", "J&T Express", "Viettel Post"].map((carrier) => (
               <label key={carrier} className="flex items-center gap-4 p-5 border border-gray-100 rounded-3xl cursor-pointer hover:bg-gray-50 transition-all">
@@ -217,7 +217,7 @@ function EmailSettings() {
           <div key={email.name} className="flex items-center justify-between p-6 border border-gray-100 rounded-3xl hover:bg-gray-50 transition-all">
             <div>
               <p className="font-black text-gray-900">{email.label}</p>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">Gửi tự động theo sự kiện</p>
+              <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1">Gửi tự động theo sự kiện</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" defaultChecked={email.enabled} className="sr-only peer" />
@@ -240,7 +240,7 @@ function SecuritySettings() {
 
       <div className="space-y-6">
         <div>
-          <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Mật khẩu hiện tại</label>
+          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Mật khẩu hiện tại</label>
           <input
             type="password"
             className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-400 font-bold text-gray-900"
@@ -248,7 +248,7 @@ function SecuritySettings() {
         </div>
 
         <div>
-          <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Mật khẩu mới</label>
+          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Mật khẩu mới</label>
           <input
             type="password"
             className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-400 font-bold text-gray-900"
@@ -256,7 +256,7 @@ function SecuritySettings() {
         </div>
 
         <div>
-          <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Xác nhận mật khẩu</label>
+          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2 px-1">Xác nhận mật khẩu</label>
           <input
             type="password"
             className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-400 font-bold text-gray-900"
@@ -292,7 +292,7 @@ function NotificationSettings() {
           <div key={notif.name} className="flex items-center justify-between p-6 border border-gray-100 rounded-3xl hover:bg-gray-50 transition-all">
             <div>
               <p className="font-black text-gray-900">{notif.label}</p>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">Thông báo qua Email & Admin</p>
+              <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1">Thông báo qua Email & Admin</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" defaultChecked={notif.enabled} className="sr-only peer" />

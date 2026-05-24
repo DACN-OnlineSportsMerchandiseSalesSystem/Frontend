@@ -4,6 +4,7 @@ import { User, Package, Heart, MapPin, Lock, ChevronRight, Edit3, Plus, Trash2, 
 import { useApp } from "../context/AppContext";
 import { getMyInterestsAPI, updateInterestsAPI } from "../../services/userService";
 import { products, formatPrice } from "../data/products";
+import { optimizeImage } from "@/utils/imageOptimizer";
 
 const tabs = [
   { key: "profile", label: "Thông tin cá nhân", icon: <User className="w-4 h-4" /> },
@@ -166,7 +167,7 @@ export function Account() {
                   activeTab === tab.key ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600" : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
-                <span className={activeTab === tab.key ? "text-blue-600" : "text-gray-400"}>{tab.icon}</span>
+                <span className={activeTab === tab.key ? "text-blue-600" : "text-gray-500"}>{tab.icon}</span>
                 {tab.label}
               </button>
             ))}
@@ -301,7 +302,7 @@ export function Account() {
                       </div>
                       <div className="flex gap-2 mb-3">
                         {order.items.slice(0, 3).map((item, i) => (
-                          <img key={i} src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
+                          <img loading="lazy" decoding="async" key={i} src={optimizeImage(item.image)} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
                         ))}
                         {order.items.length > 3 && (
                           <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500 text-sm">
@@ -433,7 +434,7 @@ export function Account() {
                           className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                             canRedeem && reward.available
                               ? "bg-blue-600 text-white hover:bg-blue-700"
-                              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              : "bg-gray-100 text-gray-500 cursor-not-allowed"
                           }`}
                         >
                           {canRedeem && reward.available ? "Đổi ngay" : "Chưa đủ"}
@@ -479,7 +480,7 @@ export function Account() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-gray-700 truncate">{item.desc}</p>
-                        <p className="text-xs text-gray-400">{item.date}</p>
+                        <p className="text-xs text-gray-500">{item.date}</p>
                       </div>
                       <span className={`text-sm font-bold flex-shrink-0 ${item.positive ? "text-green-600" : "text-red-500"}`}>
                         {item.points} điểm
@@ -506,7 +507,7 @@ export function Account() {
                   {wishlistProducts.map((p) => (
                     <div key={p.id} className="border border-gray-100 rounded-2xl overflow-hidden group">
                       <div className="relative">
-                        <img src={p.image} alt={p.name} className="w-full aspect-square object-cover" />
+                        <img loading="lazy" decoding="async" src={p.image} alt={p.name} className="w-full aspect-square object-cover" />
                         <button
                           onClick={() => toggleWishlist(p.id)}
                           className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
@@ -709,7 +710,7 @@ export function Account() {
 
               <div className="space-y-3">
                 {user.addresses.length === 0 && (
-                  <div className="text-center py-8 text-gray-400">
+                  <div className="text-center py-8 text-gray-500">
                     <MapPin className="w-10 h-10 mx-auto mb-2 opacity-40" />
                     <p className="text-sm">Chưa có địa chỉ nào</p>
                   </div>

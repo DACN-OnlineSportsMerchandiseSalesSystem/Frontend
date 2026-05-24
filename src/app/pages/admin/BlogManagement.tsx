@@ -186,23 +186,23 @@ export function BlogManagement() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Tổng bài viết</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Tổng bài viết</p>
           <p className="text-3xl font-black text-gray-900 mt-2">{blogs.length}</p>
         </div>
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Đã xuất bản</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Đã xuất bản</p>
           <p className="text-3xl font-black text-green-600 mt-2">
             {blogs.filter(b => b.status === "published" || !b.status).length}
           </p>
         </div>
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Bản nháp</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Bản nháp</p>
           <p className="text-3xl font-black text-yellow-600 mt-2">
             {blogs.filter(b => b.status === "draft").length}
           </p>
         </div>
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Tổng lượt xem</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Tổng lượt xem</p>
           <p className="text-3xl font-black text-blue-600 mt-2">
             {blogs.reduce((sum, b) => sum + (b.views || 0), 0).toLocaleString()}
           </p>
@@ -213,7 +213,7 @@ export function BlogManagement() {
       <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
               type="text"
               value={searchQuery}
@@ -232,7 +232,7 @@ export function BlogManagement() {
             <option value="draft">Bản nháp</option>
           </select>
         </div>
-        <p className="text-sm font-bold text-gray-400">Đang hiển thị {filteredBlogs.length} bài viết</p>
+        <p className="text-sm font-bold text-gray-500">Đang hiển thị {filteredBlogs.length} bài viết</p>
       </div>
 
       {/* Blog List */}
@@ -251,7 +251,7 @@ export function BlogManagement() {
             <div key={blog.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl transition-all group flex flex-col">
               <div className="relative aspect-video overflow-hidden bg-gray-50">
                 {blog.imageUrl ? (
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={blog.imageUrl}
                     alt={blog.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -289,7 +289,7 @@ export function BlogManagement() {
                   {blog.excerpt}
                 </p>
 
-                <div className="flex items-center justify-between text-xs font-bold text-gray-400 mb-5">
+                <div className="flex items-center justify-between text-xs font-bold text-gray-500 mb-5">
                   <div className="flex items-center gap-1.5">
                     <User className="w-4 h-4" />
                     {blog.author}
@@ -308,21 +308,21 @@ export function BlogManagement() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => openViewModal(blog)}
-                      className="p-2 hover:bg-green-50 text-gray-400 hover:text-green-600 rounded-xl transition-colors"
+                      className="p-2 hover:bg-green-50 text-gray-500 hover:text-green-600 rounded-xl transition-colors"
                       title="Xem chi tiết"
                     >
                       <Eye className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => openEditModal(blog)}
-                      className="p-2 hover:bg-yellow-50 text-gray-400 hover:text-yellow-600 rounded-xl transition-colors"
+                      className="p-2 hover:bg-yellow-50 text-gray-500 hover:text-yellow-600 rounded-xl transition-colors"
                       title="Sửa"
                     >
                       <Edit2 className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => blog.id && handleDelete(blog.id)}
-                      className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-xl transition-colors"
+                      className="p-2 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-xl transition-colors"
                       title="Xóa"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -381,7 +381,7 @@ export function BlogManagement() {
                   <label className="block text-sm font-bold text-gray-700 mb-2">Ảnh Thumbnail *</label>
                   <div className="flex items-center gap-4">
                     {formData.imageUrl && (
-                      <img src={formData.imageUrl} alt="Thumbnail" className="w-16 h-16 object-cover rounded-xl" />
+                      <img loading="lazy" decoding="async" src={formData.imageUrl} alt="Thumbnail" className="w-16 h-16 object-cover rounded-xl" />
                     )}
                     <label className="flex-1 cursor-pointer">
                       <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
@@ -526,7 +526,7 @@ export function BlogManagement() {
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-8">
             <button
               onClick={() => setViewingBlog(null)}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+              className="absolute top-4 right-4 p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
             >
               ✕
             </button>
@@ -539,7 +539,7 @@ export function BlogManagement() {
             </div>
             
             {viewingBlog.imageUrl && (
-              <img src={viewingBlog.imageUrl} alt={viewingBlog.title} className="w-full h-80 object-cover rounded-xl mb-8 shadow-md" />
+              <img loading="lazy" decoding="async" src={viewingBlog.imageUrl} alt={viewingBlog.title} className="w-full h-80 object-cover rounded-xl mb-8 shadow-md" />
             )}
             
             {viewingBlog.excerpt && (

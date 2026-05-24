@@ -74,7 +74,7 @@ export function Blog() {
             <div className="md:col-span-2">
               <Link to={`/blog/${featured[0].slug}`} className="group block h-full">
                 <div className="relative h-72 md:h-80 rounded-2xl overflow-hidden mb-4 bg-gray-100">
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={featured[0].imageUrl || "https://placehold.co/800x400?text=No+Image"}
                     alt={featured[0].title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -103,14 +103,14 @@ export function Blog() {
               {featured.slice(1, 3).map((post) => (
                 <Link key={post.id} to={`/blog/${post.slug}`} className="group flex gap-3 bg-white rounded-xl p-3 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all">
                   <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                    <img src={post.imageUrl || "https://placehold.co/100x100?text=No+Image"} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <img loading="lazy" decoding="async" src={post.imageUrl || "https://placehold.co/100x100?text=No+Image"} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-xs text-blue-600 mb-1 block">{sportIcons[post.sport] || "📝"} {post.category}</span>
                     <h4 className="text-gray-800 text-sm leading-snug group-hover:text-blue-700 transition-colors line-clamp-2 mb-2">
                       {post.title}
                     </h4>
-                    <div className="flex items-center gap-1 text-gray-400 text-xs">
+                    <div className="flex items-center gap-1 text-gray-500 text-xs">
                       <Clock className="w-3 h-3" />
                       <span>{Math.ceil(post.content.length / 1000)} phút đọc</span>
                     </div>
@@ -125,7 +125,7 @@ export function Blog() {
       {/* Search + Filter */}
       <div className="flex flex-col md:flex-row gap-4 mb-7">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
             type="text"
             placeholder="Tìm kiếm bài viết..."
@@ -154,12 +154,12 @@ export function Blog() {
 
       {/* Posts Grid */}
       {loading ? (
-        <div className="text-center py-20 text-gray-400">
+        <div className="text-center py-20 text-gray-500">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p>Đang tải bài viết...</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
+        <div className="text-center py-20 text-gray-500">
           <div className="text-5xl mb-3">🔍</div>
           <p>Không tìm thấy bài viết phù hợp</p>
         </div>
@@ -168,7 +168,7 @@ export function Blog() {
           {filtered.map((post) => (
             <Link key={post.id} to={`/blog/${post.slug}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-blue-100 transition-all flex flex-col">
               <div className="h-48 overflow-hidden relative bg-gray-100 shrink-0">
-                <img
+                <img loading="lazy" decoding="async"
                   src={post.imageUrl || "https://placehold.co/400x250?text=No+Image"}
                   alt={post.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -189,10 +189,10 @@ export function Blog() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-700 truncate max-w-[100px]">{post.author}</p>
-                      <p className="text-xs text-gray-400">{post.publishDate || "Gần đây"}</p>
+                      <p className="text-xs text-gray-500">{post.publishDate || "Gần đây"}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 text-gray-400 text-xs">
+                  <div className="flex items-center gap-1 text-gray-500 text-xs">
                     <Clock className="w-3 h-3" />
                     <span>{Math.ceil(post.content.length / 1000)} phút</span>
                   </div>

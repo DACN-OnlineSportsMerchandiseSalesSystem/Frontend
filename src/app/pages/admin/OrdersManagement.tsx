@@ -3,6 +3,7 @@ import { Search, Eye, Edit2, Printer, Download, CheckCircle, XCircle, Clock, Pac
 import { formatPrice } from "../../data/products";
 import orderService from "../../../services/orderService";
 import { Order, useApp } from "../../context/AppContext";
+import { optimizeImage } from "@/utils/imageOptimizer";
 
 const statusConfig = {
   pending: { label: "Chờ xử lý", color: "yellow", icon: Clock, next: "confirmed" },
@@ -147,7 +148,7 @@ export function OrdersManagement() {
       <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
         <div className="flex flex-col md:flex-row gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
               type="text"
               value={searchQuery}
@@ -307,7 +308,7 @@ export function OrdersManagement() {
                 const prev = arr[idx - 1];
                 return (
                   <div key={page} className="flex items-center gap-1.5">
-                    {prev && page - prev > 1 && <span className="px-1 text-gray-400">...</span>}
+                    {prev && page - prev > 1 && <span className="px-1 text-gray-500">...</span>}
                     <button
                       onClick={() => setCurrentPage(page)}
                       className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
@@ -443,7 +444,7 @@ function OrderDetailModal({ order, onClose, onStatusUpdate }: { order: Order; on
             <div className="space-y-3">
               {order.items.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
-                  <img src={item.image} alt={item.name} className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+                  <img loading="lazy" decoding="async" src={optimizeImage(item.image)} alt={item.name} className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{item.name}</p>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -455,7 +456,7 @@ function OrderDetailModal({ order, onClose, onStatusUpdate }: { order: Order; on
                   <div className="text-right">
                     <p className="text-sm font-bold text-blue-600">{formatPrice(item.price * item.quantity)}</p>
                     {item.originalPrice && item.originalPrice > item.price && (
-                      <p className="text-xs text-gray-400 line-through">{formatPrice(item.originalPrice * item.quantity)}</p>
+                      <p className="text-xs text-gray-500 line-through">{formatPrice(item.originalPrice * item.quantity)}</p>
                     )}
                   </div>
                 </div>
@@ -512,7 +513,7 @@ function OrderDetailModal({ order, onClose, onStatusUpdate }: { order: Order; on
                 <div key={idx} className="flex gap-4">
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      event.done ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+                      event.done ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'
                     }`}>
                       {event.done ? <CheckCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                     </div>
@@ -521,14 +522,14 @@ function OrderDetailModal({ order, onClose, onStatusUpdate }: { order: Order; on
                     )}
                   </div>
                   <div className="flex-1 pb-4">
-                    <p className={`text-sm font-medium ${event.done ? 'text-gray-900' : 'text-gray-400'}`}>
+                    <p className={`text-sm font-medium ${event.done ? 'text-gray-900' : 'text-gray-500'}`}>
                       {event.status}
                     </p>
-                    <p className={`text-xs ${event.done ? 'text-gray-600' : 'text-gray-400'} mt-0.5`}>
+                    <p className={`text-xs ${event.done ? 'text-gray-600' : 'text-gray-500'} mt-0.5`}>
                       {event.description}
                     </p>
                     {event.time && (
-                      <p className="text-xs text-gray-400 mt-1">{event.time}</p>
+                      <p className="text-xs text-gray-500 mt-1">{event.time}</p>
                     )}
                   </div>
                 </div>

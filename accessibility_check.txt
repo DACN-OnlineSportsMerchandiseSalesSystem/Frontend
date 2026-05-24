@@ -1,0 +1,203 @@
+Chatbot.tsx:625:.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold">$1</a>');
+Chatbot.tsx:758:<a
+Footer.tsx:21:<a href="#" className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-500 transition-colors">
+Footer.tsx:24:<a href="#" className="w-9 h-9 bg-red-600 rounded-lg flex items-center justify-center hover:bg-red-500 transition-colors">
+Footer.tsx:27:<a href="#" className="w-9 h-9 bg-pink-600 rounded-lg flex items-center justify-center hover:bg-pink-500 transition-colors">
+Footer.tsx:39:<Link to="/products" className="hover:text-white hover:translate-x-1 transition-all inline-block">
+Footer.tsx:62:<Link to={item.to} className="hover:text-white hover:translate-x-1 transition-all inline-block">
+Footer.tsx:96:<button className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-sm whitespace-nowrap">
+HamburgerMenu.tsx:60:<button onClick={onClose} className="p-1.5 hover:bg-blue-600 rounded-lg transition-colors">
+HamburgerMenu.tsx:81:<Link
+HamburgerMenu.tsx:108:<Link
+HamburgerMenu.tsx:119:<Link
+HamburgerMenu.tsx:148:<Link
+HamburgerMenu.tsx:176:<Link
+HamburgerMenu.tsx:193:<Link to="/products?filter=sale" onClick={onClose} className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 transition-colors text-sm">
+HamburgerMenu.tsx:196:<Link to="/products?filter=new" onClick={onClose} className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 transition-colors text-sm">
+HamburgerMenu.tsx:199:<Link to="/products?filter=bestseller" onClick={onClose} className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-yellow-50 hover:bg-yellow-100 text-yellow-700 transition-colors text-sm">
+Header.tsx:81:<Link to="/policy" className="hover:text-white transition-colors">Chính sách</Link>
+Header.tsx:82:<Link to="/returns" className="hover:text-white transition-colors">Đổi trả</Link>
+Header.tsx:83:<Link to="/track-order" className="hover:text-white transition-colors">Theo dõi đơn hàng</Link>
+Header.tsx:99:<Link to="/" className="flex items-center gap-1.5 flex-shrink-0">
+Header.tsx:118:<button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white transition-colors">
+Header.tsx:127:<Link
+Header.tsx:161:<Link to="/account?tab=wishlist" className="relative p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
+Header.tsx:171:<Link to="/track-order" className="hidden sm:flex p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
+Header.tsx:176:<Link to="/cart" className="relative p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
+Header.tsx:187:<Link
+Header.tsx:244:<Link
+Header.tsx:258:<Link
+Header.tsx:301:<Link
+Header.tsx:310:<Link
+Header.tsx:319:<Link
+ProductCard.tsx:52:<Link to={`/product/${product.id}`} className="block">
+ProductCard.tsx:88:<Link
+Account.tsx:143:<Link to="/" className="hover:text-blue-600">Trang chủ</Link>
+Account.tsx:184:<button onClick={() => { setEditMode(true); setSaveError(""); setFormData({ ...user }); }} className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm">
+Account.tsx:189:<button onClick={() => { setEditMode(false); setSaveError(""); }} className="px-4 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Hủy</button>
+Account.tsx:190:<button onClick={handleSave} disabled={isLoading} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center gap-1 disabled:bg-blue-400">
+Account.tsx:287:<Link to="/products" className="mt-3 inline-block text-blue-600 hover:text-blue-800 text-sm">Mua sắm ngay →</Link>
+Account.tsx:314:<Link
+Account.tsx:502:<Link to="/products" className="mt-3 inline-block text-blue-600 text-sm hover:text-blue-800">Khám phá sản phẩm →</Link>
+Account.tsx:518:<Link to={`/product/${p.id}`} className="text-xs text-gray-800 hover:text-blue-700 line-clamp-2">{p.name}</Link>
+Account.tsx:702:<button onClick={() => setAddAddrMode(false)} className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm">Hủy</button>
+Account.tsx:703:<button onClick={handleAddAddress} disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center gap-1 disabled:bg-blue-400">
+Admin.tsx:105:<button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
+Blog.tsx:75:<Link to={`/blog/${featured[0].slug}`} className="group block h-full">
+Blog.tsx:104:<Link key={post.id} to={`/blog/${post.slug}`} className="group flex gap-3 bg-white rounded-xl p-3 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all">
+Blog.tsx:169:<Link key={post.id} to={`/blog/${post.slug}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-blue-100 transition-all flex flex-col">
+Blog.tsx:224:<button className="bg-white text-blue-700 px-5 py-2.5 rounded-xl text-sm hover:bg-blue-50 transition-colors whitespace-nowrap">
+BlogDetail.tsx:51:<Link to="/blog" className="bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-colors">
+BlogDetail.tsx:78:<Link to="/" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
+BlogDetail.tsx:80:<Link to="/blog" className="hover:text-blue-600 transition-colors">Blog</Link>
+BlogDetail.tsx:88:<Link to="/blog" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm mb-5 transition-colors">
+BlogDetail.tsx:162:<button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-500 hover:border-green-300 hover:text-green-600 text-sm transition-all ml-auto">
+BlogDetail.tsx:194:<Link key={p.id} to={`/blog/${p.slug}`} className="group flex gap-3">
+BlogDetail.tsx:229:<Link
+BlogDetail.tsx:249:<Link
+BlogDetail.tsx:263:<Link to="/blog" className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 transition-colors">
+BlogDetail.tsx:270:<Link key={p.id} to={`/blog/${p.slug}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:border-blue-100 transition-all">
+Cart.tsx:341:<Link
+Cart.tsx:355:<Link to="/" className="hover:text-blue-600">Trang chủ</Link>
+Cart.tsx:378:<Link to={`/product/${item.baseProductId || item.productId}`}>
+Cart.tsx:408:<Link
+Cart.tsx:529:<Link to="/products" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm transition-colors pt-1">
+Cart.tsx:635:<button className="text-xs text-blue-600 hover:text-blue-800 font-medium border border-blue-300 px-2.5 py-1 rounded-lg transition-colors">
+Cart.tsx:743:Vui lòng <Link to="/login" className="underline font-bold hover:text-red-700">đăng nhập</Link> để tiến hành thanh toán
+Cart.tsx:778:<Link to="/products" className="text-blue-600 text-sm hover:underline font-medium">
+Checkout.tsx:182:<Link to="/products" className="bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-colors">
+Checkout.tsx:193:<Link to="/" className="hover:text-blue-600">Trang chủ</Link>
+Checkout.tsx:195:<Link to="/cart" className="hover:text-blue-600">Giỏ hàng</Link>
+Checkout.tsx:408:<button onClick={() => setStep("address")} className="px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
+Checkout.tsx:411:<button onClick={() => setStep("confirm")} className="flex-1 py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors">
+Checkout.tsx:463:<button onClick={() => setStep("payment")} className="px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
+Home.tsx:222:<Link
+Home.tsx:229:<Link
+Home.tsx:240:<button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/15 hover:bg-white/30 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all z-20 border border-white/20">
+Home.tsx:243:<button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/15 hover:bg-white/30 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all z-20 border border-white/20">
+Home.tsx:300:<Link to="/products?filter=sale" className="hidden md:inline-flex items-center gap-2 bg-white text-orange-600 px-6 py-3 rounded-xl font-bold hover:bg-yellow-50 transition-all shadow-lg">
+Home.tsx:315:<Link to="/products?filter=sale" className="md:hidden mt-4 w-full flex items-center justify-center gap-2 bg-white text-orange-600 px-6 py-3 rounded-xl font-bold hover:bg-yellow-50 transition-all shadow-lg">
+Home.tsx:328:<Link to="/products?filter=bestseller" className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 transition-colors">
+Home.tsx:350:<Link to="/products" className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 transition-colors">
+Home.tsx:373:<Link to="/products?category=Quần áo thể thao" className="inline-flex items-center gap-1.5 bg-white text-blue-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-50 transition-colors">
+Home.tsx:384:<Link to="/products?filter=sale" className="inline-flex items-center gap-1.5 bg-yellow-400 text-slate-900 px-4 py-2 rounded-lg text-sm font-bold hover:bg-yellow-300 transition-colors">
+Home.tsx:400:<Link to="/products?filter=new" className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 transition-colors">
+Home.tsx:422:<Link to="/blog" className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 transition-colors">
+Home.tsx:428:<Link key={post.id} to={`/blog/${post.slug || post.id}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-blue-100 transition-all">
+Login.tsx:139:<Link to="/" className="inline-flex items-center gap-2 mb-3">
+Login.tsx:152:<Link to="/" className="hover:text-blue-600">Trang chủ</Link>
+Login.tsx:533:<Link to="/policy" className="text-blue-600 hover:text-blue-800">Điều khoản dịch vụ</Link>
+Login.tsx:535:<Link to="/policy" className="text-blue-600 hover:text-blue-800">Chính sách bảo mật</Link>
+NotFound.tsx:12:<Link to="/" className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-xl transition-colors">
+NotFound.tsx:15:<button onClick={() => window.history.back()} className="flex items-center gap-2 border-2 border-gray-200 text-gray-600 px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors">
+OrderSuccess.tsx:26:<Link
+OrderSuccess.tsx:33:<Link
+OrderTracking.tsx:98:<Link to="/" className="hover:text-blue-600">Trang chủ</Link>
+OrderTracking.tsx:295:<Link to="/returns" className="flex items-center gap-2 px-5 py-2.5 border border-blue-200 text-blue-600 rounded-xl text-sm hover:bg-blue-50 transition-colors">
+OrderTracking.tsx:392:<Link to="/products" className="text-blue-600 text-sm hover:underline mt-2 inline-block">Mua sắm ngay</Link>
+OrderTracking.tsx:411:<button onClick={() => setCancelModal(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors text-sm">
+OrderTracking.tsx:414:<button onClick={handleCancel} className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm transition-colors">
+OrderTracking.tsx:437:<button onClick={() => setReturnModal(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors text-sm">
+OrderTracking.tsx:440:<button onClick={handleReturn} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm transition-colors">
+Policy.tsx:62:<Link to="/" className="hover:text-blue-600">Trang chủ</Link>
+ProductDetail.tsx:178:<Link to="/products" className="bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-colors">
+ProductDetail.tsx:218:<Link to="/" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
+ProductDetail.tsx:220:<Link to="/products" className="hover:text-blue-600 transition-colors">Sản phẩm</Link>
+ProductDetail.tsx:224:<Link to={`/products?sport=${categoryName}`} className="hover:text-blue-600 transition-colors">{categoryName}</Link>
+ProductDetail.tsx:323:<button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
+ProductDetail.tsx:327:<button onClick={() => setQty(qty + 1)} className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
+ProductDetail.tsx:553:<Link to="/products" className="text-blue-600 text-sm hover:underline">Xem thêm</Link>
+ProductDetail.tsx:568:<Link to="/products" className="text-blue-600 text-sm hover:underline">Xem thêm</Link>
+Products.tsx:89:<Link to="/" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
+Products.tsx:109:<button onClick={() => removeFilter(f.key)} className="hover:text-red-500">
+Products.tsx:114:<button onClick={() => setSearchParams({})} className="text-sm text-red-500 hover:text-red-700 underline">
+Products.tsx:236:<button onClick={() => setViewMode("grid")} className={`p-1.5 rounded-lg transition-colors ${viewMode === "grid" ? "bg-blue-100 text-blue-700" : "text-gray-400 hover:text-gray-600"}`}>
+Products.tsx:239:<button onClick={() => setViewMode("list")} className={`p-1.5 rounded-lg transition-colors ${viewMode === "list" ? "bg-blue-100 text-blue-700" : "text-gray-400 hover:text-gray-600"}`}>
+Products.tsx:250:<button onClick={() => setSearchParams({})} className="bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-colors">
+Returns.tsx:121:<Link to="/" className="hover:text-blue-600">Trang chủ</Link>
+Returns.tsx:221:<button onClick={handleFindOrder} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm hover:bg-blue-700 transition-colors font-medium">
+BlogManagement.tsx:346:<button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+BrandsManagement.tsx:251:<button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+CategoriesManagement.tsx:448:<button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+CouponsManagement.tsx:114:<button className="p-2 hover:bg-blue-50 rounded-lg transition-colors" onClick={() => setEditingVoucher(coupon)}>
+CouponsManagement.tsx:117:<button className="p-2 hover:bg-red-50 rounded-lg transition-colors" onClick={() => handleDelete(coupon.id)}>
+CouponsManagement.tsx:238:<button type="button" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+CustomersManagement.tsx:386:<button type="button" onClick={() => setShowCreateModal(false)}><X className="w-5 h-5 text-gray-500" /></button>
+CustomersManagement.tsx:403:<button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2 border rounded-xl">Hủy</button>
+CustomersManagement.tsx:404:<button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-xl">Tạo tài khoản</button>
+CustomersManagement.tsx:455:<button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+DiscountsManagement.tsx:265:<button type="button" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+OrdersManagement.tsx:110:<button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+OrdersManagement.tsx:363:<button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+OrdersManagement.tsx:395:<button className="px-4 py-2 border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors text-sm">
+PoliciesManagement.tsx:212:<button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+ProductsManagement.tsx:582:<button type="button" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+ProductsManagement.tsx:960:<button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+ReturnsManagement.tsx:207:<button onClick={() => setSelectedReturn(null)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+ReviewsManagement.tsx:295:<button onClick={() => setReplyModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+SettingsManagement.tsx:118:<button className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all shadow-lg shadow-blue-200 font-black uppercase tracking-widest text-xs">
+SettingsManagement.tsx:268:<button className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all shadow-lg shadow-blue-200 font-black uppercase tracking-widest text-xs">
+StatisticsReports.tsx:72:<button className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-lg shadow-blue-200 font-black uppercase tracking-widest text-xs">
+ProductCard.tsx:49:<Link to={`/product/${product.id}`} className="block">
+ProductCard.tsx:84:<Link
+Footer.tsx:21:<a href="#" className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white hover:bg-blue-500 transition-colors font-bold text-xs">
+Footer.tsx:24:<a href="#" className="w-9 h-9 bg-red-600 rounded-lg flex items-center justify-center text-white hover:bg-red-500 transition-colors font-bold text-xs">
+Footer.tsx:27:<a href="#" className="w-9 h-9 bg-pink-600 rounded-lg flex items-center justify-center text-white hover:bg-pink-500 transition-colors font-bold text-xs">
+Footer.tsx:39:<Link to="/products" className="hover:text-white hover:translate-x-1 transition-all inline-block">
+Footer.tsx:62:<Link to={item.to} className="hover:text-white hover:translate-x-1 transition-all inline-block">
+Footer.tsx:96:<button className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-sm whitespace-nowrap">
+HamburgerMenu.tsx:43:<button onClick={onClose} className="p-1.5 hover:bg-blue-600 rounded-lg transition-colors">
+HamburgerMenu.tsx:64:<Link
+HamburgerMenu.tsx:92:<Link
+HamburgerMenu.tsx:120:<Link
+HamburgerMenu.tsx:148:<Link
+HamburgerMenu.tsx:165:<Link to="/products?filter=sale" onClick={onClose} className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 transition-colors text-sm">
+HamburgerMenu.tsx:168:<Link to="/products?filter=new" onClick={onClose} className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 transition-colors text-sm">
+HamburgerMenu.tsx:171:<Link to="/products?filter=bestseller" onClick={onClose} className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-yellow-50 hover:bg-yellow-100 text-yellow-700 transition-colors text-sm">
+Header.tsx:66:<Link to="/policy" className="hover:text-white transition-colors">Chính sách</Link>
+Header.tsx:67:<Link to="/returns" className="hover:text-white transition-colors">Đổi trả</Link>
+Header.tsx:68:<Link to="/track-order" className="hover:text-white transition-colors">Theo dõi đơn hàng</Link>
+Header.tsx:84:<Link to="/" className="flex items-center gap-1.5 flex-shrink-0">
+Header.tsx:103:<button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white transition-colors">
+Header.tsx:112:<Link
+Header.tsx:146:<Link to="/account?tab=wishlist" className="relative p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
+Header.tsx:156:<Link to="/track-order" className="hidden sm:flex p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
+Header.tsx:161:<Link to="/cart" className="relative p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
+Header.tsx:218:<Link
+Header.tsx:232:<Link
+Header.tsx:271:<Link
+Header.tsx:279:<Link
+index.tsx:99:<Link
+index.tsx:113:<Link to="/" className="hover:text-blue-600">Trang chủ</Link>
+index.tsx:137:<Link to={`/product/${item.productId}`}>
+index.tsx:167:<Link
+index.tsx:235:<Link to="/products" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm transition-colors pt-1">
+index.tsx:341:<button className="text-xs text-blue-600 hover:text-blue-800 font-medium border border-blue-300 px-2.5 py-1 rounded-lg transition-colors">
+index.tsx:87:<Link to="/products" className="bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-colors">
+index.tsx:98:<Link to="/" className="hover:text-blue-600">Trang chủ</Link>
+index.tsx:100:<Link to="/cart" className="hover:text-blue-600">Giỏ hàng</Link>
+index.tsx:284:<button onClick={() => setStep("address")} className="px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
+index.tsx:287:<button onClick={() => setStep("confirm")} className="flex-1 py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors">
+index.tsx:328:<button onClick={() => setStep("payment")} className="px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
+OrderSuccess.tsx:26:<Link
+OrderSuccess.tsx:33:<Link
+index.tsx:68:<Link
+index.tsx:74:<Link
+index.tsx:91:<button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-20">
+index.tsx:94:<button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-20">
+index.tsx:135:<Link to="/products" className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 transition-colors">
+index.tsx:141:<Link
+index.tsx:160:<Link to="/products?filter=bestseller" className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 transition-colors">
+index.tsx:179:<Link to="/products?category=Quần áo thể thao" className="inline-flex items-center gap-1.5 bg-white text-blue-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-50 transition-colors">
+index.tsx:190:<Link to="/products?filter=sale" className="inline-flex items-center gap-1.5 bg-yellow-400 text-slate-900 px-4 py-2 rounded-lg text-sm font-bold hover:bg-yellow-300 transition-colors">
+index.tsx:206:<Link to="/products?filter=new" className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 transition-colors">
+index.tsx:224:<Link to="/products?filter=sale" className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 transition-colors">
+index.tsx:12:<Link to="/" className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-xl transition-colors">
+index.tsx:15:<button onClick={() => history.back()} className="flex items-center gap-2 border-2 border-gray-200 text-gray-600 px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors">
+PolicyPage.tsx:66:<Link to="/" className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors">
+ProductDetail.tsx:29:<Link to="/products" className="bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-colors">
+ProductDetail.tsx:77:<Link to="/" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
+ProductDetail.tsx:79:<Link to="/products" className="hover:text-blue-600 transition-colors">Sản phẩm</Link>
+ProductDetail.tsx:81:<Link to={`/products?sport=${encodeURIComponent(product.sport)}`} className="hover:text-blue-600 transition-colors">{product.sport}</Link>
+ProductDetail.tsx:196:<button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
+ProductDetail.tsx:200:<button onClick={() => setQty(qty + 1)} className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">

@@ -61,7 +61,7 @@ export function BrandsManagement() {
       {/* Filters */}
       <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input
             type="text"
             value={searchQuery}
@@ -102,7 +102,7 @@ export function BrandsManagement() {
                   <tr key={brand.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <img 
+                        <img loading="lazy" decoding="async" 
                           src={brand.imageUrl || "https://via.placeholder.com/100"} 
                           alt={brand.name} 
                           className="w-12 h-12 rounded-lg object-cover border border-gray-100 bg-gray-50" 
@@ -136,14 +136,14 @@ export function BrandsManagement() {
                           className="p-2 hover:bg-yellow-50 rounded-lg transition-colors group"
                           title="Chỉnh sửa"
                         >
-                          <Edit2 className="w-4 h-4 text-gray-400 group-hover:text-yellow-600" />
+                          <Edit2 className="w-4 h-4 text-gray-500 group-hover:text-yellow-600" />
                         </button>
                         <button
                           onClick={() => handleDelete(brand.id)}
                           className="p-2 hover:bg-red-50 rounded-lg transition-colors group"
                           title="Xóa"
                         >
-                          <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-500" />
+                          <Trash2 className="w-4 h-4 text-gray-500 group-hover:text-red-500" />
                         </button>
                       </div>
                     </td>
@@ -278,7 +278,7 @@ function BrandFormModal({ brand, onClose, onRefresh }: { brand?: Brand; onClose:
                   </div>
                 ) : formData.imageUrl ? (
                   <>
-                    <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-contain p-4" />
+                    <img loading="lazy" decoding="async" src={formData.imageUrl} alt="Preview" className="w-full h-full object-contain p-4" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <p className="text-white text-sm font-medium flex items-center gap-2">
                         <Upload className="w-4 h-4" /> Thay đổi ảnh
@@ -288,11 +288,11 @@ function BrandFormModal({ brand, onClose, onRefresh }: { brand?: Brand; onClose:
                 ) : (
                   <>
                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                      <ImageIcon className="w-6 h-6 text-gray-400 group-hover:text-blue-600" />
+                      <ImageIcon className="w-6 h-6 text-gray-500 group-hover:text-blue-600" />
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-semibold text-gray-700">Tải ảnh lên</p>
-                      <p className="text-xs text-gray-400">PNG, JPG tối đa 5MB</p>
+                      <p className="text-xs text-gray-500">PNG, JPG tối đa 5MB</p>
                     </div>
                   </>
                 )}

@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { Heart, ShoppingCart, Star, Eye } from "lucide-react";
 import { Product, formatPrice } from "../data/products";
 import { useApp } from "../context/AppContext";
+import { optimizeImage } from "@/utils/imageOptimizer";
 
 interface ProductCardProps {
   product: Product;
@@ -52,15 +53,15 @@ export function ProductCard({ product }: ProductCardProps) {
       <Link to={`/product/${product.id}`} className="block">
         {/* Image */}
         <div className="relative overflow-hidden bg-gray-50 aspect-square">
-          <img
-            src={image}
+          <img loading="lazy" decoding="async"
+            src={optimizeImage(image)}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
             {discount > 0 && (
-              <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+              <span className="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">
                 -{discount}%
               </span>
             )}
@@ -78,14 +79,16 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Actions overlay */}
           <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <button
+              aria-label={isWishlisted ? "Bỏ thích" : "Yêu thích"}
               onClick={handleWishlist}
               className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-colors ${
-                isWishlisted ? "bg-red-500 text-white" : "bg-white text-gray-600 hover:text-red-500"
+                isWishlisted ? "bg-red-600 text-white" : "bg-white text-gray-600 hover:text-red-500"
               }`}
             >
               <Heart className={`w-4 h-4 ${isWishlisted ? "fill-white" : ""}`} />
             </button>
             <Link
+              aria-label="Xem chi tiết"
               to={`/product/${product.id}`}
               onClick={(e) => e.stopPropagation()}
               className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg text-gray-600 hover:text-blue-600 transition-colors"
@@ -127,7 +130,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex items-baseline gap-2">
             <span className="text-blue-700 font-bold">{formatPrice(price)}</span>
             {originalPrice > price && (
-              <span className="text-xs text-gray-400 line-through">{formatPrice(originalPrice)}</span>
+              <span className="text-xs text-gray-500 line-through">{formatPrice(originalPrice)}</span>
             )}
           </div>
         </div>

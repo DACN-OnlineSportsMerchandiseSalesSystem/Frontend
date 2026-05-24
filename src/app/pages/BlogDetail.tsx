@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router";
 import { Clock, ChevronRight, ArrowLeft, Share2, Bookmark, ThumbsUp, Tag } from "lucide-react";
 import { useState, useEffect } from "react";
 import blogService, { BlogPostDTO } from "../../services/blogService";
+import { optimizeImage } from "@/utils/imageOptimizer";
 
 export function BlogDetail() {
   const { id: slug } = useParams<{ id: string }>(); // Using 'id' from router, but it represents the slug
@@ -105,9 +106,9 @@ export function BlogDetail() {
             </div>
             <div>
               <p className="text-gray-800 text-sm">{post.author}</p>
-              <p className="text-gray-400 text-xs">Biên tập viên</p>
+              <p className="text-gray-500 text-xs">Biên tập viên</p>
             </div>
-            <div className="ml-auto flex items-center gap-4 text-sm text-gray-400">
+            <div className="ml-auto flex items-center gap-4 text-sm text-gray-500">
               <div className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />
                 <span>{Math.ceil(post.content.length / 1000)} phút đọc</span>
@@ -119,7 +120,7 @@ export function BlogDetail() {
           {/* Hero Image */}
           {post.imageUrl && (
             <div className="rounded-2xl overflow-hidden mb-7 aspect-video bg-gray-100">
-              <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
+              <img loading="lazy" decoding="async" src={optimizeImage(post.imageUrl)} alt={post.title} className="w-full h-full object-cover" />
             </div>
           )}
 
@@ -131,7 +132,7 @@ export function BlogDetail() {
 
           {/* Tags */}
           <div className="mt-12 flex flex-wrap gap-2">
-            <Tag className="w-4 h-4 text-gray-400 mt-0.5" />
+            <Tag className="w-4 h-4 text-gray-500 mt-0.5" />
             {post.tags && post.tags.split(',').map((tag) => tag.trim() && (
               <span key={tag} className="bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded-full hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer">
                 #{tag.trim()}
@@ -193,13 +194,13 @@ export function BlogDetail() {
                 {related.map((p) => (
                   <Link key={p.id} to={`/blog/${p.slug}`} className="group flex gap-3">
                     <div className="w-20 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                      <img src={p.imageUrl || "https://placehold.co/100x100?text=No+Image"} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <img loading="lazy" decoding="async" src={p.imageUrl || "https://placehold.co/100x100?text=No+Image"} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-gray-700 text-sm leading-snug group-hover:text-blue-700 transition-colors line-clamp-2 mb-1">
                         {p.title}
                       </p>
-                      <div className="flex items-center gap-1 text-gray-400 text-xs">
+                      <div className="flex items-center gap-1 text-gray-500 text-xs">
                         <Clock className="w-3 h-3" />
                         <span>{Math.ceil(p.content.length / 1000)} phút</span>
                       </div>
@@ -232,7 +233,7 @@ export function BlogDetail() {
                   className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-blue-50 hover:text-blue-700 text-gray-600 text-sm transition-colors"
                 >
                   <span>{item.label}</span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-500">
                     {/* {blogPosts.filter((p) => p.sport === item.sport).length} bài */}
                   </span>
                 </Link>
@@ -269,14 +270,14 @@ export function BlogDetail() {
           {related.slice(0, 3).map((p) => (
             <Link key={p.id} to={`/blog/${p.slug}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:border-blue-100 transition-all">
               <div className="h-40 overflow-hidden bg-gray-100">
-                <img src={p.imageUrl || "https://placehold.co/400x250?text=No+Image"} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img loading="lazy" decoding="async" src={p.imageUrl || "https://placehold.co/400x250?text=No+Image"} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               </div>
               <div className="p-4">
                 <span className="text-xs text-blue-600 mb-1 block">{sportIcons[p.sport] || "📝"} {p.category}</span>
                 <h4 className="text-gray-800 text-sm leading-snug group-hover:text-blue-700 transition-colors line-clamp-2 mb-2">
                   {p.title}
                 </h4>
-                <div className="flex items-center gap-1 text-gray-400 text-xs">
+                <div className="flex items-center gap-1 text-gray-500 text-xs">
                   <Clock className="w-3 h-3" />
                   <span>{Math.ceil(p.content.length / 1000)} phút đọc</span>
                 </div>

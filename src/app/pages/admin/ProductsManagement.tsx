@@ -163,7 +163,7 @@ export function ProductsManagement() {
       <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
         <div className="flex flex-col md:flex-row gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
               type="text"
               value={searchQuery}
@@ -235,7 +235,7 @@ export function ProductsManagement() {
                 <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <img src={product.image} alt={product.name} className="w-12 h-12 rounded-lg object-cover border border-gray-100" />
+                      <img loading="lazy" decoding="async" src={product.image} alt={product.name} className="w-12 h-12 rounded-lg object-cover border border-gray-100" />
                       <div>
                         <p className="text-sm font-medium text-gray-800 line-clamp-1">{product.name}</p>
                         <p className="text-xs text-gray-500">{product.brand}</p>
@@ -250,7 +250,7 @@ export function ProductsManagement() {
                   <td className="px-4 py-3">
                     <p className="text-sm font-bold text-blue-600">{formatPrice(product.price)}</p>
                     {product.originalPrice && product.originalPrice > product.price && (
-                      <p className="text-xs text-gray-400 line-through">{formatPrice(product.originalPrice)}</p>
+                      <p className="text-xs text-gray-500 line-through">{formatPrice(product.originalPrice)}</p>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -331,7 +331,7 @@ export function ProductsManagement() {
                 const prev = arr[idx - 1];
                 return (
                   <div key={page} className="flex items-center gap-1.5">
-                    {prev && page - prev > 1 && <span className="px-1 text-gray-400">...</span>}
+                    {prev && page - prev > 1 && <span className="px-1 text-gray-500">...</span>}
                     <button
                       onClick={() => setCurrentPage(page)}
                       className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
@@ -596,10 +596,10 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
                 {isUploading ? (
                   <div className="w-8 h-8 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
                 ) : imageUrl ? (
-                  <img src={imageUrl} alt="Preview" className="max-h-[120px] rounded-lg object-contain" />
+                  <img loading="lazy" decoding="async" src={imageUrl} alt="Preview" className="max-h-[120px] rounded-lg object-contain" />
                 ) : (
                   <>
-                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-1" />
+                    <Upload className="w-12 h-12 text-gray-500 mx-auto mb-1" />
                     <p className="text-sm text-gray-600">Click để tải ảnh lên</p>
                   </>
                 )}
@@ -691,10 +691,10 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
                             </span>
                             {hasChildren && (
                               <span className="ml-auto flex items-center gap-1">
-                                <span className="text-[10px] text-gray-400 font-normal">{children.length} mục con</span>
+                                <span className="text-[10px] text-gray-500 font-normal">{children.length} mục con</span>
                                 {isOpen
-                                  ? <ChevronDown className="w-4 h-4 text-gray-400" />
-                                  : <ChevronRight className="w-4 h-4 text-gray-400" />
+                                  ? <ChevronDown className="w-4 h-4 text-gray-500" />
+                                  : <ChevronRight className="w-4 h-4 text-gray-500" />
                                 }
                               </span>
                             )}
@@ -733,12 +733,12 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
                                       ? 'text-blue-600 font-semibold'
                                       : isParentSelected
                                         ? 'text-gray-600'
-                                        : 'text-gray-400 italic'
+                                        : 'text-gray-500 italic'
                                   }`}>
                                     {child.name}
                                   </span>
                                   {!isParentSelected && (
-                                    <span className="ml-auto text-[10px] text-gray-400 font-medium">
+                                    <span className="ml-auto text-[10px] text-gray-500 font-medium">
                                       🔒 chọn cha trước
                                     </span>
                                   )}
@@ -753,7 +753,7 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
                   });
                 })()}
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">💡 Click vào tên danh mục cha để xem/ẩn danh mục con. Tích ô vuông để chọn.</p>
+              <p className="text-xs text-gray-500 mt-1.5">💡 Click vào tên danh mục cha để xem/ẩn danh mục con. Tích ô vuông để chọn.</p>
             </div>
 
             {/* Price & Discount */}
@@ -778,7 +778,7 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Màu sắc <span className="text-gray-400 font-normal">(Ví dụ: Đỏ, Đen, Trắng)</span>
+                  Màu sắc <span className="text-gray-500 font-normal">(Ví dụ: Đỏ, Đen, Trắng)</span>
                 </label>
                 <input
                   type="text" value={colors} onChange={(e) => setColors(e.target.value)}
@@ -788,7 +788,7 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Kích cỡ <span className="text-gray-400 font-normal">(Ví dụ: 38, 39, 40)</span>
+                  Kích cỡ <span className="text-gray-500 font-normal">(Ví dụ: 38, 39, 40)</span>
                 </label>
                 <input
                   type="text" value={sizes} onChange={(e) => setSizes(e.target.value)}
@@ -854,7 +854,7 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
                     </table>
                   </div>
                 </div>
-                <p className="text-xs text-gray-400 mt-1.5">💡 Nhập số lượng tồn kho cho từng tổ hợp màu sắc và kích cỡ. Ô đỏ = hết hàng.</p>
+                <p className="text-xs text-gray-500 mt-1.5">💡 Nhập số lượng tồn kho cho từng tổ hợp màu sắc và kích cỡ. Ô đỏ = hết hàng.</p>
               </div>
             )}
 
@@ -967,7 +967,7 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
             {/* Left: Image + Price */}
             <div className="space-y-6">
               <div className="aspect-square rounded-3xl overflow-hidden border border-gray-100 bg-gray-50 p-4 shadow-inner">
-                <img
+                <img loading="lazy" decoding="async"
                   src={product.images?.[0]?.imageUrl || product.image}
                   alt={product.name}
                   className="w-full h-full object-contain"
@@ -993,11 +993,11 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
             <div className="space-y-6">
               <div>
                 <h4 className="text-3xl font-black text-gray-900 leading-tight">{product.name}</h4>
-                <p className="text-gray-400 font-mono text-sm mt-2">Mã SP: {product.productCode}</p>
+                <p className="text-gray-500 font-mono text-sm mt-2">Mã SP: {product.productCode}</p>
               </div>
 
               <div>
-                <p className="text-[10px] font-black text-gray-400 uppercase mb-3">Danh mục</p>
+                <p className="text-[10px] font-black text-gray-500 uppercase mb-3">Danh mục</p>
                 <div className="flex flex-wrap gap-2">
                   {sortCategoryNamesParentFirst(product.categoryNames, categories).map((name: string) => (
                     <span key={name} className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold">{name}</span>
@@ -1008,7 +1008,7 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
               {/* Variant Stock Table */}
               {variants.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase mb-3">Tồn kho theo biến thể</p>
+                  <p className="text-[10px] font-black text-gray-500 uppercase mb-3">Tồn kho theo biến thể</p>
                   <div className="border border-gray-200 rounded-xl overflow-hidden">
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
@@ -1048,12 +1048,12 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
                       </table>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1.5">🟡 Sắp hết (≤20) &nbsp;🟢 Còn hàng &nbsp;🔴 Hết hàng</p>
+                  <p className="text-xs text-gray-500 mt-1.5">🟡 Sắp hết (≤20) &nbsp;🟢 Còn hàng &nbsp;🔴 Hết hàng</p>
                 </div>
               )}
 
               <div>
-                <p className="text-[10px] font-black text-gray-400 uppercase mb-3">Mô tả sản phẩm</p>
+                <p className="text-[10px] font-black text-gray-500 uppercase mb-3">Mô tả sản phẩm</p>
                 <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-line bg-gray-50 p-5 rounded-2xl border border-gray-100">
                   {product.description || "Chưa có mô tả chi tiết."}
                 </p>
@@ -1102,7 +1102,7 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
                       </div>
                       <button 
                         onClick={() => handleDeleteReview(review.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
                         title="Xóa đánh giá"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -1117,7 +1117,7 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
                         <CornerDownRight className="w-5 h-5 text-gray-300 absolute -left-7 top-4" />
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-bold text-sm text-gray-900">Phản hồi của người bán</span>
-                          <span className="text-xs text-gray-400">• {new Date(review.repliedAt).toLocaleDateString("vi-VN")}</span>
+                          <span className="text-xs text-gray-500">• {new Date(review.repliedAt).toLocaleDateString("vi-VN")}</span>
                         </div>
                         <p className="text-sm text-gray-600">{review.adminReply}</p>
                       </div>

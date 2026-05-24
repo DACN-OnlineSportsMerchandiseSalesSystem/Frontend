@@ -80,7 +80,7 @@ export function Home() {
             </div>
           </div>
           <div className="hidden lg:block flex-1 relative h-80">
-            <img
+            <img fetchPriority="high" decoding="async"
               src={current.img}
               alt="Hero"
               className="absolute inset-0 w-full h-full object-cover rounded-2xl opacity-60"
@@ -88,10 +88,10 @@ export function Home() {
           </div>
         </div>
         {/* Slider controls */}
-        <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-20">
+        <button onClick={prevSlide} aria-label="Trang trước" className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-20">
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-20">
+        <button onClick={nextSlide} aria-label="Trang sau" className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors z-20">
           <ChevronRight className="w-5 h-5" />
         </button>
         {/* Dots */}

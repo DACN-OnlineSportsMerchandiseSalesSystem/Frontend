@@ -7,6 +7,7 @@ import {
 import { useApp } from "../context/AppContext";
 import { formatPrice } from "../data/products";
 import returnService, { ReturnRequestDTO } from "../../services/returnService";
+import { optimizeImage } from "@/utils/imageOptimizer";
 
 const returnReasons = [
   "Sản phẩm bị lỗi / hỏng hóc",
@@ -225,7 +226,7 @@ export function Returns() {
 
                 {deliveredOrders.length > 0 && (
                   <div>
-                    <p className="text-xs text-gray-400 mb-2">Đơn hàng đã giao gần đây:</p>
+                    <p className="text-xs text-gray-500 mb-2">Đơn hàng đã giao gần đây:</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {deliveredOrders.slice(0, 4).map((order) => (
                         <button
@@ -267,7 +268,7 @@ export function Returns() {
                           isSelected ? "border-blue-500 bg-blue-50" : "border-gray-100 hover:bg-gray-50"
                         }`}>
                           <input type="checkbox" checked={isSelected} onChange={() => toggleItem(item, idx)} className="w-4 h-4 accent-blue-600" />
-                          <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
+                          <img loading="lazy" decoding="async" src={optimizeImage(item.image)} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
                             <p className="text-xs text-gray-500">Size: {item.size} · Màu: {item.color} · SL: {item.quantity}</p>
@@ -328,7 +329,7 @@ export function Returns() {
                   <button
                     onClick={handleSubmit}
                     disabled={!reason || isSubmitting}
-                    className="w-full py-4 bg-blue-700 hover:bg-blue-800 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-100 transition-all"
+                    className="w-full py-4 bg-blue-700 hover:bg-blue-800 disabled:bg-gray-200 disabled:text-gray-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-100 transition-all"
                   >
                     {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <RotateCcw className="w-5 h-5" />}
                     {isSubmitting ? "Đang gửi yêu cầu..." : "Gửi yêu cầu đổi trả ngay"}
@@ -385,7 +386,7 @@ export function Returns() {
                     <div className="flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-100">
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-black text-blue-600">YC #{ret.id}</span>
-                        <span className="text-xs text-gray-400">•</span>
+                        <span className="text-xs text-gray-500">•</span>
                         <span className="text-xs text-gray-500">Đơn #{ret.orderId}</span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -393,7 +394,7 @@ export function Returns() {
                           {st.icon}
                           {st.label}
                         </span>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-500">
                           {ret.createdAt ? new Date(ret.createdAt).toLocaleDateString("vi-VN") : ""}
                         </span>
                       </div>
@@ -403,22 +404,22 @@ export function Returns() {
                     <div className="px-5 py-4 space-y-3">
                       {/* Reason */}
                       <div className="flex gap-2">
-                        <span className="text-xs text-gray-400 shrink-0 mt-0.5">Lý do:</span>
+                        <span className="text-xs text-gray-500 shrink-0 mt-0.5">Lý do:</span>
                         <span className="text-xs text-gray-700">{ret.reason}</span>
                       </div>
 
                       {/* Items */}
                       {ret.returnItems && ret.returnItems.length > 0 && (
                         <div>
-                          <p className="text-xs text-gray-400 mb-2">Sản phẩm yêu cầu hoàn ({ret.returnItems.length}):</p>
+                          <p className="text-xs text-gray-500 mb-2">Sản phẩm yêu cầu hoàn ({ret.returnItems.length}):</p>
                           <div className="space-y-2">
                             {ret.returnItems.map((item, idx) => (
                               <div key={idx} className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl">
                                 {item.imageProof ? (
-                                  <img src={item.imageProof} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                                  <img loading="lazy" decoding="async" src={item.imageProof} alt="" className="w-10 h-10 rounded-lg object-cover" />
                                 ) : (
                                   <div className="w-10 h-10 rounded-lg bg-gray-200 flex items-center justify-center flex-shrink-0">
-                                    <Package className="w-4 h-4 text-gray-400" />
+                                    <Package className="w-4 h-4 text-gray-500" />
                                   </div>
                                 )}
                                 <div className="flex-1 min-w-0">
