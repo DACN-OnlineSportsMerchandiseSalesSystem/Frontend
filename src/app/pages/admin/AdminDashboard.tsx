@@ -80,7 +80,7 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
         <button
           onClick={handleManualSync}
           disabled={isSyncing}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-bold text-sm shadow-sm disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-bold text-sm shadow-sm disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
           {isSyncing ? "Đang đồng bộ..." : "Cập nhật số liệu"}
@@ -135,7 +135,7 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
             {/* Recent Orders */}
-            <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm">
+            <div className="bg-white rounded-[32px] p-8 border-2 border-gray-300 shadow-sm">
               <div className="flex items-center justify-between mb-8 px-2">
                 <h3 className="text-gray-900 font-black text-lg">Đơn hàng vừa nhận</h3>
                 <button 
@@ -152,7 +152,7 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
                     <p className="text-sm font-bold">Chưa có đơn hàng</p>
                   </div>
                 ) : recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-5 hover:bg-gray-50 rounded-3xl transition-all border border-transparent hover:border-gray-100 group">
+                  <div key={order.id} className="flex items-center justify-between p-5 hover:bg-gray-50 rounded-3xl transition-all border border-transparent hover:border-gray-200 group">
                     <div className="flex-1">
                       <p className="text-sm font-black text-gray-900 group-hover:text-blue-600 transition-colors">#{order.id}</p>
                       <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter mt-1">
@@ -171,7 +171,7 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
             </div>
 
             {/* Top Products */}
-            <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm">
+            <div className="bg-white rounded-[32px] p-8 border-2 border-gray-300 shadow-sm">
               <div className="flex items-center justify-between mb-8 px-2">
                 <h3 className="text-gray-900 font-black text-lg">Sản phẩm nổi bật</h3>
                 <button 
@@ -183,14 +183,14 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
               </div>
               <div className="space-y-4">
                 {topProducts.slice(0, 5).map((product, idx) => (
-                  <div key={product.id || idx} className="flex items-center gap-5 p-4 hover:bg-gray-50 rounded-3xl transition-all border border-transparent hover:border-gray-100 group">
+                  <div key={product.id || idx} className="flex items-center gap-5 p-4 hover:bg-gray-50 rounded-3xl transition-all border border-transparent hover:border-gray-200 group">
                     <div className="w-10 h-10 bg-gray-50 group-hover:bg-blue-600 group-hover:text-white rounded-2xl flex items-center justify-center text-gray-500 font-black text-xs transition-all">
                       {idx + 1}
                     </div>
                     <img loading="lazy" decoding="async" 
                       src={product.images?.[0]?.imageUrl || product.image || "/placeholder.png"} 
                       alt={product.name} 
-                      className="w-14 h-14 rounded-2xl object-cover border border-gray-50 shadow-sm" 
+                      className="w-14 h-14 rounded-2xl object-cover border-2 border-gray-300 shadow-sm" 
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-black text-gray-900 truncate group-hover:text-blue-600 transition-colors">{product.name}</p>
@@ -206,12 +206,12 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
           </div>
 
           {/* Quick actions */}
-          <div className="bg-white rounded-[40px] p-10 border border-gray-100 shadow-sm mt-8">
+          <div className="bg-white rounded-[40px] p-10 border-2 border-gray-300 shadow-sm mt-8">
             <h3 className="text-gray-900 font-black mb-8 px-2 text-xl">Thao tác</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <button 
                 onClick={() => onNavigate?.("products")}
-                className="flex flex-col items-center gap-4 p-8 hover:bg-blue-50 rounded-[40px] transition-all border border-gray-50 group cursor-pointer"
+                className="flex flex-col items-center gap-4 p-8 hover:bg-blue-50 rounded-[40px] transition-all border-2 border-gray-300 group cursor-pointer"
               >
                 <div className="w-16 h-16 bg-blue-100 group-hover:bg-blue-600 group-hover:scale-110 rounded-[20px] flex items-center justify-center transition-all shadow-lg shadow-blue-100 group-hover:shadow-blue-200">
                   <Plus className="w-8 h-8 text-blue-600 group-hover:text-white" />
@@ -220,7 +220,7 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
               </button>
               <button 
                 onClick={() => onNavigate?.("vouchers")}
-                className="flex flex-col items-center gap-4 p-8 hover:bg-emerald-50 rounded-[40px] transition-all border border-gray-50 group cursor-pointer"
+                className="flex flex-col items-center gap-4 p-8 hover:bg-emerald-50 rounded-[40px] transition-all border-2 border-gray-300 group cursor-pointer"
               >
                 <div className="w-16 h-16 bg-emerald-100 group-hover:bg-emerald-600 group-hover:scale-110 rounded-[20px] flex items-center justify-center transition-all shadow-lg shadow-emerald-100 group-hover:shadow-emerald-200">
                   <Tag className="w-8 h-8 text-emerald-600 group-hover:text-white" />
@@ -229,7 +229,7 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
               </button>
               <button 
                 onClick={() => onNavigate?.("blog")}
-                className="flex flex-col items-center gap-4 p-8 hover:bg-indigo-50 rounded-[40px] transition-all border border-gray-50 group cursor-pointer"
+                className="flex flex-col items-center gap-4 p-8 hover:bg-indigo-50 rounded-[40px] transition-all border-2 border-gray-300 group cursor-pointer"
               >
                 <div className="w-16 h-16 bg-indigo-100 group-hover:bg-indigo-600 group-hover:scale-110 rounded-[20px] flex items-center justify-center transition-all shadow-lg shadow-indigo-100 group-hover:shadow-indigo-200">
                   <FileText className="w-8 h-8 text-indigo-600 group-hover:text-white" />
@@ -238,7 +238,7 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
               </button>
               <button 
                 onClick={() => onNavigate?.("stats")}
-                className="flex flex-col items-center gap-4 p-8 hover:bg-amber-50 rounded-[40px] transition-all border border-gray-50 group cursor-pointer"
+                className="flex flex-col items-center gap-4 p-8 hover:bg-amber-50 rounded-[40px] transition-all border-2 border-gray-300 group cursor-pointer"
               >
                 <div className="w-16 h-16 bg-amber-100 group-hover:bg-amber-600 group-hover:scale-110 rounded-[20px] flex items-center justify-center transition-all shadow-lg shadow-amber-100 group-hover:shadow-amber-200">
                   <TrendingUp className="w-8 h-8 text-amber-600 group-hover:text-white" />

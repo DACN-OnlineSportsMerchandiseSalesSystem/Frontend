@@ -64,7 +64,7 @@ export function StatisticsReports() {
           <button
             onClick={handleTriggerSync}
             disabled={isSyncing}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-bold text-sm shadow-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-bold text-sm shadow-sm disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
             Đồng bộ dữ liệu
@@ -84,7 +84,7 @@ export function StatisticsReports() {
       )}
 
       {/* Revenue Chart */}
-      <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm relative overflow-hidden">
+      <div className="bg-white rounded-3xl p-8 border-2 border-gray-300 shadow-sm relative overflow-hidden">
         <div className="flex items-center justify-between mb-10 relative z-10">
           <div>
             <h3 className="text-gray-900 font-black text-xl">Biểu đồ doanh thu tháng {currentMonth}</h3>
@@ -135,7 +135,7 @@ export function StatisticsReports() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Products */}
-        <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-3xl p-8 border-2 border-gray-300 shadow-sm">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
@@ -163,7 +163,7 @@ export function StatisticsReports() {
         </div>
 
         {/* Yearly Revenue Overview */}
-        <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-3xl p-8 border-2 border-gray-300 shadow-sm">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">

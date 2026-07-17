@@ -123,7 +123,7 @@ export function CustomersManagement() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3">
+      <div className="bg-white rounded-2xl p-4 border-2 border-gray-300 shadow-sm space-y-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input
@@ -134,7 +134,7 @@ export function CustomersManagement() {
               setCurrentPage(1);
             }}
             placeholder="Tìm kiếm theo tên, email, số điện thoại..."
-            className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400"
+            className="w-full pl-11 pr-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400"
           />
         </div>
         <div className="flex flex-wrap gap-3">
@@ -144,7 +144,7 @@ export function CustomersManagement() {
               setFilterRole(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
+            className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
           >
             <option value="all">Tất cả vai trò</option>
             <option value="ROLE_ADMIN">Quản trị</option>
@@ -156,7 +156,7 @@ export function CustomersManagement() {
               setFilterStatus(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
+            className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="ACTIVE">Hoạt động</option>
@@ -168,7 +168,7 @@ export function CustomersManagement() {
               setSortBy(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
+            className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
           >
             <option value="id_desc">Mới nhất</option>
             <option value="id_asc">Cũ nhất</option>
@@ -181,23 +181,23 @@ export function CustomersManagement() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
+        <div className="bg-white rounded-xl p-4 border-2 border-gray-300">
           <p className="text-sm text-gray-600">Tổng người dùng</p>
           <p className="text-2xl font-black text-gray-900 mt-1">{users.length}</p>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
+        <div className="bg-white rounded-xl p-4 border-2 border-gray-300">
           <p className="text-sm text-gray-600">Quản trị viên</p>
           <p className="text-2xl font-black text-purple-600 mt-1">
             {users.filter(u => u.roleName === "ROLE_ADMIN").length}
           </p>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
+        <div className="bg-white rounded-xl p-4 border-2 border-gray-300">
           <p className="text-sm text-gray-600">Đang hoạt động</p>
           <p className="text-2xl font-black text-green-600 mt-1">
             {users.filter(u => u.status === "ACTIVE").length}
           </p>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
+        <div className="bg-white rounded-xl p-4 border-2 border-gray-300">
           <p className="text-sm text-gray-600">Bị khóa</p>
           <p className="text-2xl font-black text-red-600 mt-1">
             {users.filter(u => u.status !== "ACTIVE").length}
@@ -206,15 +206,15 @@ export function CustomersManagement() {
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border-2 border-gray-300 shadow-sm">
           <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
           <p className="text-gray-500">Đang tải danh sách người dùng...</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border-2 border-gray-300 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Người dùng</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Liên hệ</th>
@@ -304,7 +304,7 @@ export function CustomersManagement() {
 
       {/* Pagination Controls */}
       {!isLoading && !error && totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 border border-gray-100 rounded-2xl shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 border-2 border-gray-300 rounded-2xl shadow-sm">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">Hiển thị</span>
             <select
@@ -313,7 +313,7 @@ export function CustomersManagement() {
                 setItemsPerPage(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="px-2 py-1.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white text-sm"
+              className="px-2 py-1.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 bg-white text-sm"
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -327,7 +327,7 @@ export function CustomersManagement() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+              className="px-3 py-1.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
             >
               Trước
             </button>
@@ -344,7 +344,7 @@ export function CustomersManagement() {
                       className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
                         currentPage === page
                           ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                          : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                          : "border-2 border-gray-300 text-gray-600 hover:bg-gray-50"
                       }`}
                     >
                       {page}
@@ -356,7 +356,7 @@ export function CustomersManagement() {
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+              className="px-3 py-1.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
             >
               Sau
             </button>
@@ -381,7 +381,7 @@ export function CustomersManagement() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full">
             <form onSubmit={handleCreate}>
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h3 className="font-bold text-gray-900">Thêm người dùng mới</h3>
                 <button type="button" onClick={() => setShowCreateModal(false)}><X className="w-5 h-5 text-gray-500" /></button>
               </div>
@@ -450,7 +450,7 @@ function UserDetailModal({ user, onClose, onUpdate }: { user: UserProfile; onClo
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
           <h3 className="text-lg font-bold text-gray-900">Thông tin người dùng</h3>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <X className="w-5 h-5 text-gray-500" />
@@ -573,7 +573,7 @@ function UserDetailModal({ user, onClose, onUpdate }: { user: UserProfile; onClo
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3 border-t border-gray-100">
+        <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3 border-t border-gray-200">
           {isEditing ? (
             <>
               <button 

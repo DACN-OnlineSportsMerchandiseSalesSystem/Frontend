@@ -12,7 +12,7 @@ export function NotFound() {
         <Link to="/" className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-xl transition-colors">
           <Home className="w-4 h-4" /> Về trang chủ
         </Link>
-        <button onClick={() => window.history.back()} className="flex items-center gap-2 border-2 border-gray-200 text-gray-600 px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors">
+        <button onClick={() => window.history.back()} className="flex items-center gap-2 border-2 border-gray-300 text-gray-600 px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Quay lại
         </button>
       </div>

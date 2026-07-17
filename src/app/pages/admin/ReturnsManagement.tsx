@@ -66,7 +66,7 @@ export function ReturnsManagement() {
         </div>
         <button
           onClick={fetchReturns}
-          className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-gray-600"
+          className="flex items-center gap-2 px-4 py-2.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-gray-600"
         >
           <RefreshCw className="w-4 h-4" />
           Làm mới
@@ -74,7 +74,7 @@ export function ReturnsManagement() {
       </div>
 
       {/* Status Tabs */}
-      <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+      <div className="bg-white rounded-2xl p-4 border-2 border-gray-300 shadow-sm">
         <div className="flex gap-2 overflow-x-auto pb-1">
           {[
             { key: "ALL",      label: "Tất cả" },
@@ -99,7 +99,7 @@ export function ReturnsManagement() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border-2 border-gray-300 shadow-sm">
           <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
           <p className="text-gray-500">Đang tải danh sách yêu cầu hoàn trả...</p>
         </div>
@@ -109,15 +109,15 @@ export function ReturnsManagement() {
           <p>{error}</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border-2 border-gray-300 shadow-sm">
           <RotateCcw className="w-12 h-12 text-gray-200 mb-4" />
           <p className="text-gray-500">Không có yêu cầu hoàn trả nào</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border-2 border-gray-300 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Mã đơn hàng</th>
@@ -199,7 +199,7 @@ export function ReturnsManagement() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-3xl">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-3xl">
               <div>
                 <h3 className="text-lg font-black text-gray-900">Chi tiết Yêu cầu Hoàn trả #{selectedReturn.id}</h3>
                 <p className="text-xs text-gray-500 mt-0.5">Đơn hàng #{selectedReturn.orderId}</p>
@@ -236,7 +236,7 @@ export function ReturnsManagement() {
 
               {/* Return Items */}
               {selectedReturn.returnItems && selectedReturn.returnItems.length > 0 && (
-                <div className="bg-white border border-gray-100 rounded-2xl p-4">
+                <div className="bg-white border-2 border-gray-300 rounded-2xl p-4">
                   <h4 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
                     <Package className="w-4 h-4 text-blue-600" />
                     Sản phẩm yêu cầu hoàn ({selectedReturn.returnItems.length})
@@ -245,7 +245,7 @@ export function ReturnsManagement() {
                     {selectedReturn.returnItems.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
                         {item.imageProof ? (
-                          <img loading="lazy" decoding="async" src={item.imageProof} alt="" className="w-14 h-14 rounded-lg object-cover border border-gray-200" />
+                          <img loading="lazy" decoding="async" src={item.imageProof} alt="" className="w-14 h-14 rounded-lg object-cover border-2 border-gray-300" />
                         ) : (
                           <div className="w-14 h-14 rounded-lg bg-gray-200 flex items-center justify-center">
                             <Package className="w-5 h-5 text-gray-500" />

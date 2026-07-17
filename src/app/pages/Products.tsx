@@ -120,8 +120,8 @@ export function Products() {
       <div className="flex gap-6">
         {/* Sidebar Filters - desktop */}
         <aside className="hidden lg:block w-56 flex-shrink-0">
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden sticky top-24">
-            <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+          <div className="bg-white rounded-2xl border-2 border-gray-300 overflow-hidden sticky top-24">
+            <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
               <h3 className="text-sm text-gray-800 flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4 text-blue-600" />
                 Bộ lọc
@@ -129,7 +129,7 @@ export function Products() {
             </div>
 
             {/* Categories */}
-            <div className="p-4 border-b border-gray-100">
+            <div className="p-4 border-b border-gray-200">
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">Danh mục</p>
               <div className="space-y-1">
                 <button
@@ -165,7 +165,7 @@ export function Products() {
             </div>
 
             {/* Brands */}
-            <div className="p-4 border-b border-gray-100">
+            <div className="p-4 border-b border-gray-200">
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">Thương hiệu</p>
               <div className="flex flex-wrap gap-1.5">
                 {apiBrands.map((b) => (
@@ -217,13 +217,13 @@ export function Products() {
         {/* Main content */}
         <div className="flex-1 min-w-0">
           {/* Sort & View */}
-          <div className="flex items-center justify-between mb-4 bg-white rounded-xl p-3 border border-gray-100">
+          <div className="flex items-center justify-between mb-4 bg-white rounded-xl p-3 border-2 border-gray-300">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">Sắp xếp:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-400 bg-white text-gray-700"
+                className="text-sm border-2 border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-400 bg-white text-gray-700"
               >
                 <option value="default">Mặc định</option>
                 <option value="price_asc">Giá tăng dần</option>

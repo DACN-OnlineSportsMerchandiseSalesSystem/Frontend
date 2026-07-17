@@ -70,19 +70,19 @@ export function CouponsManagement() {
       )}
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border-2 border-gray-300 shadow-sm">
           <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
           <p className="text-gray-500">Đang tải danh sách voucher...</p>
         </div>
       ) : vouchers.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div className="text-center py-20 bg-white rounded-2xl border-2 border-gray-300 shadow-sm">
           <Tag className="w-16 h-16 text-gray-200 mx-auto mb-4" />
           <p className="text-gray-500 font-medium">Chưa có voucher nào</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {vouchers.map((coupon) => (
-            <div key={coupon.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+            <div key={coupon.id} className="bg-white rounded-2xl border-2 border-gray-300 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
               <div className="p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start gap-3">
@@ -139,7 +139,7 @@ export function CouponsManagement() {
                     </span>
                   </div>
 
-                  <div className="pt-3 border-t border-gray-100">
+                  <div className="pt-3 border-t border-gray-200">
                     <div className="flex items-center justify-between text-sm mb-2">
                       <span className="text-gray-600">Lượt sử dụng:</span>
                       <span className="font-bold text-gray-900">
@@ -233,7 +233,7 @@ function VoucherFormModal({ voucher, onClose, onSuccess }: { voucher?: Voucher |
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
       <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         <form onSubmit={handleSubmit}>
-          <div className="sticky top-0 bg-white border-b border-gray-100 px-8 py-6 flex items-center justify-between">
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex items-center justify-between">
             <h3 className="text-xl font-black text-gray-900">{voucher ? "Cập nhật Voucher" : "Tạo Voucher mới"}</h3>
             <button type="button" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
               <X className="w-5 h-5 text-gray-500" />
@@ -340,7 +340,7 @@ function VoucherFormModal({ voucher, onClose, onSuccess }: { voucher?: Voucher |
             </div>
           </div>
 
-          <div className="sticky bottom-0 bg-gray-50 px-8 py-6 flex items-center justify-end gap-3 border-t border-gray-100">
+          <div className="sticky bottom-0 bg-gray-50 px-8 py-6 flex items-center justify-end gap-3 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}

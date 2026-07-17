@@ -107,7 +107,7 @@ export function Home() {
       </section>
 
       {/* Trust badges */}
-      <section className="bg-white border-b border-gray-100">
+      <section className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-5 grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { icon: <Truck className="w-5 h-5 text-blue-600" />, title: "Giao hàng toàn quốc", desc: "Miễn phí từ 500K" },
@@ -141,7 +141,7 @@ export function Home() {
             <Link
               key={cat.id}
               to={cat.id === "all" ? "/products" : `/products?sport=${encodeURIComponent(cat.id)}`}
-              className="flex flex-col items-center gap-2 p-3 bg-white rounded-2xl hover:bg-blue-50 hover:border-blue-200 border border-gray-100 transition-all group hover:shadow-md"
+              className="flex flex-col items-center gap-2 p-3 bg-white rounded-2xl hover:bg-blue-50 hover:border-blue-200 border-2 border-gray-300 transition-all group hover:shadow-md"
             >
               <span className="text-2xl">{cat.icon}</span>
               <span className="text-xs text-gray-600 group-hover:text-blue-700 text-center leading-tight">{cat.name}</span>

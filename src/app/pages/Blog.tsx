@@ -101,7 +101,7 @@ export function Blog() {
             {/* Side featured */}
             <div className="flex flex-col gap-4">
               {featured.slice(1, 3).map((post) => (
-                <Link key={post.id} to={`/blog/${post.slug}`} className="group flex gap-3 bg-white rounded-xl p-3 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all">
+                <Link key={post.id} to={`/blog/${post.slug}`} className="group flex gap-3 bg-white rounded-xl p-3 border-2 border-gray-300 hover:border-blue-200 hover:shadow-md transition-all">
                   <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                     <img loading="lazy" decoding="async" src={post.imageUrl || "https://placehold.co/100x100?text=No+Image"} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
@@ -131,7 +131,7 @@ export function Blog() {
             placeholder="Tìm kiếm bài viết..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-blue-400 bg-white text-sm text-gray-700 placeholder-gray-400"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-gray-300 focus:outline-none focus:border-blue-400 bg-white text-sm text-gray-700 placeholder-gray-400"
           />
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -166,7 +166,7 @@ export function Blog() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((post) => (
-            <Link key={post.id} to={`/blog/${post.slug}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-blue-100 transition-all flex flex-col">
+            <Link key={post.id} to={`/blog/${post.slug}`} className="group bg-white rounded-2xl border-2 border-gray-300 overflow-hidden hover:shadow-lg hover:border-blue-100 transition-all flex flex-col">
               <div className="h-48 overflow-hidden relative bg-gray-100 shrink-0">
                 <img loading="lazy" decoding="async"
                   src={post.imageUrl || "https://placehold.co/400x250?text=No+Image"}
@@ -200,7 +200,7 @@ export function Blog() {
                 {/* Tags */}
                 <div className="flex gap-1.5 mt-4 flex-wrap">
                   {post.tags && post.tags.split(',').slice(0, 3).map((tag) => tag.trim() && (
-                    <span key={tag} className="bg-gray-50 text-gray-500 text-xs px-2 py-0.5 rounded-full border border-gray-100">
+                    <span key={tag} className="bg-gray-50 text-gray-500 text-xs px-2 py-0.5 rounded-full border-2 border-gray-300">
                       #{tag.trim()}
                     </span>
                   ))}

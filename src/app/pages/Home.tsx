@@ -431,7 +431,7 @@ export function Home() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {blogs.slice(0, 3).map((post) => (
-            <Link key={post.id} to={`/blog/${post.slug || post.id}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-blue-100 transition-all">
+            <Link key={post.id} to={`/blog/${post.slug || post.id}`} className="group bg-white rounded-2xl border-2 border-gray-300 overflow-hidden hover:shadow-lg hover:border-blue-100 transition-all">
               <div className="h-44 overflow-hidden relative">
                 <img loading="lazy" decoding="async" src={post.imageUrl || '/default-blog.jpg'} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <span className="absolute top-3 left-3 bg-white/95 text-blue-700 text-xs px-2.5 py-1 rounded-full">{post.category}</span>

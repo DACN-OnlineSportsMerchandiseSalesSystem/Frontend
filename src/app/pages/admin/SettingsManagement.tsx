@@ -21,7 +21,7 @@ export function SettingsManagement() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar Menu */}
-        <div className="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm h-fit">
+        <div className="bg-white rounded-3xl p-4 border-2 border-gray-300 shadow-sm h-fit">
           <nav className="space-y-1">
             {sections.map((section) => {
               const Icon = section.icon;
@@ -60,7 +60,7 @@ export function SettingsManagement() {
 
 function StoreSettings() {
   return (
-    <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-8">
+    <div className="bg-white rounded-3xl p-8 border-2 border-gray-300 shadow-sm space-y-8">
       <div>
         <h3 className="text-gray-900 font-black text-xl mb-1">Thông tin cửa hàng</h3>
         <p className="text-sm text-gray-500">Cập nhật thông tin cơ bản về cửa hàng hiển thị trên Website</p>
@@ -114,7 +114,7 @@ function StoreSettings() {
         </div>
       </div>
 
-      <div className="flex justify-end pt-6 border-t border-gray-100">
+      <div className="flex justify-end pt-6 border-t border-gray-200">
         <button className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all shadow-lg shadow-blue-200 font-black uppercase tracking-widest text-xs">
           <Save className="w-4 h-4" />
           Lưu thay đổi
@@ -126,7 +126,7 @@ function StoreSettings() {
 
 function PaymentSettings() {
   return (
-    <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-8">
+    <div className="bg-white rounded-3xl p-8 border-2 border-gray-300 shadow-sm space-y-8">
       <div>
         <h3 className="text-gray-900 font-black text-xl mb-1">Cài đặt thanh toán</h3>
         <p className="text-sm text-gray-500">Quản lý các cổng thanh toán tích hợp</p>
@@ -139,14 +139,14 @@ function PaymentSettings() {
           { name: "VNPay", label: "Cổng thanh toán VNPay", enabled: true },
           { name: "Card", label: "Thẻ tín dụng/ghi nợ", enabled: false },
         ].map((method) => (
-          <div key={method.name} className="flex items-center justify-between p-6 border border-gray-100 rounded-3xl hover:bg-gray-50 transition-all">
+          <div key={method.name} className="flex items-center justify-between p-6 border-2 border-gray-300 rounded-3xl hover:bg-gray-50 transition-all">
             <div>
               <p className="font-black text-gray-900">{method.label}</p>
               <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1">Phương thức: {method.name}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" defaultChecked={method.enabled} className="sr-only peer" />
-              <div className="w-12 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              <div className="w-12 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           </div>
         ))}
@@ -157,7 +157,7 @@ function PaymentSettings() {
 
 function ShippingSettings() {
   return (
-    <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-8">
+    <div className="bg-white rounded-3xl p-8 border-2 border-gray-300 shadow-sm space-y-8">
       <div>
         <h3 className="text-gray-900 font-black text-xl mb-1">Cài đặt vận chuyển</h3>
         <p className="text-sm text-gray-500">Cấu hình phí ship và đối tác vận chuyển</p>
@@ -187,7 +187,7 @@ function ShippingSettings() {
           <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-4 px-1">Đối tác vận chuyển được phép</label>
           <div className="grid grid-cols-2 gap-4">
             {["Giao hàng nhanh", "Giao hàng tiết kiệm", "J&T Express", "Viettel Post"].map((carrier) => (
-              <label key={carrier} className="flex items-center gap-4 p-5 border border-gray-100 rounded-3xl cursor-pointer hover:bg-gray-50 transition-all">
+              <label key={carrier} className="flex items-center gap-4 p-5 border-2 border-gray-300 rounded-3xl cursor-pointer hover:bg-gray-50 transition-all">
                 <input type="checkbox" defaultChecked className="w-5 h-5 text-blue-600 rounded-lg border-gray-200 focus:ring-blue-400" />
                 <span className="text-sm font-bold text-gray-700">{carrier}</span>
               </label>
@@ -201,7 +201,7 @@ function ShippingSettings() {
 
 function EmailSettings() {
   return (
-    <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-8">
+    <div className="bg-white rounded-3xl p-8 border-2 border-gray-300 shadow-sm space-y-8">
       <div>
         <h3 className="text-gray-900 font-black text-xl mb-1">Email & Thông báo</h3>
         <p className="text-sm text-gray-500">Cấu hình hệ thống gửi tin nhắn tự động</p>
@@ -214,14 +214,14 @@ function EmailSettings() {
           { name: "order_delivered", label: "Email giao hàng thành công", enabled: true },
           { name: "newsletter", label: "Email marketing & khuyến mãi", enabled: false },
         ].map((email) => (
-          <div key={email.name} className="flex items-center justify-between p-6 border border-gray-100 rounded-3xl hover:bg-gray-50 transition-all">
+          <div key={email.name} className="flex items-center justify-between p-6 border-2 border-gray-300 rounded-3xl hover:bg-gray-50 transition-all">
             <div>
               <p className="font-black text-gray-900">{email.label}</p>
               <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1">Gửi tự động theo sự kiện</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" defaultChecked={email.enabled} className="sr-only peer" />
-              <div className="w-12 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              <div className="w-12 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           </div>
         ))}
@@ -232,7 +232,7 @@ function EmailSettings() {
 
 function SecuritySettings() {
   return (
-    <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-8">
+    <div className="bg-white rounded-3xl p-8 border-2 border-gray-300 shadow-sm space-y-8">
       <div>
         <h3 className="text-gray-900 font-black text-xl mb-1">Bảo mật tài khoản</h3>
         <p className="text-sm text-gray-500">Đổi mật khẩu định kỳ để bảo vệ website</p>
@@ -264,7 +264,7 @@ function SecuritySettings() {
         </div>
       </div>
 
-      <div className="flex justify-end pt-6 border-t border-gray-100">
+      <div className="flex justify-end pt-6 border-t border-gray-200">
         <button className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all shadow-lg shadow-blue-200 font-black uppercase tracking-widest text-xs">
           <Lock className="w-4 h-4" />
           Đổi mật khẩu
@@ -276,7 +276,7 @@ function SecuritySettings() {
 
 function NotificationSettings() {
   return (
-    <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-8">
+    <div className="bg-white rounded-3xl p-8 border-2 border-gray-300 shadow-sm space-y-8">
       <div>
         <h3 className="text-gray-900 font-black text-xl mb-1">Thông báo hệ thống</h3>
         <p className="text-sm text-gray-500">Tùy chỉnh nhận thông báo quan trọng</p>
@@ -289,14 +289,14 @@ function NotificationSettings() {
           { name: "new_customer", label: "Khách hàng mới", enabled: false },
           { name: "daily_report", label: "Báo cáo hàng ngày", enabled: true },
         ].map((notif) => (
-          <div key={notif.name} className="flex items-center justify-between p-6 border border-gray-100 rounded-3xl hover:bg-gray-50 transition-all">
+          <div key={notif.name} className="flex items-center justify-between p-6 border-2 border-gray-300 rounded-3xl hover:bg-gray-50 transition-all">
             <div>
               <p className="font-black text-gray-900">{notif.label}</p>
               <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1">Thông báo qua Email & Admin</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" defaultChecked={notif.enabled} className="sr-only peer" />
-              <div className="w-12 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              <div className="w-12 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           </div>
         ))}

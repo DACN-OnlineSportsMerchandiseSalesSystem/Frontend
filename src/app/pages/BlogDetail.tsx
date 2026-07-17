@@ -100,7 +100,7 @@ export function BlogDetail() {
           </div>
 
           {/* Author + Meta */}
-          <div className="flex items-center gap-4 py-4 border-y border-gray-100 mb-6">
+          <div className="flex items-center gap-4 py-4 border-y border-gray-200 mb-6">
             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold flex-shrink-0 text-xl">
               {post.author?.[0]?.toUpperCase() || 'A'}
             </div>
@@ -141,7 +141,7 @@ export function BlogDetail() {
           </div>
 
           {/* Like + Share */}
-          <div className="flex items-center gap-4 mt-8 pt-6 border-t border-gray-100">
+          <div className="flex items-center gap-4 mt-8 pt-6 border-t border-gray-200">
             <button
               onClick={handleLike}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 text-sm transition-all ${
@@ -160,7 +160,7 @@ export function BlogDetail() {
               <Bookmark className={`w-4 h-4 ${bookmarked ? "fill-yellow-500 text-yellow-500" : ""}`} />
               <span>{bookmarked ? "Đã lưu" : "Lưu bài"}</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-500 hover:border-green-300 hover:text-green-600 text-sm transition-all ml-auto">
+            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-gray-300 text-gray-500 hover:border-green-300 hover:text-green-600 text-sm transition-all ml-auto">
               <Share2 className="w-4 h-4" />
               <span>Chia sẻ</span>
             </button>
@@ -185,7 +185,7 @@ export function BlogDetail() {
         <div className="space-y-6">
           {/* Related Posts */}
           {related.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <div className="bg-white rounded-2xl border-2 border-gray-300 p-5">
               <h3 className="text-gray-800 mb-4 flex items-center gap-2">
                 <span className="w-1 h-5 bg-blue-600 rounded-full inline-block" />
                 Bài Viết Liên Quan
@@ -212,7 +212,7 @@ export function BlogDetail() {
           )}
 
           {/* All Posts Link */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <div className="bg-white rounded-2xl border-2 border-gray-300 p-5">
             <h3 className="text-gray-800 mb-4 flex items-center gap-2">
               <span className="w-1 h-5 bg-blue-600 rounded-full inline-block" />
               Tất Cả Chủ Đề
@@ -268,7 +268,7 @@ export function BlogDetail() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Note: In a real app we would fetch random posts. For now we use related */}
           {related.slice(0, 3).map((p) => (
-            <Link key={p.id} to={`/blog/${p.slug}`} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:border-blue-100 transition-all">
+            <Link key={p.id} to={`/blog/${p.slug}`} className="group bg-white rounded-2xl border-2 border-gray-300 overflow-hidden hover:shadow-md hover:border-blue-100 transition-all">
               <div className="h-40 overflow-hidden bg-gray-100">
                 <img loading="lazy" decoding="async" src={p.imageUrl || "https://placehold.co/400x250?text=No+Image"} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               </div>

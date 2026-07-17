@@ -160,7 +160,7 @@ export function ProductsManagement() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+      <div className="bg-white rounded-2xl p-4 border-2 border-gray-300 shadow-sm">
         <div className="flex flex-col md:flex-row gap-3">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -172,7 +172,7 @@ export function ProductsManagement() {
                 setCurrentPage(1);
               }}
               placeholder="Tìm kiếm sản phẩm theo tên, thương hiệu..."
-              className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400"
+              className="w-full pl-11 pr-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400"
             />
           </div>
           <select
@@ -181,7 +181,7 @@ export function ProductsManagement() {
               setFilterCategory(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
+            className="px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
           >
             <option value="all">Tất cả danh mục</option>
             {categories.filter(c => !c.parentId).map((c: any) => (
@@ -199,7 +199,7 @@ export function ProductsManagement() {
               setSortBy(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
+            className="px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
           >
             <option value="id_desc">Mới nhất</option>
             <option value="id_asc">Cũ nhất</option>
@@ -217,10 +217,10 @@ export function ProductsManagement() {
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border-2 border-gray-300 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sản phẩm</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Danh mục</th>
@@ -235,7 +235,7 @@ export function ProductsManagement() {
                 <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <img loading="lazy" decoding="async" src={product.image} alt={product.name} className="w-12 h-12 rounded-lg object-cover border border-gray-100" />
+                      <img loading="lazy" decoding="async" src={product.image} alt={product.name} className="w-12 h-12 rounded-lg object-cover border-2 border-gray-300" />
                       <div>
                         <p className="text-sm font-medium text-gray-800 line-clamp-1">{product.name}</p>
                         <p className="text-xs text-gray-500">{product.brand}</p>
@@ -297,7 +297,7 @@ export function ProductsManagement() {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 border border-gray-100 rounded-2xl shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 border-2 border-gray-300 rounded-2xl shadow-sm">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">Hiển thị</span>
             <select
@@ -306,7 +306,7 @@ export function ProductsManagement() {
                 setItemsPerPage(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="px-2 py-1.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white text-sm"
+              className="px-2 py-1.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 bg-white text-sm"
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -320,7 +320,7 @@ export function ProductsManagement() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+              className="px-3 py-1.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
             >
               Trước
             </button>
@@ -337,7 +337,7 @@ export function ProductsManagement() {
                       className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
                         currentPage === page
                           ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                          : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                          : "border-2 border-gray-300 text-gray-600 hover:bg-gray-50"
                       }`}
                     >
                       {page}
@@ -349,7 +349,7 @@ export function ProductsManagement() {
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+              className="px-3 py-1.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
             >
               Sau
             </button>
@@ -575,7 +575,7 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
-          <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
             <h3 className="text-lg font-bold text-gray-900">
               {isEdit ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
             </h3>
@@ -591,7 +591,7 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
               <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer min-h-[150px] flex flex-col items-center justify-center gap-2 ${imageUrl ? 'border-blue-200 bg-blue-50' : 'border-gray-300'}`}
+                className={`border-2 border-dashed rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer min-h-[150px] flex flex-col items-center justify-center gap-2 ${imageUrl ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}
               >
                 {isUploading ? (
                   <div className="w-8 h-8 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
@@ -613,7 +613,7 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
               </label>
               <input
                 type="text" required value={name} onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400"
+                className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400"
                 placeholder="Nhập tên sản phẩm"
               />
             </div>
@@ -656,7 +656,7 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
                   </span>
                 )}
               </div>
-              <div className="border border-gray-200 rounded-xl overflow-hidden max-h-56 overflow-y-auto">
+              <div className="border-2 border-gray-300 rounded-xl overflow-hidden max-h-56 overflow-y-auto">
                 {(() => {
                   const parents = categories.filter((c: any) => !c.parentId);
                   const childrenOf = (parentId: number) => categories.filter((c: any) => c.parentId === parentId);
@@ -668,12 +668,12 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
                     return (
                       <div key={parent.id}>
                         {/* Hàng danh mục cha */}
-                        <div className={`flex items-center gap-2 px-3 py-2.5 hover:bg-gray-50 transition-colors ${isParentChecked ? 'bg-blue-50/60' : 'bg-white'} ${hasChildren ? 'border-b border-gray-100' : ''}`}>
+                        <div className={`flex items-center gap-2 px-3 py-2.5 hover:bg-gray-50 transition-colors ${isParentChecked ? 'bg-blue-50/60' : 'bg-white'} ${hasChildren ? 'border-b border-gray-200' : ''}`}>
                           {/* Checkbox cha */}
                           <div
                             onClick={() => handleCategoryToggle(parent.id)}
                             className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-all cursor-pointer ${
-                              isParentChecked ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'
+                              isParentChecked ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-200'
                             }`}
                           >
                             {isParentChecked && <X className="w-3 h-3 text-white" />}
@@ -710,7 +710,7 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
                                 <div
                                   key={child.id}
                                   title={!isParentSelected ? `Cần chọn "${parent.name}" trước` : ''}
-                                  className={`flex items-center gap-2 pl-9 pr-3 py-2 border-b border-gray-100 last:border-0 transition-colors ${
+                                  className={`flex items-center gap-2 pl-9 pr-3 py-2 border-b border-gray-200 last:border-0 transition-colors ${
                                     isChildChecked
                                       ? 'bg-blue-50/50 cursor-pointer hover:bg-blue-50'
                                       : isParentSelected
@@ -723,7 +723,7 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
                                     isChildChecked
                                       ? 'bg-blue-500 border-blue-500'
                                       : isParentSelected
-                                        ? 'bg-white border-gray-300'
+                                        ? 'bg-white border-gray-200'
                                         : 'bg-gray-200 border-gray-200'
                                   }`}>
                                     {isChildChecked && <X className="w-2.5 h-2.5 text-white" />}
@@ -809,7 +809,7 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
                     Tổng: {totalStock} sản phẩm
                   </span>
                 </div>
-                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <div className="border-2 border-gray-300 rounded-xl overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50">
@@ -825,7 +825,7 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
                           <tr key={c} className={ci % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
                             <td className="px-3 py-2.5">
                               <span className="inline-flex items-center gap-1.5 font-bold text-gray-700 text-xs">
-                                <span className="w-3 h-3 rounded-full border border-gray-300 flex-shrink-0" style={{ backgroundColor: 'transparent' }} />
+                                <span className="w-3 h-3 rounded-full border-2 border-gray-300 flex-shrink-0" style={{ backgroundColor: 'transparent' }} />
                                 {c}
                               </span>
                             </td>
@@ -863,16 +863,16 @@ function ProductFormModal({ product, onClose, onRefresh }: { product?: any; onCl
               <label className="block text-sm font-medium text-gray-700 mb-2">Mô tả sản phẩm</label>
               <textarea
                 rows={4} value={description} onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400"
+                className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400"
                 placeholder="Nhập mô tả chi tiết về sản phẩm..."
               />
             </div>
           </div>
 
-          <div className="sticky bottom-0 bg-gray-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-gray-100">
+          <div className="sticky bottom-0 bg-gray-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-gray-200">
             <button
               type="button" onClick={onClose}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors"
+              className="px-4 py-2.5 border-2 border-gray-300 rounded-xl hover:bg-gray-100 transition-colors"
             >
               Hủy
             </button>
@@ -955,7 +955,7 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-3xl w-full max-w-5xl shadow-2xl my-8 animate-in fade-in zoom-in duration-200">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-3xl">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-3xl">
           <h3 className="text-xl font-black text-gray-900">Chi tiết sản phẩm</h3>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <X className="w-5 h-5 text-gray-500" />
@@ -966,7 +966,7 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {/* Left: Image + Price */}
             <div className="space-y-6">
-              <div className="aspect-square rounded-3xl overflow-hidden border border-gray-100 bg-gray-50 p-4 shadow-inner">
+              <div className="aspect-square rounded-3xl overflow-hidden border-2 border-gray-300 bg-gray-50 p-4 shadow-inner">
                 <img loading="lazy" decoding="async"
                   src={product.images?.[0]?.imageUrl || product.image}
                   alt={product.name}
@@ -1009,7 +1009,7 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
               {variants.length > 0 && (
                 <div>
                   <p className="text-[10px] font-black text-gray-500 uppercase mb-3">Tồn kho theo biến thể</p>
-                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="border-2 border-gray-300 rounded-xl overflow-hidden">
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead className="bg-gray-50">
@@ -1054,7 +1054,7 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
 
               <div>
                 <p className="text-[10px] font-black text-gray-500 uppercase mb-3">Mô tả sản phẩm</p>
-                <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-line bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-line bg-gray-50 p-5 rounded-2xl border-2 border-gray-300">
                   {product.description || "Chưa có mô tả chi tiết."}
                 </p>
               </div>
@@ -1062,7 +1062,7 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
           </div>
 
           {/* Reviews Section */}
-          <div className="mt-12 pt-10 border-t border-gray-100">
+          <div className="mt-12 pt-10 border-t border-gray-200">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <MessageSquare className="w-6 h-6 text-blue-600" />
@@ -1075,13 +1075,13 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
                 <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
               </div>
             ) : reviews.length === 0 ? (
-              <div className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100">
+              <div className="bg-gray-50 rounded-2xl p-8 text-center border-2 border-gray-300">
                 <p className="text-gray-500 font-medium">Chưa có đánh giá nào cho sản phẩm này.</p>
               </div>
             ) : (
               <div className="space-y-6">
                 {reviews.map(review => (
-                  <div key={review.id} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                  <div key={review.id} className="bg-white border-2 border-gray-300 rounded-2xl p-6 shadow-sm">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold">
@@ -1113,7 +1113,7 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
                     <p className="text-gray-600 text-sm leading-relaxed mb-4">{review.comment}</p>
 
                     {review.adminReply ? (
-                      <div className="bg-gray-50 rounded-xl p-4 ml-8 border border-gray-100 relative">
+                      <div className="bg-gray-50 rounded-xl p-4 ml-8 border-2 border-gray-300 relative">
                         <CornerDownRight className="w-5 h-5 text-gray-300 absolute -left-7 top-4" />
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-bold text-sm text-gray-900">Phản hồi của người bán</span>
@@ -1130,7 +1130,7 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
                             placeholder="Nhập phản hồi..."
                             value={replyText[review.id] || ""}
                             onChange={e => setReplyText({ ...replyText, [review.id]: e.target.value })}
-                            className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 focus:bg-white transition-colors"
+                            className="flex-1 px-4 py-2 bg-gray-50 border-2 border-gray-300 rounded-xl text-sm focus:outline-none focus:border-blue-400 focus:bg-white transition-colors"
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') handleReplyReview(review.id);
                             }}
@@ -1159,7 +1159,7 @@ function ProductDetailModal({ product, categories, onClose }: { product: any; ca
           </div>
         </div>
 
-        <div className="p-6 border-t border-gray-100 flex justify-end">
+        <div className="p-6 border-t border-gray-200 flex justify-end">
           <button
             onClick={onClose}
             className="px-10 py-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-black transition-all"

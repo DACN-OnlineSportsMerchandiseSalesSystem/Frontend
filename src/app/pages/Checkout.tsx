@@ -226,7 +226,7 @@ export function Checkout() {
         <div className="lg:col-span-2">
           {/* Step 1: Address */}
           {step === "address" && (
-            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-300">
               <h2 className="text-gray-900 mb-5 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-blue-600" />
                 Địa chỉ giao hàng
@@ -254,7 +254,7 @@ export function Checkout() {
                       {user.addresses.map((addr, i) => (
                         <label 
                           key={i} 
-                          className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-colors ${selectedAddrId === addr.id ? "border-blue-500 bg-blue-50" : "border-gray-100"}`}
+                          className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-colors ${selectedAddrId === addr.id ? "border-blue-500 bg-blue-50" : "border-gray-200"}`}
                           onClick={() => setSelectedAddrId(addr.id || null)}
                         >
                           <input 
@@ -290,7 +290,7 @@ export function Checkout() {
                         placeholder={field.placeholder}
                         value={(address as any)[field.key]}
                         onChange={(e) => setAddress((a) => ({ ...a, [field.key]: e.target.value }))}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm"
+                        className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 text-sm"
                       />
                     </div>
                   ))}
@@ -299,7 +299,7 @@ export function Checkout() {
                     <select
                       value={address.city}
                       onChange={(e) => setAddress((a) => ({ ...a, city: e.target.value, state: "" }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm bg-white"
+                      className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 text-sm bg-white"
                     >
                       <option value="">Chọn tỉnh/thành</option>
                       <option value="Hà Nội">Hà Nội</option>
@@ -313,7 +313,7 @@ export function Checkout() {
                       disabled={!address.city}
                       value={address.state}
                       onChange={(e) => setAddress((a) => ({ ...a, state: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm bg-white disabled:bg-gray-50"
+                      className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 text-sm bg-white disabled:bg-gray-50"
                     >
                       <option value="">Chọn Phường/Xã</option>
                       {address.city === "Hà Nội" && (
@@ -348,7 +348,7 @@ export function Checkout() {
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm resize-none"
+                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 text-sm resize-none"
                 />
               </div>
 
@@ -369,11 +369,11 @@ export function Checkout() {
 
           {/* Step 2: Payment */}
           {step === "payment" && (
-            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-300">
               <h2 className="text-gray-900 mb-5">Phương thức thanh toán</h2>
               <div className="space-y-3 mb-6">
                 {paymentMethods.map((pm) => (
-                  <label key={pm.id} className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-colors ${payment === pm.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+                  <label key={pm.id} className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-colors ${payment === pm.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-200"}`}>
                     <input
                       type="radio"
                       name="payment"
@@ -406,7 +406,7 @@ export function Checkout() {
                 </div>
               )}
               <div className="flex gap-3">
-                <button onClick={() => setStep("address")} className="px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
+                <button onClick={() => setStep("address")} className="px-6 py-3 border-2 border-gray-300 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
                   Quay lại
                 </button>
                 <button onClick={() => setStep("confirm")} className="flex-1 py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors">
@@ -418,7 +418,7 @@ export function Checkout() {
 
           {/* Step 3: Confirm */}
           {step === "confirm" && (
-            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-300">
               <h2 className="text-gray-900 mb-5">Xác nhận đơn hàng</h2>
               {/* Address summary */}
               <div className="p-4 bg-gray-50 rounded-xl mb-4">
@@ -461,7 +461,7 @@ export function Checkout() {
                 </p>
               )}
               <div className="flex gap-3">
-                <button onClick={() => setStep("payment")} className="px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
+                <button onClick={() => setStep("payment")} className="px-6 py-3 border-2 border-gray-300 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
                   Quay lại
                 </button>
                 <button
@@ -485,7 +485,7 @@ export function Checkout() {
         </div>
 
         {/* Order summary sidebar */}
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 h-fit sticky top-24">
+        <div className="bg-white rounded-2xl p-5 border-2 border-gray-300 h-fit sticky top-24">
           <h3 className="text-gray-800 mb-4">Đơn hàng của bạn</h3>
           <div className="space-y-3 mb-4">
             {cart.map((item) => (
@@ -511,7 +511,7 @@ export function Checkout() {
               </div>
             ))}
           </div>
-          <div className="border-t border-gray-100 pt-3 space-y-2 text-sm">
+          <div className="border-t border-gray-200 pt-3 space-y-2 text-sm">
             <div className="flex justify-between text-gray-600">
               <span>Tạm tính (Giá gốc)</span>
               <span>{formatPrice(originalSubtotal)}</span>
@@ -532,7 +532,7 @@ export function Checkout() {
               <span>Phí ship</span>
               <span className={shippingFee === 0 ? "text-green-600" : ""}>{shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}</span>
             </div>
-            <div className="flex justify-between text-gray-800 font-bold pt-2 border-t border-gray-100">
+            <div className="flex justify-between text-gray-800 font-bold pt-2 border-t border-gray-200">
               <span>Tổng cộng</span>
               <span className="text-blue-700 text-lg">{formatPrice(total)}</span>
             </div>

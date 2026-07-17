@@ -155,9 +155,9 @@ export function Login() {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-300 overflow-hidden">
           {/* Tabs */}
-          <div className="flex border-b border-gray-100">
+          <div className="flex border-b border-gray-200">
             <button
               onClick={() => { setActiveTab("login"); setLoginError(""); }}
               className={`flex-1 py-4 text-sm font-medium transition-all ${
@@ -222,7 +222,7 @@ export function Login() {
                       value={loginEmail}
                       onChange={(e) => { setLoginEmail(e.target.value); setLoginError(""); }}
                       placeholder={loginRole === "admin" ? "admin@sportzone.com" : "email@example.com"}
-                      className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition-colors"
+                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 transition-colors"
                       required
                     />
                   </div>
@@ -240,7 +240,7 @@ export function Login() {
                       value={loginPassword}
                       onChange={(e) => { setLoginPassword(e.target.value); setLoginError(""); }}
                       placeholder="Nhập mật khẩu"
-                      className="w-full pl-11 pr-11 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition-colors"
+                      className="w-full pl-11 pr-11 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 transition-colors"
                       required
                     />
                     <button
@@ -319,7 +319,7 @@ export function Login() {
                           setRegisterError("");
                         }}
                         placeholder="Nguyễn"
-                        className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition-colors text-sm"
+                        className="w-full pl-9 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 transition-colors text-sm"
                         required
                       />
                     </div>
@@ -334,7 +334,7 @@ export function Login() {
                         setRegisterError("");
                       }}
                       placeholder="Văn A"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition-colors text-sm"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 transition-colors text-sm"
                     />
                   </div>
                 </div>
@@ -354,7 +354,7 @@ export function Login() {
                         setRegisterError("");
                       }}
                       placeholder="email@example.com"
-                      className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition-colors"
+                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 transition-colors"
                       required
                     />
                   </div>
@@ -375,7 +375,7 @@ export function Login() {
                         setRegisterError("");
                       }}
                       placeholder="0912345678"
-                      className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition-colors"
+                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 transition-colors"
                       required
                     />
                   </div>
@@ -396,7 +396,7 @@ export function Login() {
                         setRegisterError("");
                       }}
                       placeholder="Ít nhất 6 ký tự"
-                      className="w-full pl-11 pr-11 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition-colors"
+                      className="w-full pl-11 pr-11 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 transition-colors"
                       required
                     />
                     <button
@@ -424,7 +424,7 @@ export function Login() {
                         setRegisterError("");
                       }}
                       placeholder="Nhập lại mật khẩu"
-                      className="w-full pl-11 pr-11 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition-colors"
+                      className="w-full pl-11 pr-11 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 transition-colors"
                       required
                     />
                     <button
@@ -451,7 +451,7 @@ export function Login() {
                         setRegisterError("");
                       }}
                       placeholder="Nhập mã OTP (6 số)"
-                      className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 transition-colors text-center tracking-widest font-mono"
+                      className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 transition-colors text-center tracking-widest font-mono"
                       maxLength={6}
                       required
                     />

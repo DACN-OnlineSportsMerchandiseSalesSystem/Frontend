@@ -68,14 +68,14 @@ export function Policy() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <aside>
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-2xl border-2 border-gray-300 overflow-hidden">
             {policies.map((policy) => {
               const pKey = policy.key || (policy as any).policyKey;
               return (
                 <button
                   key={pKey}
                   onClick={() => setTab(pKey)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors text-left border-b border-gray-50 last:border-0 ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors text-left border-b border-gray-200 last:border-0 ${
                     currentTabKey === pKey ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600 font-bold" : "text-gray-600 hover:bg-gray-50"
                   }`}
                 >
@@ -92,13 +92,48 @@ export function Policy() {
           </div>
         </aside>
 
-        <div className="lg:col-span-3 bg-white rounded-2xl p-6 border border-gray-100">
+        <div className="lg:col-span-3 bg-white rounded-2xl p-6 border-2 border-gray-300">
           {activePolicy ? (
             <div>
               <h2 className="text-gray-900 mb-4 flex items-center gap-2">
                 {getPolicyIcon(activePolicy.key || (activePolicy as any).policyKey)}
                 {activePolicy.title}
               </h2>
+              <style>{`
+                /* Aggressive styles for policy list items */
+                .policy-content ul, 
+                .policy-content ul.ql-indent-1,
+                .policy-content ul.ql-indent-2 {
+                  list-style-type: disc !important;
+                  list-style-position: inside !important;
+                  padding-left: 1.25rem !important;
+                  margin-top: 0.5rem !important;
+                  margin-bottom: 0.5rem !important;
+                  display: block !important;
+                }
+                .policy-content ol {
+                  list-style-type: decimal !important;
+                  list-style-position: inside !important;
+                  padding-left: 1.25rem !important;
+                  margin-top: 0.5rem !important;
+                  margin-bottom: 0.5rem !important;
+                  display: block !important;
+                }
+                .policy-content li {
+                  display: list-item !important;
+                  list-style-type: inherit !important;
+                  list-style-position: inside !important;
+                  margin-top: 0.25rem !important;
+                  margin-bottom: 0.25rem !important;
+                }
+                /* Indentation support */
+                .policy-content .ql-indent-1 {
+                  padding-left: 2rem !important;
+                }
+                .policy-content .ql-indent-2 {
+                  padding-left: 3.5rem !important;
+                }
+              `}</style>
               <div 
                 className="prose prose-sm max-w-none text-gray-600 policy-content"
                 dangerouslySetInnerHTML={{ __html: activePolicy.content }}

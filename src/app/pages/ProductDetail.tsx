@@ -231,7 +231,7 @@ export function ProductDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         {/* Images */}
         <div>
-          <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 mb-3 aspect-square">
+          <div className="bg-white rounded-2xl overflow-hidden border-2 border-gray-300 mb-3 aspect-square">
             <img loading="lazy" decoding="async"
               src={product.images[activeImage]?.imageUrl || "https://placehold.co/600x600?text=No+Image"}
               alt={product.name}
@@ -243,7 +243,7 @@ export function ProductDetail() {
               <button
                 key={i}
                 onClick={() => setActiveImage(i)}
-                className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors flex-shrink-0 ${activeImage === i ? "border-blue-600" : "border-gray-200 hover:border-gray-300"}`}
+                className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors flex-shrink-0 ${activeImage === i ? "border-blue-600" : "border-gray-200 hover:border-gray-200"}`}
               >
                 <img loading="lazy" decoding="async" src={img.imageUrl} alt="" className="w-full h-full object-cover" />
               </button>
@@ -319,7 +319,7 @@ export function ProductDetail() {
           {/* Qty */}
           <div className="flex items-center gap-4 mb-6">
             <p className="text-sm text-gray-600">Số lượng:</p>
-            <div className="flex items-center gap-0 border border-gray-200 rounded-xl overflow-hidden">
+            <div className="flex items-center gap-0 border-2 border-gray-300 rounded-xl overflow-hidden">
               <button onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Giảm" className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
                 <Minus className="w-4 h-4 text-gray-600" />
               </button>
@@ -367,8 +367,8 @@ export function ProductDetail() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-10">
-        <div className="flex border-b border-gray-100">
+      <div className="bg-white rounded-2xl border-2 border-gray-300 overflow-hidden mb-10">
+        <div className="flex border-b border-gray-200">
           {([
             { key: "desc", label: "Mô tả sản phẩm" },
             { key: "specs", label: "Thông số kỹ thuật" },
@@ -400,15 +400,15 @@ export function ProductDetail() {
               <table className="w-full text-sm">
                 <tbody>
                   <tr className="bg-gray-50">
-                    <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-100">Mã sản phẩm</td>
+                    <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-200">Mã sản phẩm</td>
                     <td className="py-3 px-4 text-gray-800 font-medium">{product.productCode}</td>
                   </tr>
                   <tr className="bg-white">
-                    <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-100">Thương hiệu</td>
+                    <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-200">Thương hiệu</td>
                     <td className="py-3 px-4 text-gray-800">{product.brandName}</td>
                   </tr>
                   <tr className="bg-gray-50">
-                    <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-100">Danh mục</td>
+                    <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-200">Danh mục</td>
                     <td className="py-3 px-4 text-gray-800">{sortedCats.join(", ") || "Chưa phân loại"}</td>
                   </tr>
                 </tbody>
@@ -419,7 +419,7 @@ export function ProductDetail() {
           {activeTab === "reviews" && (
             <div>
               {/* Summary */}
-              <div className="flex items-center gap-8 pb-6 border-b border-gray-100 mb-6">
+              <div className="flex items-center gap-8 pb-6 border-b border-gray-200 mb-6">
                 <div className="text-center bg-blue-50 px-8 py-4 rounded-2xl">
                   <div className="text-5xl font-black text-blue-700">{(product.rating || 0).toFixed(1)}</div>
                   <div className="flex justify-center gap-0.5 my-2">
@@ -456,7 +456,7 @@ export function ProductDetail() {
                   </div>
                 ) : (
                   reviews.map((r) => (
-                    <div key={r.id} className="border-b border-gray-50 pb-6 last:border-0">
+                    <div key={r.id} className="border-b border-gray-200 pb-6 last:border-0">
                       <div className="flex items-center gap-3 mb-2">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold">
                           {r.userName?.charAt(0) || "U"}
@@ -516,7 +516,7 @@ export function ProductDetail() {
                       value={reviewTitle}
                       onChange={(e) => setReviewTitle(e.target.value)}
                       placeholder="Ví dụ: Sản phẩm rất tốt, Giao hàng nhanh..."
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-blue-400 bg-white text-sm text-gray-700"
+                      className="w-full px-4 py-2.5 rounded-xl border-2 border-gray-300 focus:outline-none focus:border-blue-400 bg-white text-sm text-gray-700"
                     />
                   </div>
                 </div>
@@ -527,7 +527,7 @@ export function ProductDetail() {
                   onChange={(e) => setReviewText(e.target.value)}
                   placeholder="Mô tả cảm nhận của bạn về chất lượng, kiểu dáng, dịch vụ..."
                   rows={4}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-blue-400 bg-white text-sm resize-none text-gray-700 placeholder-gray-400 mb-4"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:outline-none focus:border-blue-400 bg-white text-sm resize-none text-gray-700 placeholder-gray-400 mb-4"
                 />
                 
                 <div className="flex justify-end">

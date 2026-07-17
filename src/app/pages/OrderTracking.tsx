@@ -104,7 +104,7 @@ export function OrderTracking() {
       <h1 className="text-gray-900 mb-2">Theo dõi đơn hàng</h1>
       <p className="text-gray-500 text-sm mb-6">Nhập mã đơn hàng để kiểm tra trạng thái giao hàng</p>
 
-      <div className="bg-white rounded-2xl p-5 border border-gray-100 mb-6">
+      <div className="bg-white rounded-2xl p-5 border-2 border-gray-300 mb-6">
         <div className="flex gap-3">
           <input
             type="text"
@@ -112,7 +112,7 @@ export function OrderTracking() {
             onChange={(e) => setSearchId(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             placeholder="Nhập mã đơn hàng (vd: SZ20260315001)"
-            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm"
+            className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 text-sm"
           />
           <button
             onClick={handleSearch}
@@ -125,7 +125,7 @@ export function OrderTracking() {
       </div>
 
       {foundOrder === null && searchId && (
-        <div className="text-center py-10 bg-white rounded-2xl border border-gray-100">
+        <div className="text-center py-10 bg-white rounded-2xl border-2 border-gray-300">
           <AlertTriangle className="w-10 h-10 text-yellow-400 mx-auto mb-3" />
           <p className="text-gray-600">Không tìm thấy đơn hàng với mã <strong>{searchId}</strong></p>
           <p className="text-gray-500 text-sm mt-1">Kiểm tra lại mã đơn hàng và thử lại</p>
@@ -134,7 +134,7 @@ export function OrderTracking() {
 
       {foundOrder && (
         <div className="space-y-5">
-          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+          <div className="bg-white rounded-2xl p-5 border-2 border-gray-300">
             <div className="flex items-start justify-between gap-4 mb-4">
               <button 
                 onClick={() => setFoundOrder(null)}
@@ -169,7 +169,7 @@ export function OrderTracking() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+          <div className="bg-white rounded-2xl p-5 border-2 border-gray-300">
             <h3 className="text-gray-800 mb-5">Lịch trình đơn hàng</h3>
             <div className="space-y-0">
               {foundOrder.trackingHistory?.map((event: any, i: number) => (
@@ -192,7 +192,7 @@ export function OrderTracking() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+          <div className="bg-white rounded-2xl p-5 border-2 border-gray-300">
             <h3 className="text-gray-800 mb-4">Sản phẩm đã đặt</h3>
             <div className="space-y-3">
               {foundOrder.items?.map((item: any, i: number) => {
@@ -223,7 +223,7 @@ export function OrderTracking() {
               const trackingProductDiscount = foundOrder.items?.reduce((s: number, i: any) => s + ((i.originalPrice || i.price) - i.price) * i.quantity, 0) || 0;
 
               return (
-                <div className="border-t border-gray-100 mt-4 pt-4 space-y-2 text-sm">
+                <div className="border-t border-gray-200 mt-4 pt-4 space-y-2 text-sm">
                   <div className="flex justify-between text-gray-600">
                     <span>Tạm tính (Giá gốc)</span>
                     <span>{formatPrice(trackingOriginalSubtotal)}</span>
@@ -244,7 +244,7 @@ export function OrderTracking() {
                     <span>Phí vận chuyển</span>
                     <span>{foundOrder.shippingFee === 0 ? "Miễn phí" : formatPrice(foundOrder.shippingFee)}</span>
                   </div>
-                  <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-50 mt-2">
+                  <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200 mt-2">
                     <span>Tổng cộng</span>
                     <span className="text-blue-700 text-lg">{formatPrice(foundOrder.total)}</span>
                   </div>
@@ -253,7 +253,7 @@ export function OrderTracking() {
             })()}
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+          <div className="bg-white rounded-2xl p-5 border-2 border-gray-300">
             <h3 className="text-gray-800 mb-3">Địa chỉ nhận hàng</h3>
             <p className="text-sm font-medium text-gray-800">{foundOrder.address?.fullName} · {foundOrder.address?.phone}</p>
             <p className="text-sm text-gray-600">
@@ -319,14 +319,14 @@ export function OrderTracking() {
       {/* Paginated Orders List */}
       {!foundOrder && orders.length > 0 && (
         <div className="space-y-4">
-          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+          <div className="bg-white rounded-2xl p-5 border-2 border-gray-300">
             <h3 className="text-gray-800 mb-4">Danh sách đơn hàng của bạn</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
               {paginatedOrders.map((order) => (
                 <button
                   key={order.id}
                   onClick={() => { setSearchId(order.id); setFoundOrder(order); window.scrollTo(0, 0); }}
-                  className="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-all text-left group"
+                  className="flex flex-col gap-3 p-4 rounded-xl border-2 border-gray-300 hover:border-blue-200 hover:bg-blue-50 transition-all text-left group"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -350,11 +350,11 @@ export function OrderTracking() {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 pt-4 border-t border-gray-50">
+              <div className="flex items-center justify-center gap-2 pt-4 border-t border-gray-200">
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(prev => prev - 1)}
-                  className="p-2 rounded-lg border border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50"
+                  className="p-2 rounded-lg border-2 border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50"
                 >
                   <ChevronRight className="w-4 h-4 rotate-180 text-gray-600" />
                 </button>
@@ -376,7 +376,7 @@ export function OrderTracking() {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(prev => prev + 1)}
-                  className="p-2 rounded-lg border border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50"
+                  className="p-2 rounded-lg border-2 border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50"
                 >
                   <ChevronRight className="w-4 h-4 text-gray-600" />
                 </button>
@@ -387,7 +387,7 @@ export function OrderTracking() {
       )}
 
       {!foundOrder && orders.length === 0 && isLoggedIn && (
-        <div className="text-center py-10 bg-white rounded-2xl border border-gray-100">
+        <div className="text-center py-10 bg-white rounded-2xl border-2 border-gray-300">
           <Package className="w-12 h-12 text-gray-200 mx-auto mb-3" />
           <p className="text-gray-600">Bạn chưa có đơn hàng nào</p>
           <Link to="/products" className="text-blue-600 text-sm hover:underline mt-2 inline-block">Mua sắm ngay</Link>
@@ -402,14 +402,14 @@ export function OrderTracking() {
             <p className="text-sm text-gray-500 mb-4">Vui lòng cho chúng tôi biết lý do hủy để cải thiện dịch vụ</p>
             <div className="space-y-2 mb-4">
               {["Tôi đặt nhầm sản phẩm", "Tôi muốn thay đổi địa chỉ giao hàng", "Tôi tìm được giá tốt hơn", "Lý do khác"].map((r) => (
-                <label key={r} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50">
+                <label key={r} className="flex items-center gap-3 p-3 rounded-xl border-2 border-gray-300 cursor-pointer hover:bg-gray-50">
                   <input type="radio" name="cancelReason" value={r} onChange={() => setCancelReason(r)} className="accent-blue-600" />
                   <span className="text-sm text-gray-700">{r}</span>
                 </label>
               ))}
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setCancelModal(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors text-sm">
+              <button onClick={() => setCancelModal(false)} className="flex-1 py-2.5 border-2 border-gray-300 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors text-sm">
                 Hủy bỏ
               </button>
               <button onClick={handleCancel} className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm transition-colors">
@@ -428,14 +428,14 @@ export function OrderTracking() {
             <p className="text-sm text-gray-500 mb-4">Chọn lý do đổi trả. Chúng tôi sẽ liên hệ trong 24h</p>
             <div className="space-y-2 mb-4">
               {["Sản phẩm bị lỗi/hỏng", "Sản phẩm không đúng mô tả", "Kích cỡ không phù hợp", "Sản phẩm không như mong đợi", "Lý do khác"].map((r) => (
-                <label key={r} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50">
+                <label key={r} className="flex items-center gap-3 p-3 rounded-xl border-2 border-gray-300 cursor-pointer hover:bg-gray-50">
                   <input type="radio" name="returnReason" value={r} onChange={() => setReturnReason(r)} className="accent-blue-600" />
                   <span className="text-sm text-gray-700">{r}</span>
                 </label>
               ))}
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setReturnModal(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors text-sm">
+              <button onClick={() => setReturnModal(false)} className="flex-1 py-2.5 border-2 border-gray-300 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors text-sm">
                 Hủy bỏ
               </button>
               <button onClick={handleReturn} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm transition-colors">

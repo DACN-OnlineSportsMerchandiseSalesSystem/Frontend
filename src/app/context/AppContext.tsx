@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { Product } from "../data/products";
 import { loginAPI, registerAPI, logoutAPI } from "../../services/authService";
 import { getMyProfileAPI, updateMyProfileAPI, changePasswordAPI } from "../../services/userService";
@@ -127,6 +127,13 @@ interface AppContextType {
   refreshCart: () => Promise<void>;
   cartCount: number;
   cartTotal: number;
+  carts: ApiCart[];
+  currentCartId: number | null;
+  selectCart: (cartId: number) => void;
+  createCart: (name: string) => Promise<void>;
+  renameCart: (cartId: number, name: string) => Promise<void>;
+  setDefaultCart: (cartId: number) => Promise<void>;
+  deleteCart: (cartId: number) => Promise<void>;
 }
 
 const defaultUser: User = {
@@ -179,6 +186,14 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [carts, setCarts] = useState<ApiCart[]>([]);
+  const [currentCartId, setCurrentCartId] = useState<number | null>(null);
+  const currentCartIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    currentCartIdRef.current = currentCartId;
+  }, [currentCartId]);
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [user, setUser] = useState<User>(() => {
     const role = localStorage.getItem('userRole');
@@ -196,25 +211,54 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [apiError, setApiError] = useState<string | null>(null);
 
   // ==================== CART ====================
-  const refreshCart = useCallback(async () => {
+  const refreshCart = useCallback(async (targetCartId?: number | null) => {
     if (!isLoggedIn) return;
     try {
-      const apiCart = await cartService.getMyCart();
-      const mappedItems: CartItem[] = apiCart.items.map(item => ({
-        id: item.id,
-        productId: item.productVariantId.toString(), // Variant ID
-        baseProductId: item.productId.toString(), // Base Product ID
-        name: item.productName,
-        price: Number(item.unitPrice) || 0,
-        originalPrice: item.originalPrice !== undefined && item.originalPrice !== null ? Number(item.originalPrice) : undefined,
-        discount: item.discount !== undefined && item.discount !== null ? Number(item.discount) : undefined,
-        image: item.imageUrl,
-        quantity: item.quantity,
-        size: item.variantInfo,
-        color: '',
-        brand: ''
-      }));
-      setCart(mappedItems);
+      let activeCarts = await cartService.getCarts('ACTIVE');
+
+      // Nếu không có giỏ hàng hoạt động nào, tự động gọi API lấy/tạo giỏ hàng mặc định
+      if (activeCarts.length === 0) {
+        const defaultCart = await cartService.getDefaultCart();
+        activeCarts = [defaultCart];
+      }
+      
+      setCarts(activeCarts);
+
+      let selectedCart: ApiCart | undefined;
+      
+      if (targetCartId !== undefined && targetCartId !== null) {
+        selectedCart = activeCarts.find(c => c.id === targetCartId);
+      }
+      
+      if (!selectedCart && currentCartIdRef.current !== null) {
+        selectedCart = activeCarts.find(c => c.id === currentCartIdRef.current);
+      }
+
+      if (!selectedCart) {
+        selectedCart = activeCarts.find(c => c.isDefault) || activeCarts[0];
+      }
+
+      if (selectedCart) {
+        setCurrentCartId(selectedCart.id);
+        const mappedItems: CartItem[] = (selectedCart.items || []).map(item => ({
+          id: item.id,
+          productId: item.productVariantId.toString(),
+          baseProductId: item.productId.toString(),
+          name: item.productName,
+          price: Number(item.unitPrice) || 0,
+          originalPrice: item.originalPrice !== undefined && item.originalPrice !== null ? Number(item.originalPrice) : undefined,
+          discount: item.discount !== undefined && item.discount !== null ? Number(item.discount) : undefined,
+          image: item.imageUrl,
+          quantity: item.quantity,
+          size: item.variantInfo,
+          color: '',
+          brand: ''
+        }));
+        setCart(mappedItems);
+      } else {
+        setCurrentCartId(null);
+        setCart([]);
+      }
     } catch (err) {
       console.error("Failed to load cart", err);
     }
@@ -228,7 +272,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {}
   }, [isLoggedIn]);
 
-    // Khôi phục session khi app load (nếu token còn trong localStorage)
+  // Khôi phục session khi app load (nếu token còn trong localStorage)
   useEffect(() => {
     const handleCartUpdate = () => {
       console.log(">>> [EVENT] Nhận tín hiệu cập nhật giỏ hàng!");
@@ -283,7 +327,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const addToCart = useCallback(async (item: CartItem) => {
     if (!isLoggedIn) {
-      // Local cart if not logged in
       const guestItem = { ...item, price: Number(item.price) || 0 };
       setCart((prev) => {
         const existing = prev.find(c => c.productId === guestItem.productId);
@@ -293,8 +336,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      await cartService.addToCart(parseInt(item.productId), item.quantity);
-      await refreshCart();
+      const targetCartId = currentCartIdRef.current || undefined;
+      await cartService.addToCart(parseInt(item.productId), item.quantity, targetCartId);
+      await refreshCart(targetCartId);
     } catch (err) {
       console.error("Add to cart failed", err);
     }
@@ -308,32 +352,83 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       const itemToDelete = cart.find(i => i.productId === productId);
       if (itemToDelete && itemToDelete.id) {
-        await cartService.removeCartItem(itemToDelete.id);
-        await refreshCart();
+        const targetCartId = currentCartIdRef.current || undefined;
+        await cartService.removeCartItem(itemToDelete.id, targetCartId);
+        await refreshCart(targetCartId);
       }
     } catch (err) {}
   }, [isLoggedIn, cart, refreshCart]);
 
   const updateCartQty = useCallback(async (productId: string, size: string, color: string, qty: number) => {
     if (!isLoggedIn) {
-      setCart((prev) => prev.map((c) => c.productId === productId ? { ...c, quantity: qty } : c));
+      if (qty <= 0) {
+        setCart((prev) => prev.filter((c) => c.productId !== productId));
+      } else {
+        setCart((prev) => prev.map((c) => c.productId === productId ? { ...c, quantity: qty } : c));
+      }
       return;
     }
     try {
       const itemToUpdate = cart.find(i => i.productId === productId);
       if (itemToUpdate && itemToUpdate.id) {
-        await cartService.updateCartItem(itemToUpdate.id, qty);
-        await refreshCart();
+        const targetCartId = currentCartIdRef.current || undefined;
+        await cartService.updateCartItem(itemToUpdate.id, qty, targetCartId);
+        await refreshCart(targetCartId);
       }
     } catch (err) {}
   }, [isLoggedIn, cart, refreshCart]);
 
   const clearCart = useCallback(async () => {
     if (isLoggedIn) {
-      await cartService.clearCart();
+      const targetCartId = currentCartIdRef.current || undefined;
+      await cartService.clearCart(targetCartId);
     }
     setCart([]);
   }, [isLoggedIn]);
+
+  const selectCart = useCallback((cartId: number) => {
+    refreshCart(cartId);
+  }, [refreshCart]);
+
+  const createCart = useCallback(async (name: string) => {
+    if (!isLoggedIn) return;
+    try {
+      const newCart = await cartService.createCart(name);
+      await refreshCart(newCart.id);
+    } catch (err) {
+      console.error("Create cart failed", err);
+    }
+  }, [isLoggedIn, refreshCart]);
+
+  const renameCart = useCallback(async (cartId: number, name: string) => {
+    if (!isLoggedIn) return;
+    try {
+      await cartService.updateCart(cartId, { name });
+      await refreshCart(currentCartIdRef.current);
+    } catch (err) {
+      console.error("Rename cart failed", err);
+    }
+  }, [isLoggedIn, refreshCart]);
+
+  const setDefaultCart = useCallback(async (cartId: number) => {
+    if (!isLoggedIn) return;
+    try {
+      await cartService.updateCart(cartId, { isDefault: true });
+      await refreshCart(cartId);
+    } catch (err) {
+      console.error("Set default cart failed", err);
+    }
+  }, [isLoggedIn, refreshCart]);
+
+  const deleteCart = useCallback(async (cartId: number) => {
+    if (!isLoggedIn) return;
+    try {
+      await cartService.archiveCart(cartId);
+      await refreshCart(null);
+    } catch (err) {
+      console.error("Delete cart failed", err);
+    }
+  }, [isLoggedIn, refreshCart]);
 
   // ==================== ORDERS ====================
   const mapApiOrderToUI = useCallback((o: any): Order => ({
@@ -702,6 +797,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         toggleWishlist,
         categories, brands, validVouchers, refreshVouchers, refreshOrders, refreshCart,
         cartCount, cartTotal,
+        carts, currentCartId, selectCart, createCart, renameCart, setDefaultCart, deleteCart,
       }}
     >
       {children}

@@ -59,7 +59,7 @@ export function PolicyPage() {
             <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
           </div>
         ) : policies.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center max-w-2xl mx-auto border border-gray-100 shadow-sm">
+          <div className="bg-white rounded-3xl p-12 text-center max-w-2xl mx-auto border-2 border-gray-300 shadow-sm">
             <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-gray-900 mb-2">Chưa có chính sách nào được công bố</h2>
             <p className="text-gray-500">Xin lỗi, hiện tại chúng tôi đang cập nhật các chính sách. Vui lòng quay lại sau.</p>
@@ -71,7 +71,7 @@ export function PolicyPage() {
           <div className="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto">
             {/* Sidebar Navigation */}
             <div className="w-full lg:w-1/4 flex-shrink-0">
-              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sticky top-24">
+              <div className="bg-white rounded-3xl border-2 border-gray-300 shadow-sm p-4 sticky top-24">
                 <h3 className="text-sm font-black text-gray-500 uppercase tracking-widest mb-4 px-4 pt-2">Danh mục</h3>
                 <nav className="space-y-1">
                   {policies.map(policy => (
@@ -95,16 +95,42 @@ export function PolicyPage() {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 bg-white rounded-3xl border border-gray-100 shadow-sm p-8 md:p-12 min-h-[600px]">
+            <div className="flex-1 bg-white rounded-3xl border-2 border-gray-300 shadow-sm p-8 md:p-12 min-h-[600px]">
               {activePolicy ? (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="mb-8 border-b border-gray-100 pb-8">
+                  <div className="mb-8 border-b border-gray-200 pb-8">
                     <span className="inline-block px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full mb-4 uppercase tracking-wider">
                       {activePolicy.category}
                     </span>
                     <h2 className="text-3xl font-black text-gray-900">{activePolicy.title}</h2>
                   </div>
                   
+                  <style>{`
+                    .prose ul {
+                      list-style-type: disc !important;
+                      padding-left: 1.5rem !important;
+                      margin-top: 0.75rem !important;
+                      margin-bottom: 0.75rem !important;
+                    }
+                    .prose ol {
+                      list-style-type: decimal !important;
+                      padding-left: 1.5rem !important;
+                      margin-top: 0.75rem !important;
+                      margin-bottom: 0.75rem !important;
+                    }
+                    .prose li {
+                      display: list-item !important;
+                      list-style-type: inherit !important;
+                      margin-top: 0.25rem !important;
+                      margin-bottom: 0.25rem !important;
+                    }
+                    .prose .ql-indent-1 {
+                      padding-left: 3rem !important;
+                    }
+                    .prose .ql-indent-2 {
+                      padding-left: 4.5rem !important;
+                    }
+                  `}</style>
                   {/* Dangerously Set Inner HTML is used here because the policy content could be rich text/HTML */}
                   <div 
                     className="prose prose-blue max-w-none prose-headings:font-black prose-a:text-blue-600 prose-img:rounded-2xl"

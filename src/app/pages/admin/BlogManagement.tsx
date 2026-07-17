@@ -185,23 +185,23 @@ export function BlogManagement() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-2xl p-6 border-2 border-gray-300 shadow-sm">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Tổng bài viết</p>
           <p className="text-3xl font-black text-gray-900 mt-2">{blogs.length}</p>
         </div>
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-2xl p-6 border-2 border-gray-300 shadow-sm">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Đã xuất bản</p>
           <p className="text-3xl font-black text-green-600 mt-2">
             {blogs.filter(b => b.status === "published" || !b.status).length}
           </p>
         </div>
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-2xl p-6 border-2 border-gray-300 shadow-sm">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Bản nháp</p>
           <p className="text-3xl font-black text-yellow-600 mt-2">
             {blogs.filter(b => b.status === "draft").length}
           </p>
         </div>
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-2xl p-6 border-2 border-gray-300 shadow-sm">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Tổng lượt xem</p>
           <p className="text-3xl font-black text-blue-600 mt-2">
             {blogs.reduce((sum, b) => sum + (b.views || 0), 0).toLocaleString()}
@@ -210,7 +210,7 @@ export function BlogManagement() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+      <div className="bg-white rounded-3xl p-6 border-2 border-gray-300 shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -219,13 +219,13 @@ export function BlogManagement() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm bài viết..."
-              className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white transition-colors font-medium"
+              className="w-full pl-11 pr-4 py-3 bg-gray-50 border-2 border-gray-300 rounded-2xl focus:outline-none focus:border-blue-400 focus:bg-white transition-colors font-medium"
             />
           </div>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:border-blue-400 font-medium text-gray-700 cursor-pointer transition-colors"
+            className="px-5 py-3 bg-gray-50 border-2 border-gray-300 rounded-2xl focus:outline-none focus:border-blue-400 font-medium text-gray-700 cursor-pointer transition-colors"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="published">Đã xuất bản</option>
@@ -241,14 +241,14 @@ export function BlogManagement() {
           <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
         </div>
       ) : filteredBlogs.length === 0 ? (
-        <div className="bg-white rounded-3xl p-12 text-center border border-gray-100">
+        <div className="bg-white rounded-3xl p-12 text-center border-2 border-gray-300">
           <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-lg font-bold text-gray-600">Không tìm thấy bài viết nào.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredBlogs.map((blog) => (
-            <div key={blog.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl transition-all group flex flex-col">
+            <div key={blog.id} className="bg-white rounded-3xl border-2 border-gray-300 shadow-sm overflow-hidden hover:shadow-xl transition-all group flex flex-col">
               <div className="relative aspect-video overflow-hidden bg-gray-50">
                 {blog.imageUrl ? (
                   <img loading="lazy" decoding="async"
@@ -300,7 +300,7 @@ export function BlogManagement() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                   <div className="flex items-center gap-1.5 text-xs font-black text-blue-600">
                     <Eye className="w-4 h-4" />
                     {(blog.views || 0).toLocaleString()} lượt xem
@@ -339,7 +339,7 @@ export function BlogManagement() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl my-8 animate-in fade-in zoom-in duration-200">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-3xl">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-3xl">
               <h3 className="text-2xl font-black text-gray-900">
                 {editingBlog ? "Chỉnh sửa Bài viết" : "Viết bài mới"}
               </h3>
@@ -361,7 +361,7 @@ export function BlogManagement() {
                       title: e.target.value,
                       slug: !editingBlog ? generateSlug(e.target.value) : formData.slug 
                     })}
-                    className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium text-lg"
+                    className="w-full px-5 py-3 bg-gray-50 border-2 border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium text-lg"
                     placeholder="VD: Top 5 đôi giày chạy bộ tốt nhất..."
                   />
                 </div>
@@ -373,7 +373,7 @@ export function BlogManagement() {
                     required
                     value={formData.slug}
                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-mono text-sm"
+                    className="w-full px-5 py-3 bg-gray-50 border-2 border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-mono text-sm"
                   />
                 </div>
 
@@ -385,7 +385,7 @@ export function BlogManagement() {
                     )}
                     <label className="flex-1 cursor-pointer">
                       <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                      <div className="w-full px-5 py-3 bg-gray-50 border border-gray-200 border-dashed rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
+                      <div className="w-full px-5 py-3 bg-gray-50 border-2 border-gray-300 border-dashed rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
                         {isUploading ? (
                           <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
                         ) : (
@@ -406,7 +406,7 @@ export function BlogManagement() {
                     required
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium text-sm"
+                    className="w-full px-5 py-3 bg-gray-50 border-2 border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium text-sm"
                   />
                 </div>
 
@@ -416,7 +416,7 @@ export function BlogManagement() {
                     required
                     value={formData.sport}
                     onChange={(e) => setFormData({ ...formData, sport: e.target.value })}
-                    className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium text-sm cursor-pointer"
+                    className="w-full px-5 py-3 bg-gray-50 border-2 border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium text-sm cursor-pointer"
                   >
                     <option value="" disabled>Chọn môn thể thao</option>
                     {categories.map(cat => (
@@ -431,7 +431,7 @@ export function BlogManagement() {
                     type="text"
                     value={formData.author}
                     onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                    className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium text-sm"
+                    className="w-full px-5 py-3 bg-gray-50 border-2 border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium text-sm"
                   />
                 </div>
 
@@ -441,7 +441,7 @@ export function BlogManagement() {
                     type="text"
                     value={formData.tags}
                     onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                    className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium text-sm"
+                    className="w-full px-5 py-3 bg-gray-50 border-2 border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium text-sm"
                     placeholder="VD: the thao, giay dep, v.v."
                   />
                 </div>
@@ -452,7 +452,7 @@ export function BlogManagement() {
                     rows={2}
                     value={formData.excerpt}
                     onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                    className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium text-sm resize-none"
+                    className="w-full px-5 py-3 bg-gray-50 border-2 border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium text-sm resize-none"
                     placeholder="Đoạn văn ngắn tóm tắt bài viết..."
                   />
                 </div>
@@ -480,7 +480,7 @@ export function BlogManagement() {
                       {isFullscreen ? "↙️ Thu nhỏ lại" : "↗️ Phóng to toàn màn hình"}
                     </button>
                   </div>
-                  <div className={`bg-white rounded-2xl border border-gray-200 overflow-hidden flex-1 flex flex-col quill-editor-container shadow-sm ${isFullscreen ? 'h-full' : ''}`}>
+                  <div className={`bg-white rounded-2xl border-2 border-gray-300 overflow-hidden flex-1 flex flex-col quill-editor-container shadow-sm ${isFullscreen ? 'h-full' : ''}`}>
                     <ReactQuill 
                       theme="snow" 
                       value={formData.content} 
@@ -491,11 +491,11 @@ export function BlogManagement() {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-gray-100 flex justify-end gap-3">
+              <div className="pt-6 border-t border-gray-200 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+                  className="px-8 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors"
                 >
                   Hủy bỏ
                 </button>
@@ -552,7 +552,7 @@ export function BlogManagement() {
             />
             
             {viewingBlog.tags && (
-              <div className="mt-8 pt-6 border-t border-gray-100 flex gap-2 flex-wrap">
+              <div className="mt-8 pt-6 border-t border-gray-200 flex gap-2 flex-wrap">
                 {viewingBlog.tags.split(',').map(tag => tag.trim() && (
                   <span key={tag} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
                     #{tag.trim()}

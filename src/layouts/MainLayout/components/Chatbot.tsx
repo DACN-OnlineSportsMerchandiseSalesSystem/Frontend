@@ -285,7 +285,7 @@ export function Chatbot() {
       {/* Chat Window */}
       {isOpen && (
         <div
-          className={`fixed bottom-20 right-4 md:right-6 z-50 w-[340px] md:w-[380px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col transition-all duration-300 ${
+          className={`fixed bottom-20 right-4 md:right-6 z-50 w-[340px] md:w-[380px] bg-white rounded-2xl shadow-2xl border-2 border-gray-300 flex flex-col transition-all duration-300 ${
             isMinimized ? "h-14 overflow-hidden" : "h-[520px]"
           }`}
         >
@@ -402,14 +402,14 @@ export function Chatbot() {
               </div>
 
               {/* Input */}
-              <div className="border-t border-gray-100 px-3 py-3 flex-shrink-0">
+              <div className="border-t border-gray-200 px-3 py-3 flex-shrink-0">
                 <form onSubmit={handleSubmit} className="flex gap-2">
                   <input
                     type="text"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Nhập tin nhắn..."
-                    className="flex-1 px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-blue-400 text-sm text-gray-700 placeholder-gray-400 transition-colors"
+                    className="flex-1 px-3.5 py-2.5 rounded-xl bg-gray-50 border-2 border-gray-300 focus:outline-none focus:border-blue-400 text-sm text-gray-700 placeholder-gray-400 transition-colors"
                   />
                   <button
                     type="submit"

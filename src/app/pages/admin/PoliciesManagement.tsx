@@ -111,7 +111,7 @@ export function PoliciesManagement() {
         </button>
       </div>
 
-      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+      <div className="bg-white p-6 rounded-3xl border-2 border-gray-300 shadow-sm space-y-4">
         <div className="relative max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
           <input
@@ -119,14 +119,14 @@ export function PoliciesManagement() {
             placeholder="Tìm kiếm chính sách..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+            className="w-full pl-11 pr-4 py-3 bg-gray-50 border-2 border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
           />
         </div>
 
         <div className="overflow-x-auto mt-6">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
+              <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">STT</th>
                 <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">Tiêu đề</th>
                 <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">Key (URL)</th>
@@ -205,7 +205,7 @@ export function PoliciesManagement() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white rounded-3xl w-full max-w-3xl shadow-2xl my-8 animate-in fade-in zoom-in duration-200">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-3xl">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-3xl">
               <h3 className="text-xl font-black text-gray-900">
                 {editingPolicy ? "Chỉnh sửa Chính sách" : "Thêm Chính sách mới"}
               </h3>
@@ -223,7 +223,7 @@ export function PoliciesManagement() {
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium"
+                    className="w-full px-4 py-2.5 bg-gray-50 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium"
                     placeholder="VD: Chính sách giao hàng"
                   />
                 </div>
@@ -235,7 +235,7 @@ export function PoliciesManagement() {
                     disabled={!!editingPolicy}
                     value={formData.policyKey}
                     onChange={(e) => setFormData({ ...formData, policyKey: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-mono disabled:opacity-50"
+                    className="w-full px-4 py-2.5 bg-gray-50 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-mono disabled:opacity-50"
                     placeholder="VD: shipping-policy"
                   />
                   <p className="text-xs text-gray-500 mt-1">Dùng để làm URL. Không có dấu, không khoảng trắng.</p>
@@ -248,7 +248,7 @@ export function PoliciesManagement() {
                     required
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium"
+                    className="w-full px-4 py-2.5 bg-gray-50 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium"
                     placeholder="VD: Shipping"
                   />
                 </div>
@@ -259,7 +259,7 @@ export function PoliciesManagement() {
                     min={1}
                     value={formData.displayOrder}
                     onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 1 })}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium"
+                    className="w-full px-4 py-2.5 bg-gray-50 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors font-medium"
                   />
                 </div>
               </div>
@@ -287,7 +287,7 @@ export function PoliciesManagement() {
                     {isFullscreen ? "↙️ Thu nhỏ lại" : "↗️ Phóng to toàn màn hình"}
                   </button>
                 </div>
-                <div className={`bg-white rounded-2xl border border-gray-200 overflow-hidden flex-1 flex flex-col quill-editor-container shadow-sm ${isFullscreen ? 'h-full' : ''}`}>
+                <div className={`bg-white rounded-2xl border-2 border-gray-300 overflow-hidden flex-1 flex flex-col quill-editor-container shadow-sm ${isFullscreen ? 'h-full' : ''}`}>
                   <ReactQuill 
                     theme="snow" 
                     value={formData.content} 
@@ -297,24 +297,24 @@ export function PoliciesManagement() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+              <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border-2 border-gray-300">
                 <input
                   type="checkbox"
                   id="isActive"
                   checked={formData.isActive}
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  className="w-5 h-5 text-blue-600 rounded border-gray-200 focus:ring-blue-500"
                 />
                 <label htmlFor="isActive" className="text-sm font-bold text-gray-700 select-none cursor-pointer">
                   Kích hoạt hiển thị cho khách hàng (Active)
                 </label>
               </div>
 
-              <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
+              <div className="pt-4 border-t border-gray-200 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+                  className="px-6 py-2.5 bg-white border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors"
                 >
                   Hủy bỏ
                 </button>

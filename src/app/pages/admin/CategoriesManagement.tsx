@@ -142,8 +142,8 @@ export function CategoriesManagement() {
         </button>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+      <div className="bg-white rounded-3xl shadow-sm border-2 border-gray-300 overflow-hidden">
+        <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
@@ -286,7 +286,7 @@ export function CategoriesManagement() {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 border border-gray-100 rounded-2xl shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 border-2 border-gray-300 rounded-2xl shadow-sm">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">Hiển thị</span>
             <select
@@ -295,7 +295,7 @@ export function CategoriesManagement() {
                 setItemsPerPage(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="px-2 py-1.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white text-sm font-bold text-gray-700 cursor-pointer"
+              className="px-2 py-1.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 bg-white text-sm font-bold text-gray-700 cursor-pointer"
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -309,7 +309,7 @@ export function CategoriesManagement() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+              className="px-3 py-1.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
             >
               Trước
             </button>
@@ -326,7 +326,7 @@ export function CategoriesManagement() {
                       className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
                         currentPage === page
                           ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                          : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                          : "border-2 border-gray-300 text-gray-600 hover:bg-gray-50"
                       }`}
                     >
                       {page}
@@ -338,7 +338,7 @@ export function CategoriesManagement() {
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+              className="px-3 py-1.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
             >
               Sau
             </button>
@@ -441,7 +441,7 @@ function CategoryFormModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <h3 className="text-xl font-black text-gray-900">
             {isEdit ? "Cập nhật danh mục" : "Thêm danh mục mới"}
           </h3>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router";
+import { useLocation, Link } from "react-router";
 import { MessageCircle, X, Send, Bot, User, ChevronDown, Minimize2, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { formatPrice } from "../data/products";
 import { chatService } from "../../services/chatService";
@@ -78,20 +78,68 @@ export function Chatbot() {
       .replace(/\s+/g, ' ')
       .trim();
 
-    if (!cleanFullText) return;
+    // Xóa dấu chấm phân tách trong các con số (ví dụ: 2.500.000 -> 2500000) ở frontend trước để tránh thuật toán cắt nhầm câu ở dấu chấm giá tiền
+    const cleanNoDotText = cleanFullText.replace(/(\d)\.(\d)/g, '$1$2');
+
+    if (!cleanNoDotText) return;
+
+    // Tách cleanNoDotText thành các câu/đoạn nhỏ (dưới 85 ký tự) để gửi lên Backend
+    const chunks: string[] = [];
+    let remainingText = cleanNoDotText;
+    
+    while (remainingText.length > 0) {
+      let splitIdx = -1;
+      // Tìm dấu câu kết thúc gần nhất trong khoảng 85 ký tự
+      const match = remainingText.substring(0, 85).match(/([.!?,\n]\s*)/);
+      if (match && match.index !== undefined) {
+        splitIdx = match.index + match[0].length;
+      } else {
+        // Nếu không có dấu câu, tìm khoảng trắng gần nhất dưới 85 ký tự
+        splitIdx = remainingText.lastIndexOf(' ', 85);
+      }
+      
+      if (splitIdx <= 5) {
+        // Fallback nếu không có khoảng trắng hoặc quá ngắn, cắt cứng 85 ký tự
+        splitIdx = remainingText.length > 85 ? 85 : remainingText.length;
+      }
+      
+      const chunk = remainingText.substring(0, splitIdx).trim();
+      remainingText = remainingText.substring(splitIdx).trim();
+      if (chunk.length > 0) {
+        chunks.push(chunk);
+      }
+    }
+
+    if (chunks.length === 0) return;
 
     try {
-      // 4. Gọi 1 lần Backend — Backend sẽ chia < 85 ký tự và trả về mảng URL theo thứ tự
-      console.log(`>>> [TTS] Gửi toàn văn lên Backend để chia đoạn...`);
-      const response = await api.get("/tts", { params: { text: cleanFullText } });
-      const audioUrls: string[] = response.data.audioUrls ?? (response.data.audioUrl ? [response.data.audioUrl] : []);
+      console.log(`>>> [TTS] Gửi ${chunks.length} đoạn văn bản (đều < 85 ký tự) lên Backend...`);
+      const audioUrls: string[] = [];
+      const successfulChunks: string[] = [];
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        console.log(`  -> [Đoạn ${i + 1}/${chunks.length}] Gửi: "${chunk}" (${chunk.length} kí tự)`);
+        try {
+          const response = await api.get("/tts", { params: { text: chunk } });
+          const url = response.data.audioUrl || response.data.audioUrls?.[0];
+          if (url) {
+            console.log(`  <- [Đoạn ${i + 1}/${chunks.length}] Thành công, URL: ${url}`);
+            audioUrls.push(url);
+            successfulChunks.push(chunk);
+          } else {
+            console.warn(`  <- [Đoạn ${i + 1}/${chunks.length}] Thất bại, không có URL trả về.`);
+          }
+        } catch (e) {
+          console.error(`  <- [Đoạn ${i + 1}/${chunks.length}] Lỗi lấy TTS cho đoạn: "${chunk}"`, e);
+        }
+      }
 
       if (audioUrls.length === 0) return;
 
       console.log(`>>> [TTS] Nhận ${audioUrls.length} đoạn âm thanh từ Backend.`);
 
       // 5. Nạp tất cả URL vào audioBuffer và kích hoạt phát
-      textChunksToProcess.current = audioUrls.map((_, i) => `chunk_${i}`);
+      textChunksToProcess.current = successfulChunks;
       nextProcessIndex.current = audioUrls.length; // Đã nạp xong hết
 
       for (let i = 0; i < audioUrls.length; i++) {
@@ -302,18 +350,27 @@ export function Chatbot() {
           const realProduct = await productService.getProductById(parseInt(idFromUrl));
           
           if (realProduct) {
-            // Chuẩn bị dữ liệu chi tiết để AI có "nguyên liệu" tư vấn
-            const variantInfo = realProduct.variants?.map((v: any) => `- Size ${v.size}, màu ${v.color} (Giá: ${formatPrice(v.price)})`).join("\n") || "Liên hệ để biết thêm";
+            // Chuẩn bị dữ liệu chi tiết để AI có "nguyên liệu" tư vấn ngắn gọn
+            const uniqueSizes = Array.from(new Set(realProduct.variants?.map((v: any) => v.size).filter(Boolean) || []));
+            const uniqueColors = Array.from(new Set(realProduct.variants?.map((v: any) => v.color).filter(Boolean) || []));
+            const prices = realProduct.variants?.map((v: any) => v.price).filter((p: any) => p != null) || [];
+            const priceStr = prices.length > 0 
+              ? (Math.min(...prices) === Math.max(...prices) 
+                  ? formatPrice(prices[0]) 
+                  : `${formatPrice(Math.min(...prices))} - ${formatPrice(Math.max(...prices))}`)
+              : formatPrice(realProduct.price);
+
+            const variantInfo = `Các kích cỡ có sẵn: ${uniqueSizes.join(", ")}\nMàu sắc có sẵn: ${uniqueColors.join(", ")}\nGiá bán: ${priceStr}`;
             
             const detailedPrompt = `
               Bối cảnh: Khách hàng đang xem sản phẩm ${realProduct.name} - Thương hiệu: ${realProduct.brandName}.
-              Chi tiết: Mã ${realProduct.productCode}, Giá: ${formatPrice(realProduct.price)}.
+              Chi tiết: Mã ${realProduct.productCode}, Giá: ${priceStr}.
               Mô tả sản phẩm: ${realProduct.description || "Không có thông tin mô tả."}
-              Tình trạng kho (Kích cỡ và màu sắc):
+              Tình trạng kho:
               ${variantInfo}
               
-              Nhiệm vụ: Dựa vào thông tin trên, hãy chủ động giới thiệu nhanh những điểm nổi bật nhất của sản phẩm, ĐỒNG THỜI LIỆT KÊ CÁC SIZE/MÀU ĐANG CÓ SẴN (ví dụ: 'Hiện tại shop đang có sẵn size 41, 42 màu Trắng') và hỏi xem khách hàng cần tư vấn thêm không.
-              QUY ĐỊNH: Không tự ý phiên âm tiếng Anh. Trả lời tự nhiên, thân thiện, súc tích.`;
+              Nhiệm vụ: Dựa vào thông tin trên, hãy chủ động giới thiệu những điểm nổi bật nhất của sản phẩm, NÊU GIÁ BÁN TRƯỚC, sau đó ghi câu "Dưới đây là các phiên bản hiện có sẵn:" và liệt kê các size, màu sắc đang có sẵn, cuối cùng hỏi xem khách hàng cần tư vấn thêm gì không.
+              QUY ĐỊNH: Trả lời tự nhiên, thân thiện, súc tích. Không tự ý phiên âm tiếng Anh. Bắt buộc phải TÔ ĐẬM (sử dụng cú pháp **tô đậm**) các thông tin bao gồm: tên sản phẩm, giá bán, các màu sắc và các kích cỡ (ví dụ: **Giày Thể Thao Biti's Hunter Evo Nữ**, **812.250đ**, màu **Hồng Lợt**, size **37**).`;
 
             const botResponse = await chatService.chat(detailedPrompt);
             
@@ -325,7 +382,7 @@ export function Chatbot() {
               quickReplies: ["Có size nào?", "Màu sắc có gì?", "Còn hàng không?", "Chính sách đổi trả?"],
             };
             setMessages([introMsg]);
-            speak(botResponse.voiceText || botResponse.response);
+            speak(typeof botResponse === 'string' ? botResponse : (botResponse.voiceText || botResponse.response || ""));
           }
         } catch (error) {
           console.error("AI API Intro Error:", error);
@@ -547,6 +604,8 @@ export function Chatbot() {
   const speakChunk = async (sentence: string, index: number) => {
     if (isMuted) return;
 
+    console.log(`📢 [TTS speakChunk #${index + 1}] Raw text nhận vào: "${sentence}"`);
+
     const cleanSentence = sentence
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1') // Xóa đường dẫn markdown link [Tên](URL) giữ lại Tên
       .replace(/\b(product|brand|category|detail)\b[a-zA-Z0-9_/]*/gi, '') // Xóa các từ khóa URL đường dẫn
@@ -558,7 +617,12 @@ export function Chatbot() {
       .replace(/\s+/g, ' ')
       .trim();
 
-    if (!cleanSentence || cleanSentence.length < 2) return;
+    console.log(`🧹 [TTS speakChunk #${index + 1}] Sau khi clean: "${cleanSentence}" (${cleanSentence.length} ký tự)`);
+
+    if (!cleanSentence || cleanSentence.length < 2) {
+      console.warn(`⚠️ [TTS speakChunk #${index + 1}] Đoạn quá ngắn hoặc rỗng, bỏ qua.`);
+      return;
+    }
 
     let isSuccess = false;
     let maxRetries = 2; // Thử gọi lại API tối đa 2 lần
@@ -569,6 +633,7 @@ export function Chatbot() {
           console.warn(`⚠️ [RETRY STREAM] FPT.AI tạo file lỗi, yêu cầu tạo lại đoạn ${index + 1} (lần ${attempt})...`);
         }
 
+        console.log(`🚀 [TTS speakChunk #${index + 1}] Gửi đến FPT.AI: "${cleanSentence}"`);
         const response = await api.get("/tts", { params: { text: cleanSentence } });
         // Backend trả về mảng audioUrls; đoạn stream đã nhỏ nên lấy phần tử đầu (hỗ trợ cả audioUrl string)
         const urls: string[] = response.data.audioUrls ?? (response.data.audioUrl ? [response.data.audioUrl] : []);
@@ -657,7 +722,7 @@ export function Chatbot() {
       {isOpen && (
         <div
           onClick={() => setHasInteracted(true)}
-          className={`fixed bottom-20 right-4 md:right-6 z-50 w-[340px] md:w-[380px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col transition-all duration-300 ${
+          className={`fixed bottom-20 right-4 md:right-6 z-50 w-[340px] md:w-[380px] bg-white rounded-2xl shadow-2xl border-2 border-gray-300 flex flex-col transition-all duration-300 ${
             isMinimized ? "h-14 overflow-hidden" : "h-[520px]"
           }`}
         >
@@ -820,7 +885,7 @@ export function Chatbot() {
               </div>
 
               {/* Input */}
-              <div className="border-t border-gray-100 px-3 py-3 flex-shrink-0">
+              <div className="border-t border-gray-200 px-3 py-3 flex-shrink-0">
                 <form onSubmit={handleSubmit} className="flex gap-2">
                   <input
                     type="text"
@@ -830,7 +895,7 @@ export function Chatbot() {
                       setHasInteracted(true);
                     }}
                     placeholder="Nhập tin nhắn..."
-                    className="flex-1 px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-blue-400 text-sm text-gray-700 placeholder-gray-400 transition-colors"
+                    className="flex-1 px-3.5 py-2.5 rounded-xl bg-gray-50 border-2 border-gray-300 focus:outline-none focus:border-blue-400 text-sm text-gray-700 placeholder-gray-400 transition-colors"
                   />
                   <button aria-label="Gửi tin nhắn"
                     type="submit"

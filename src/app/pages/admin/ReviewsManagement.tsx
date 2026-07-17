@@ -110,7 +110,7 @@ export function ReviewsManagement() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
+        <div className="bg-white p-6 rounded-3xl border-2 border-gray-300 shadow-sm flex items-center gap-4">
           <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
             <MessageSquare className="w-7 h-7" />
           </div>
@@ -120,7 +120,7 @@ export function ReviewsManagement() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
+        <div className="bg-white p-6 rounded-3xl border-2 border-gray-300 shadow-sm flex items-center gap-4">
           <div className="w-14 h-14 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center">
             <Clock className="w-7 h-7" />
           </div>
@@ -130,7 +130,7 @@ export function ReviewsManagement() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
+        <div className="bg-white p-6 rounded-3xl border-2 border-gray-300 shadow-sm flex items-center gap-4">
           <div className="w-14 h-14 bg-yellow-50 text-yellow-500 rounded-2xl flex items-center justify-center">
             <Star className="w-7 h-7 fill-yellow-500" />
           </div>
@@ -142,7 +142,7 @@ export function ReviewsManagement() {
       </div>
 
       {/* Controls */}
-      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+      <div className="bg-white p-6 rounded-3xl border-2 border-gray-300 shadow-sm space-y-4">
         <div className="flex flex-col lg:flex-row gap-4 justify-between">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
@@ -151,12 +151,12 @@ export function ReviewsManagement() {
               placeholder="Tìm kiếm người dùng, email, nội dung..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+              className="w-full pl-11 pr-4 py-3 bg-gray-50 border-2 border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl border border-gray-200">
+            <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl border-2 border-gray-300">
               <Filter className="w-4 h-4 text-gray-500" />
               <select
                 value={filterStatus}
@@ -169,7 +169,7 @@ export function ReviewsManagement() {
               </select>
             </div>
 
-            <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl border border-gray-200">
+            <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl border-2 border-gray-300">
               <Star className="w-4 h-4 text-gray-500" />
               <select
                 value={filterRating}
@@ -188,7 +188,7 @@ export function ReviewsManagement() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-gray-50 px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none text-gray-700"
+              className="bg-gray-50 px-4 py-2 rounded-xl border-2 border-gray-300 text-sm font-medium focus:outline-none text-gray-700"
             >
               <option value="NEWEST">Mới nhất</option>
               <option value="OLDEST">Cũ nhất</option>
@@ -198,7 +198,7 @@ export function ReviewsManagement() {
       </div>
 
       {/* Reviews List */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-3xl border-2 border-gray-300 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
@@ -212,7 +212,7 @@ export function ReviewsManagement() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
+                <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">Khách hàng</th>
                   <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">Đánh giá</th>
                   <th className="px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-wider">Nội dung</th>
@@ -290,7 +290,7 @@ export function ReviewsManagement() {
       {replyModalOpen && selectedReview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <h3 className="text-xl font-black text-gray-900">Chi tiết đánh giá</h3>
               <button onClick={() => setReplyModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <X className="w-5 h-5 text-gray-500" />
@@ -299,7 +299,7 @@ export function ReviewsManagement() {
 
             <div className="p-6 space-y-6">
               {/* Customer Info & Review */}
-              <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+              <div className="bg-gray-50 rounded-2xl p-5 border-2 border-gray-300">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold">
@@ -338,7 +338,7 @@ export function ReviewsManagement() {
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     placeholder="Nhập nội dung phản hồi khách hàng..."
-                    className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700 resize-none"
+                    className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700 resize-none"
                   />
                 </div>
                 {selectedReview.repliedAt && (
@@ -349,10 +349,10 @@ export function ReviewsManagement() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 rounded-b-3xl">
+            <div className="p-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50 rounded-b-3xl">
               <button
                 onClick={() => setReplyModalOpen(false)}
-                className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+                className="px-6 py-2.5 bg-white border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors"
               >
                 Đóng
               </button>

@@ -122,7 +122,7 @@ export function Header({ onMenuOpen }: HeaderProps) {
           </form>
           {/* Search dropdown */}
           {searchOpen && searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border-2 border-gray-300 overflow-hidden z-50">
               {searchResults.map((p) => (
                 <Link
                   key={p.id}
@@ -207,7 +207,7 @@ export function Header({ onMenuOpen }: HeaderProps) {
                   <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
 
                   {/* Dropdown panel */}
-                  <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-2xl border-2 border-gray-300 overflow-hidden z-50">
                     {/* User info header */}
                     <div className="bg-gradient-to-br from-blue-600 to-blue-800 px-5 py-4">
                       <div className="flex items-center gap-3">
@@ -269,7 +269,7 @@ export function Header({ onMenuOpen }: HeaderProps) {
                         </div>
                       </Link>
 
-                      <div className="mx-5 my-1 border-t border-gray-100" />
+                      <div className="mx-5 my-1 border-t border-gray-200" />
 
                       <button
                         onClick={() => {

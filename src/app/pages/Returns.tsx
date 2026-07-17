@@ -160,7 +160,7 @@ export function Returns() {
       {activeTab === "form" && (
         <>
           {step === "success" ? (
-            <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center">
+            <div className="bg-white rounded-2xl p-8 border-2 border-gray-300 text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-green-500" />
               </div>
@@ -208,7 +208,7 @@ export function Returns() {
               </div>
 
               {/* Find order */}
-              <div className="bg-white rounded-2xl p-5 border border-gray-100">
+              <div className="bg-white rounded-2xl p-5 border-2 border-gray-300">
                 <h3 className="text-gray-800 mb-4 font-bold">Tìm đơn hàng cần đổi trả</h3>
                 <div className="flex gap-3 mb-4">
                   <input
@@ -217,7 +217,7 @@ export function Returns() {
                     onChange={(e) => setOrderId(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleFindOrder()}
                     placeholder="Nhập mã đơn hàng đã giao (vd: 8)"
-                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm"
+                    className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 text-sm"
                   />
                   <button onClick={handleFindOrder} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm hover:bg-blue-700 transition-colors font-medium">
                     Tìm kiếm
@@ -233,7 +233,7 @@ export function Returns() {
                           key={order.id}
                           onClick={() => { setOrderId(order.id); setSelectedOrder(order); setSelectedItems([]); }}
                           className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
-                            selectedOrder?.id === order.id ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500" : "border-gray-100 hover:border-blue-200"
+                            selectedOrder?.id === order.id ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500" : "border-gray-200 hover:border-blue-200"
                           }`}
                         >
                           <Package className={`w-6 h-6 flex-shrink-0 ${selectedOrder?.id === order.id ? "text-blue-600" : "text-gray-300"}`} />
@@ -257,7 +257,7 @@ export function Returns() {
 
               {/* Select items */}
               {selectedOrder && (
-                <div className="bg-white rounded-2xl p-5 border border-gray-100">
+                <div className="bg-white rounded-2xl p-5 border-2 border-gray-300">
                   <h3 className="text-gray-800 mb-4 font-bold">Chọn sản phẩm cần đổi trả</h3>
                   <div className="space-y-3">
                     {selectedOrder.items.map((item: any, idx: number) => {
@@ -265,7 +265,7 @@ export function Returns() {
                       const isSelected = selectedItems.some(si => (si.orderItemId ?? si._idx) === key);
                       return (
                         <label key={key} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                          isSelected ? "border-blue-500 bg-blue-50" : "border-gray-100 hover:bg-gray-50"
+                          isSelected ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"
                         }`}>
                           <input type="checkbox" checked={isSelected} onChange={() => toggleItem(item, idx)} className="w-4 h-4 accent-blue-600" />
                           <img loading="lazy" decoding="async" src={optimizeImage(item.image)} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
@@ -283,7 +283,7 @@ export function Returns() {
 
               {/* Reason & submit */}
               {selectedItems.length > 0 && (
-                <div className="bg-white rounded-2xl p-5 border border-gray-100">
+                <div className="bg-white rounded-2xl p-5 border-2 border-gray-300">
                   <h3 className="text-gray-800 mb-4 font-bold">Loại yêu cầu & Lý do</h3>
 
                   <div className="flex gap-3 mb-6">
@@ -292,7 +292,7 @@ export function Returns() {
                       { key: "refund",   label: "💰 Hoàn tiền",    desc: "Nhận lại tiền qua ngân hàng/ví" },
                     ].map((type) => (
                       <label key={type.key} className={`flex-1 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        returnType === type.key ? "border-blue-500 bg-blue-50 shadow-sm" : "border-gray-100 hover:border-gray-200"
+                        returnType === type.key ? "border-blue-500 bg-blue-50 shadow-sm" : "border-gray-200 hover:border-gray-200"
                       }`}>
                         <input type="radio" name="returnType" value={type.key} checked={returnType === type.key} onChange={() => setReturnType(type.key as any)} className="hidden" />
                         <p className="text-sm font-bold text-gray-800">{type.label}</p>
@@ -306,7 +306,7 @@ export function Returns() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {returnReasons.map((r) => (
                         <label key={r} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                          reason === r ? "border-blue-400 bg-blue-50" : "border-gray-100 hover:bg-gray-50"
+                          reason === r ? "border-blue-400 bg-blue-50" : "border-gray-200 hover:bg-gray-50"
                         }`}>
                           <input type="radio" name="reason" value={r} checked={reason === r} onChange={() => setReason(r)} className="w-4 h-4 accent-blue-600" />
                           <span className="text-xs text-gray-700">{r}</span>
@@ -322,7 +322,7 @@ export function Returns() {
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Vui lòng mô tả rõ hơn về lỗi sản phẩm hoặc yêu cầu..."
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm resize-none"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 text-sm resize-none"
                     />
                   </div>
 
@@ -356,7 +356,7 @@ export function Returns() {
           </div>
 
           {isLoadingHistory ? (
-            <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-gray-100">
+            <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border-2 border-gray-300">
               <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
               <p className="text-gray-500 text-sm">Đang tải lịch sử...</p>
             </div>
@@ -366,7 +366,7 @@ export function Returns() {
               {historyError}
             </div>
           ) : myReturns.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-gray-100">
+            <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border-2 border-gray-300">
               <RotateCcw className="w-12 h-12 text-gray-200 mb-3" />
               <p className="text-gray-500 text-sm mb-4">Bạn chưa có yêu cầu đổi trả nào</p>
               <button
@@ -381,9 +381,9 @@ export function Returns() {
               {myReturns.map((ret) => {
                 const st = returnStatusConfig[ret.status || "PENDING"] || returnStatusConfig.PENDING;
                 return (
-                  <div key={ret.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                  <div key={ret.id} className="bg-white rounded-2xl border-2 border-gray-300 overflow-hidden">
                     {/* Card header */}
-                    <div className="flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-100">
+                    <div className="flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-200">
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-black text-blue-600">YC #{ret.id}</span>
                         <span className="text-xs text-gray-500">•</span>

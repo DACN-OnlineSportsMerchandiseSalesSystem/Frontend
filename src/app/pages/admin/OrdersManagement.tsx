@@ -108,7 +108,7 @@ export function OrdersManagement() {
           <p className="text-sm text-gray-500 mt-1">Theo dõi và xử lý đơn hàng của khách</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+          <button className="flex items-center gap-2 px-4 py-2.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
             <Download className="w-4 h-4" />
             Xuất Excel
           </button>
@@ -116,7 +116,7 @@ export function OrdersManagement() {
       </div>
 
       {/* Status Tabs */}
-      <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+      <div className="bg-white rounded-2xl p-4 border-2 border-gray-300 shadow-sm">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {[
             { key: "all", label: "Tất cả" },
@@ -145,7 +145,7 @@ export function OrdersManagement() {
       </div>
 
       {/* Search & Sort */}
-      <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+      <div className="bg-white rounded-2xl p-4 border-2 border-gray-300 shadow-sm">
         <div className="flex flex-col md:flex-row gap-3">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -157,7 +157,7 @@ export function OrdersManagement() {
                 setCurrentPage(1);
               }}
               placeholder="Tìm kiếm theo mã đơn, tên khách hàng, số điện thoại..."
-              className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400"
+              className="w-full pl-11 pr-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400"
             />
           </div>
           <select
@@ -166,7 +166,7 @@ export function OrdersManagement() {
               setSortBy(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
+            className="px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 bg-white"
           >
             <option value="id_desc">Mới nhất</option>
             <option value="id_asc">Cũ nhất</option>
@@ -180,7 +180,7 @@ export function OrdersManagement() {
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border-2 border-gray-300 shadow-sm">
           <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
           <p className="text-gray-500">Đang tải danh sách đơn hàng...</p>
         </div>
@@ -190,10 +190,10 @@ export function OrdersManagement() {
           <p>{error}</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border-2 border-gray-300 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã đơn</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày đặt</th>
@@ -274,7 +274,7 @@ export function OrdersManagement() {
 
       {/* Pagination Controls */}
       {!isLoading && !error && totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 border border-gray-100 rounded-2xl shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 border-2 border-gray-300 rounded-2xl shadow-sm">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">Hiển thị</span>
             <select
@@ -283,7 +283,7 @@ export function OrdersManagement() {
                 setItemsPerPage(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="px-2 py-1.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 bg-white text-sm"
+              className="px-2 py-1.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 bg-white text-sm"
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -297,7 +297,7 @@ export function OrdersManagement() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+              className="px-3 py-1.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
             >
               Trước
             </button>
@@ -314,7 +314,7 @@ export function OrdersManagement() {
                       className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
                         currentPage === page
                           ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                          : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                          : "border-2 border-gray-300 text-gray-600 hover:bg-gray-50"
                       }`}
                     >
                       {page}
@@ -326,7 +326,7 @@ export function OrdersManagement() {
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+              className="px-3 py-1.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent transition-colors text-sm font-medium"
             >
               Sau
             </button>
@@ -356,7 +356,7 @@ function OrderDetailModal({ order, onClose, onStatusUpdate }: { order: Order; on
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-bold text-gray-900">Chi tiết đơn hàng #{order.id}</h3>
             <p className="text-sm text-gray-500 mt-1">Ngày đặt: {order.orderDate}</p>
@@ -393,7 +393,7 @@ function OrderDetailModal({ order, onClose, onStatusUpdate }: { order: Order; on
                   Hủy đơn
                 </button>
               )}
-              <button className="px-4 py-2 border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors text-sm">
+              <button className="px-4 py-2 border-2 border-gray-300 hover:bg-gray-50 rounded-xl transition-colors text-sm">
                 <Printer className="w-4 h-4 inline mr-2" />
                 In đơn
               </button>
@@ -402,7 +402,7 @@ function OrderDetailModal({ order, onClose, onStatusUpdate }: { order: Order; on
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Customer Info */}
-            <div className="bg-white border border-gray-100 rounded-xl p-4">
+            <div className="bg-white border-2 border-gray-300 rounded-xl p-4">
               <h4 className="text-sm font-bold text-gray-900 mb-3">Thông tin khách hàng</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -423,7 +423,7 @@ function OrderDetailModal({ order, onClose, onStatusUpdate }: { order: Order; on
             </div>
 
             {/* Order Info */}
-            <div className="bg-white border border-gray-100 rounded-xl p-4">
+            <div className="bg-white border-2 border-gray-300 rounded-xl p-4">
               <h4 className="text-sm font-bold text-gray-900 mb-3">Thông tin đơn hàng</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -439,18 +439,18 @@ function OrderDetailModal({ order, onClose, onStatusUpdate }: { order: Order; on
           </div>
 
           {/* Order Items */}
-          <div className="bg-white border border-gray-100 rounded-xl p-4">
+          <div className="bg-white border-2 border-gray-300 rounded-xl p-4">
             <h4 className="text-sm font-bold text-gray-900 mb-3">Sản phẩm ({order.items.length})</h4>
             <div className="space-y-3">
               {order.items.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
-                  <img loading="lazy" decoding="async" src={optimizeImage(item.image)} alt={item.name} className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+                  <img loading="lazy" decoding="async" src={optimizeImage(item.image)} alt={item.name} className="w-16 h-16 rounded-lg object-cover border-2 border-gray-300" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{item.name}</p>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span className="text-xs bg-white px-2 py-0.5 rounded-full border border-gray-200">Size: {item.size}</span>
-                      <span className="text-xs bg-white px-2 py-0.5 rounded-full border border-gray-200">Màu: {item.color}</span>
-                      <span className="text-xs bg-white px-2 py-0.5 rounded-full border border-gray-200">x{item.quantity}</span>
+                      <span className="text-xs bg-white px-2 py-0.5 rounded-full border-2 border-gray-300">Size: {item.size}</span>
+                      <span className="text-xs bg-white px-2 py-0.5 rounded-full border-2 border-gray-300">Màu: {item.color}</span>
+                      <span className="text-xs bg-white px-2 py-0.5 rounded-full border-2 border-gray-300">x{item.quantity}</span>
                     </div>
                   </div>
                   <div className="text-right">
@@ -506,7 +506,7 @@ function OrderDetailModal({ order, onClose, onStatusUpdate }: { order: Order; on
           })()}
 
           {/* Tracking History */}
-          <div className="bg-white border border-gray-100 rounded-xl p-4">
+          <div className="bg-white border-2 border-gray-300 rounded-xl p-4">
             <h4 className="text-sm font-bold text-gray-900 mb-4">Lịch sử vận chuyển</h4>
             <div className="space-y-4">
               {order.trackingHistory?.map((event, idx) => (

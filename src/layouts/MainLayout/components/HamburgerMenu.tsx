@@ -48,7 +48,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
           {/* Quick links */}
-          <div className="p-4 border-b border-gray-100">
+          <div className="p-4 border-b border-gray-200">
             <p className="text-xs text-gray-500 uppercase tracking-wider mb-3 px-1">Điều hướng nhanh</p>
             <div className="space-y-1">
               {[
@@ -76,7 +76,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
           </div>
 
           {/* Sport Filter */}
-          <div className="border-b border-gray-100">
+          <div className="border-b border-gray-200">
             <button
               onClick={() => toggleSection("sports")}
               className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
@@ -93,7 +93,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
                     key={cat.id}
                     to={cat.id === "all" ? "/products" : `/products?sport=${encodeURIComponent(cat.id)}`}
                     onClick={onClose}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-blue-700 text-gray-700 transition-colors group border border-gray-100 hover:border-blue-200"
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-blue-700 text-gray-700 transition-colors group border-2 border-gray-300 hover:border-blue-200"
                   >
                     <span className="text-lg">{cat.icon}</span>
                     <span className="text-xs">{cat.name}</span>
@@ -104,7 +104,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
           </div>
 
           {/* Price Filter */}
-          <div className="border-b border-gray-100">
+          <div className="border-b border-gray-200">
             <button
               onClick={() => toggleSection("price")}
               className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
@@ -132,7 +132,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
           </div>
 
           {/* Brand Filter */}
-          <div className="border-b border-gray-100">
+          <div className="border-b border-gray-200">
             <button
               onClick={() => toggleSection("brands")}
               className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
@@ -149,7 +149,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
                     key={brand}
                     to={`/products?brand=${encodeURIComponent(brand)}`}
                     onClick={onClose}
-                    className="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-blue-100 hover:text-blue-700 text-gray-700 text-xs transition-colors border border-gray-200 hover:border-blue-300"
+                    className="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-blue-100 hover:text-blue-700 text-gray-700 text-xs transition-colors border-2 border-gray-300 hover:border-blue-300"
                   >
                     {brand}
                   </Link>

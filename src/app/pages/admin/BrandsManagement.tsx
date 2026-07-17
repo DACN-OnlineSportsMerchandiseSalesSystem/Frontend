@@ -59,7 +59,7 @@ export function BrandsManagement() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+      <div className="bg-white rounded-2xl p-4 border-2 border-gray-300 shadow-sm">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input
@@ -67,7 +67,7 @@ export function BrandsManagement() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm kiếm thương hiệu theo tên, mô tả..."
-            className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400"
+            className="w-full pl-11 pr-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400"
           />
         </div>
         <div className="flex items-center gap-2 mt-3">
@@ -76,10 +76,10 @@ export function BrandsManagement() {
       </div>
 
       {/* Brands Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border-2 border-gray-300 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Thương hiệu</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Mô tả</th>
@@ -105,7 +105,7 @@ export function BrandsManagement() {
                         <img loading="lazy" decoding="async" 
                           src={brand.imageUrl || "https://via.placeholder.com/100"} 
                           alt={brand.name} 
-                          className="w-12 h-12 rounded-lg object-cover border border-gray-100 bg-gray-50" 
+                          className="w-12 h-12 rounded-lg object-cover border-2 border-gray-300 bg-gray-50" 
                         />
                         <span className="text-sm font-bold text-gray-900">{brand.name}</span>
                       </div>
@@ -244,7 +244,7 @@ function BrandFormModal({ brand, onClose, onRefresh }: { brand?: Brand; onClose:
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
           <h3 className="text-xl font-bold text-gray-900">
             {isEdit ? 'Chỉnh sửa thương hiệu' : 'Thêm thương hiệu mới'}
           </h3>
@@ -308,7 +308,7 @@ function BrandFormModal({ brand, onClose, onRefresh }: { brand?: Brand; onClose:
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                 placeholder="Nhập tên thương hiệu (VD: Nike, Adidas...)"
                 required
               />
@@ -321,7 +321,7 @@ function BrandFormModal({ brand, onClose, onRefresh }: { brand?: Brand; onClose:
                 rows={3}
                 value={formData.detail}
                 onChange={(e) => setFormData({ ...formData, detail: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all resize-none"
+                className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all resize-none"
                 placeholder="Nhập mô tả về thương hiệu..."
               />
             </div>
@@ -333,7 +333,7 @@ function BrandFormModal({ brand, onClose, onRefresh }: { brand?: Brand; onClose:
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white"
+                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white"
                 >
                   <option value="active">Hoạt động</option>
                   <option value="inactive">Ẩn</option>
@@ -350,7 +350,7 @@ function BrandFormModal({ brand, onClose, onRefresh }: { brand?: Brand; onClose:
                   step="0.1"
                   value={formData.rating}
                   onChange={(e) => setFormData({ ...formData, rating: parseFloat(e.target.value) })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                 />
               </div>
             </div>
@@ -360,7 +360,7 @@ function BrandFormModal({ brand, onClose, onRefresh }: { brand?: Brand; onClose:
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 font-medium transition-colors"
+              className="px-6 py-2.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 font-medium transition-colors"
             >
               Hủy
             </button>

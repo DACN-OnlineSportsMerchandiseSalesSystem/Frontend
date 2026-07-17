@@ -130,7 +130,7 @@ export function Cart() {
             return (
               <div
                 key={`${item.productId}-${item.size}-${item.color}`}
-                className="bg-white rounded-2xl p-4 border border-gray-100 hover:border-blue-100 hover:shadow-sm transition-all"
+                className="bg-white rounded-2xl p-4 border-2 border-gray-300 hover:border-blue-100 hover:shadow-sm transition-all"
               >
                 <div className="flex gap-4">
                   {/* Image + Price block */}
@@ -139,7 +139,7 @@ export function Cart() {
                       <img loading="lazy" decoding="async"
                         src={optimizeImage(item.image)}
                         alt={item.name}
-                        className="w-24 h-24 object-cover rounded-xl border border-gray-100"
+                        className="w-24 h-24 object-cover rounded-xl border-2 border-gray-300"
                       />
                     </Link>
                     {/* Price right below image */}
@@ -177,7 +177,7 @@ export function Cart() {
                           </span>
                           <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full flex items-center gap-1">
                             <span
-                              className="w-2.5 h-2.5 rounded-full border border-gray-300 inline-block flex-shrink-0"
+                              className="w-2.5 h-2.5 rounded-full border-2 border-gray-300 inline-block flex-shrink-0"
                               style={{
                                 backgroundColor: products.find(p => p.id === item.productId)
                                   ?.colors.find(c => c.name === item.color)?.hex ?? "#ccc",
@@ -198,7 +198,7 @@ export function Cart() {
 
                     {/* Quantity + subtotal */}
                     <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+                      <div className="flex items-center border-2 border-gray-300 rounded-xl overflow-hidden">
                         <button
                           onClick={() => updateCartQty(item.productId, item.size, item.color, item.quantity - 1)}
                           className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors"
@@ -241,8 +241,8 @@ export function Cart() {
         {/* Right column */}
         <div className="space-y-4">
           {/* Coupon section */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-50 flex items-center gap-2">
+          <div className="bg-white rounded-2xl border-2 border-gray-300 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-200 flex items-center gap-2">
               <Tag className="w-4 h-4 text-blue-600" />
               <p className="text-sm text-gray-700">Mã giảm giá / Khuyến mãi</p>
             </div>
@@ -258,7 +258,7 @@ export function Cart() {
                       onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(""); }}
                       onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon(couponInput)}
                       placeholder="Nhập mã khuyến mãi..."
-                      className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 uppercase placeholder-normal"
+                      className="flex-1 px-3 py-2 text-sm border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 uppercase placeholder-normal"
                       style={{ textTransform: "uppercase" }}
                     />
                     <button
@@ -314,7 +314,7 @@ export function Cart() {
                             ? "border-green-300 bg-green-50"
                             : applicable
                             ? "border-blue-100 bg-blue-50/50 hover:border-blue-300 cursor-pointer"
-                            : "border-gray-100 bg-gray-50 opacity-60"
+                            : "border-gray-200 bg-gray-50 opacity-60"
                         }`}
                         onClick={() => applicable && !isApplied && handleApplyCoupon(coupon.code)}
                       >
@@ -356,7 +356,7 @@ export function Cart() {
           </div>
 
           {/* Order summary */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 sticky top-24">
+          <div className="bg-white rounded-2xl p-5 border-2 border-gray-300 sticky top-24">
             <h3 className="text-gray-800 mb-4">Tóm tắt đơn hàng</h3>
             <div className="space-y-3 text-sm">
               {/* Subtotal */}
@@ -403,7 +403,7 @@ export function Cart() {
               )}
 
               {/* Divider + Total */}
-              <div className="border-t border-gray-100 pt-3 space-y-1">
+              <div className="border-t border-gray-200 pt-3 space-y-1">
                 {appliedCoupon && (
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>Giá gốc</span>
@@ -434,7 +434,7 @@ export function Cart() {
             {/* Payment icons */}
             <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
               {["COD", "MoMo", "VNPay", "Thẻ"].map((m) => (
-                <span key={m} className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded border border-gray-100">{m}</span>
+                <span key={m} className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded border-2 border-gray-300">{m}</span>
               ))}
             </div>
           </div>

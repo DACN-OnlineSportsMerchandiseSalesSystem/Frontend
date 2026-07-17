@@ -63,19 +63,19 @@ export function DiscountsManagement() {
       )}
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-gray-300 shadow-sm">
           <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
           <p className="text-gray-500 font-bold">Đang tải danh sách khuyến mãi...</p>
         </div>
       ) : discounts.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
+        <div className="text-center py-20 bg-white rounded-3xl border-2 border-gray-300 shadow-sm">
           <PercentIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
           <p className="text-gray-500 font-bold">Chưa có chương trình khuyến mãi nào</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {discounts.map((discount) => (
-            <div key={discount.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl transition-all group">
+            <div key={discount.id} className="bg-white rounded-3xl border-2 border-gray-300 shadow-sm overflow-hidden hover:shadow-xl transition-all group">
               <div className="p-6">
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-start gap-4">
@@ -131,7 +131,7 @@ export function DiscountsManagement() {
                     </span>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between px-2">
+                  <div className="pt-4 border-t border-gray-200 flex items-center justify-between px-2">
                     <span className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Đối tượng</span>
                     <span className="font-black text-indigo-600 text-sm">
                       {discount.scope === "CATEGORY" ? `Danh mục: ${discount.categoryName || ('#' + discount.categoryId)}` : 
@@ -258,7 +258,7 @@ function DiscountFormModal({
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
       <div className="bg-white rounded-[32px] max-w-xl w-full shadow-2xl overflow-hidden border border-white">
         <form onSubmit={handleSubmit}>
-          <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-white">
+          <div className="px-8 py-6 border-b border-gray-200 flex items-center justify-between bg-white">
             <h3 className="text-xl font-black text-gray-900">
               {isEdit ? "Cập nhật khuyến mãi" : "Tạo khuyến mãi mới"}
             </h3>

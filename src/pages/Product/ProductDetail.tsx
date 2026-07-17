@@ -86,7 +86,7 @@ export function ProductDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         {/* Images */}
         <div>
-          <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 mb-3 aspect-square">
+          <div className="bg-white rounded-2xl overflow-hidden border-2 border-gray-300 mb-3 aspect-square">
             <img loading="lazy" decoding="async"
               src={product.images[activeImage] || product.image}
               alt={product.name}
@@ -98,7 +98,7 @@ export function ProductDetail() {
               <button
                 key={i}
                 onClick={() => setActiveImage(i)}
-                className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors flex-shrink-0 ${activeImage === i ? "border-blue-600" : "border-gray-200 hover:border-gray-300"}`}
+                className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors flex-shrink-0 ${activeImage === i ? "border-blue-600" : "border-gray-200 hover:border-gray-200"}`}
               >
                 <img loading="lazy" decoding="async" src={img} alt="" className="w-full h-full object-cover" />
               </button>
@@ -192,7 +192,7 @@ export function ProductDetail() {
           {/* Qty */}
           <div className="flex items-center gap-4 mb-6">
             <p className="text-sm text-gray-600">Số lượng:</p>
-            <div className="flex items-center gap-0 border border-gray-200 rounded-xl overflow-hidden">
+            <div className="flex items-center gap-0 border-2 border-gray-300 rounded-xl overflow-hidden">
               <button onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Giảm" className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors">
                 <Minus className="w-4 h-4 text-gray-600" />
               </button>
@@ -240,8 +240,8 @@ export function ProductDetail() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-10">
-        <div className="flex border-b border-gray-100">
+      <div className="bg-white rounded-2xl border-2 border-gray-300 overflow-hidden mb-10">
+        <div className="flex border-b border-gray-200">
           {([
             { key: "desc", label: "Mô tả sản phẩm" },
             { key: "specs", label: "Thông số kỹ thuật" },
@@ -275,7 +275,7 @@ export function ProductDetail() {
                 <tbody>
                   {Object.entries(product.specs).map(([key, value], i) => (
                     <tr key={key} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                      <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-100">{key}</td>
+                      <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-200">{key}</td>
                       <td className="py-3 px-4 text-gray-800">{value}</td>
                     </tr>
                   ))}
@@ -287,7 +287,7 @@ export function ProductDetail() {
           {activeTab === "reviews" && (
             <div>
               {/* Summary */}
-              <div className="flex items-center gap-6 pb-6 border-b border-gray-100 mb-6">
+              <div className="flex items-center gap-6 pb-6 border-b border-gray-200 mb-6">
                 <div className="text-center">
                   <div className="text-5xl font-black text-blue-700">{product.rating}</div>
                   <div className="flex justify-center gap-0.5 my-1">
@@ -317,7 +317,7 @@ export function ProductDetail() {
               {/* Reviews list */}
               <div className="space-y-5 mb-8">
                 {product.reviews.map((r) => (
-                  <div key={r.id} className="border-b border-gray-50 pb-5 last:border-0 last:pb-0">
+                  <div key={r.id} className="border-b border-gray-200 pb-5 last:border-0 last:pb-0">
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold flex-shrink-0">
                         {r.avatar}
@@ -363,7 +363,7 @@ export function ProductDetail() {
                   onChange={(e) => setReviewText(e.target.value)}
                   placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-blue-400 bg-white text-sm resize-none text-gray-700 placeholder-gray-400"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:outline-none focus:border-blue-400 bg-white text-sm resize-none text-gray-700 placeholder-gray-400"
                 />
                 <button
                   onClick={() => { setReviewText(""); setReviewRating(5); }}

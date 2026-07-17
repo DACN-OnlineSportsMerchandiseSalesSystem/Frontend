@@ -150,7 +150,7 @@ export function Account() {
         {/* Sidebar */}
         <aside>
           {/* Profile card */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 mb-4 text-center">
+          <div className="bg-white rounded-2xl p-5 border-2 border-gray-300 mb-4 text-center">
             <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-black mx-auto mb-3">
               {user.avatar}
             </div>
@@ -158,7 +158,7 @@ export function Account() {
             <p className="text-sm text-gray-500">{user.email}</p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-2xl border-2 border-gray-300 overflow-hidden">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
@@ -178,7 +178,7 @@ export function Account() {
         <div className="lg:col-span-3">
           {/* Profile */}
           {activeTab === "profile" && (
-            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-300">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-gray-900">Thông tin cá nhân</h2>
                 {!editMode ? (
@@ -187,7 +187,7 @@ export function Account() {
                   </button>
                 ) : (
                   <div className="flex gap-2">
-                    <button onClick={() => { setEditMode(false); setSaveError(""); }} className="px-4 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Hủy</button>
+                    <button onClick={() => { setEditMode(false); setSaveError(""); }} className="px-4 py-1.5 border-2 border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Hủy</button>
                     <button onClick={handleSave} disabled={isLoading} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center gap-1 disabled:bg-blue-400">
                       {isLoading ? <><Loader2 className="w-3 h-3 animate-spin" /> Đang lưu...</> : saved ? "✓ Đã lưu" : "Lưu"}
                     </button>
@@ -224,7 +224,7 @@ export function Account() {
                         <select
                           value={formData.gender}
                           onChange={(e) => setFormData((f) => ({ ...f, gender: e.target.value }))}
-                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm bg-white text-gray-800"
+                          className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 text-sm bg-white text-gray-800"
                         >
                           <option value="Nam">Nam</option>
                           <option value="Nữ">Nữ</option>
@@ -235,7 +235,7 @@ export function Account() {
                           type="text"
                           value={(formData as any)[field.key] || ""}
                           onChange={(e) => setFormData((f) => ({ ...f, [field.key]: e.target.value }))}
-                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm text-gray-800"
+                          className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 text-sm text-gray-800"
                         />
                       )
                     ) : (
@@ -279,7 +279,7 @@ export function Account() {
 
           {/* Orders */}
           {activeTab === "orders" && (
-            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-300">
               <h2 className="text-gray-900 mb-5">Đơn hàng của tôi</h2>
               {orders.length === 0 ? (
                 <div className="text-center py-10">
@@ -290,7 +290,7 @@ export function Account() {
               ) : (
                 <div className="space-y-4">
                   {orders.map((order) => (
-                    <div key={order.id} className="border border-gray-100 rounded-xl p-4">
+                    <div key={order.id} className="border-2 border-gray-300 rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div>
                           <p className="text-sm font-medium text-gray-800">#{order.id}</p>
@@ -379,7 +379,7 @@ export function Account() {
               </div>
 
               {/* Rank cards */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="bg-white rounded-2xl border-2 border-gray-300 p-5">
                 <h3 className="text-gray-800 mb-4 flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-yellow-500" />
                   Hệ thống hạng thành viên
@@ -387,7 +387,7 @@ export function Account() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
                     { rank: "Đồng", icon: "🥉", range: "0 - 1.000đ", color: "bg-amber-50 border-amber-200", textColor: "text-amber-700", active: user.rank === 'BRONZE' || !user.rank },
-                    { rank: "Bạc", icon: "🥈", range: "1.000 - 5.000đ", color: "bg-gray-50 border-gray-300", textColor: "text-gray-600", active: user.rank === 'SILVER' },
+                    { rank: "Bạc", icon: "🥈", range: "1.000 - 5.000đ", color: "bg-gray-50 border-gray-200", textColor: "text-gray-600", active: user.rank === 'SILVER' },
                     { rank: "Vàng ★", icon: "🥇", range: "5.000 - 10.000đ", color: "bg-yellow-50 border-yellow-400", textColor: "text-yellow-700", active: user.rank === 'GOLD' },
                     { rank: "Kim cương", icon: "💎", range: "10.000đ+", color: "bg-blue-50 border-blue-200", textColor: "text-blue-700", active: user.rank === 'DIAMOND' },
                   ].map((r) => (
@@ -402,7 +402,7 @@ export function Account() {
               </div>
 
               {/* Rewards catalogue */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="bg-white rounded-2xl border-2 border-gray-300 p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-gray-800 flex items-center gap-2">
                     <Gift className="w-4 h-4 text-blue-600" />
@@ -421,7 +421,7 @@ export function Account() {
                   ].map((reward, i) => {
                     const canRedeem = 2450 >= reward.points;
                     return (
-                      <div key={i} className={`flex items-center gap-4 p-4 rounded-xl border ${reward.available ? "border-gray-100" : "border-gray-100 opacity-60"} hover:border-blue-200 transition-all`}>
+                      <div key={i} className={`flex items-center gap-4 p-4 rounded-xl border ${reward.available ? "border-gray-200" : "border-gray-200 opacity-60"} hover:border-blue-200 transition-all`}>
                         <div className={`w-12 h-12 ${reward.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
                           <span className={reward.iconColor}>{reward.icon}</span>
                         </div>
@@ -446,7 +446,7 @@ export function Account() {
               </div>
 
               {/* How to earn */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="bg-white rounded-2xl border-2 border-gray-300 p-5">
                 <h3 className="text-gray-800 mb-4">Cách tích điểm</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
@@ -464,7 +464,7 @@ export function Account() {
               </div>
 
               {/* Transaction history */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="bg-white rounded-2xl border-2 border-gray-300 p-5">
                 <h3 className="text-gray-800 mb-4">Lịch sử điểm thưởng</h3>
                 <div className="space-y-3">
                   {[
@@ -474,7 +474,7 @@ export function Account() {
                     { date: "28/03/2026", desc: "Đánh giá sản phẩm có ảnh", points: "+50", positive: true },
                     { date: "20/03/2026", desc: "Mua hàng đơn #SZ20260320002", points: "+280", positive: true },
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-4 py-3 border-b border-gray-50 last:border-0">
+                    <div key={i} className="flex items-center gap-4 py-3 border-b border-gray-200 last:border-0">
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${item.positive ? "bg-green-100" : "bg-red-100"}`}>
                         <Star className={`w-4 h-4 ${item.positive ? "text-green-600" : "text-red-500"}`} />
                       </div>
@@ -494,7 +494,7 @@ export function Account() {
 
           {/* Wishlist */}
           {activeTab === "wishlist" && (
-            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-300">
               <h2 className="text-gray-900 mb-5">Sản phẩm yêu thích ({wishlistProducts.length})</h2>
               {wishlistProducts.length === 0 ? (
                 <div className="text-center py-10">
@@ -505,7 +505,7 @@ export function Account() {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {wishlistProducts.map((p) => (
-                    <div key={p.id} className="border border-gray-100 rounded-2xl overflow-hidden group">
+                    <div key={p.id} className="border-2 border-gray-300 rounded-2xl overflow-hidden group">
                       <div className="relative">
                         <img loading="lazy" decoding="async" src={p.image} alt={p.name} className="w-full aspect-square object-cover" />
                         <button
@@ -528,7 +528,7 @@ export function Account() {
 
           {/* Interests */}
           {activeTab === "interests" && (
-            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-300">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-5 gap-3">
                 <div>
                   <h2 className="text-gray-900">Sở thích & Đam mê</h2>
@@ -571,7 +571,7 @@ export function Account() {
                         className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2 text-center relative overflow-hidden group ${
                           isSelected 
                             ? "border-blue-500 bg-blue-50 shadow-md shadow-blue-100/50" 
-                            : "border-gray-100 hover:border-blue-200 hover:bg-gray-50"
+                            : "border-gray-200 hover:border-blue-200 hover:bg-gray-50"
                         }`}
                       >
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
@@ -599,7 +599,7 @@ export function Account() {
 
           {/* Addresses */}
           {activeTab === "addresses" && (
-            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-300">
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-gray-900">Sổ địa chỉ</h2>
                 <button
@@ -625,7 +625,7 @@ export function Account() {
                         placeholder="Nguyễn Văn A"
                         value={newAddr.receiverName}
                         onChange={(e) => setNewAddr((a) => ({ ...a, receiverName: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white"
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white"
                       />
                     </div>
                     <div>
@@ -634,7 +634,7 @@ export function Account() {
                         placeholder="0912345678"
                         value={newAddr.phone}
                         onChange={(e) => setNewAddr((a) => ({ ...a, phone: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white"
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white"
                       />
                     </div>
                     <div>
@@ -642,7 +642,7 @@ export function Account() {
                       <select
                         value={newAddr.city}
                         onChange={(e) => setNewAddr((a) => ({ ...a, city: e.target.value, state: "" }))}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white"
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white"
                       >
                         <option value="">Chọn Tỉnh/TP</option>
                         <option value="Hà Nội">Hà Nội</option>
@@ -656,7 +656,7 @@ export function Account() {
                         disabled={!newAddr.city}
                         value={newAddr.state}
                         onChange={(e) => setNewAddr((a) => ({ ...a, state: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white disabled:bg-gray-50"
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white disabled:bg-gray-50"
                       >
                         <option value="">Chọn Phường/Xã</option>
                         {newAddr.city === "Hà Nội" && (
@@ -691,7 +691,7 @@ export function Account() {
                         placeholder="Số nhà, tên đường"
                         value={newAddr.street}
                         onChange={(e) => setNewAddr((a) => ({ ...a, street: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white"
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-400 bg-white"
                       />
                     </div>
                   </div>
@@ -700,7 +700,7 @@ export function Account() {
                     <span className="text-sm text-gray-600">Đặt làm địa chỉ mặc định</span>
                   </label>
                   <div className="flex gap-2 mt-3">
-                    <button onClick={() => setAddAddrMode(false)} className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm">Hủy</button>
+                    <button onClick={() => setAddAddrMode(false)} className="px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-lg text-sm">Hủy</button>
                     <button onClick={handleAddAddress} disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center gap-1 disabled:bg-blue-400">
                       {isLoading ? <><Loader2 className="w-3 h-3 animate-spin" /> Đang lưu...</> : "Lưu địa chỉ"}
                     </button>
@@ -717,7 +717,7 @@ export function Account() {
                 )}
                 {user.addresses.map((addr, i) => (
                   <div key={addr.id ?? i} className={`border rounded-xl p-4 transition-colors ${
-                    addr.isDefault ? "border-blue-200 bg-blue-50/30" : "border-gray-100"
+                    addr.isDefault ? "border-blue-200 bg-blue-50/30" : "border-gray-200"
                   }`}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -752,7 +752,7 @@ export function Account() {
 
           {/* Password */}
           {activeTab === "password" && (
-            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-300">
               <h2 className="text-gray-900 mb-5">Đổi mật khẩu</h2>
               <form onSubmit={handleChangePassword} className="max-w-sm space-y-4">
                 {[
@@ -766,7 +766,7 @@ export function Account() {
                       type="password"
                       value={(pwForm as any)[f.key]}
                       onChange={(e) => setPwForm((p) => ({ ...p, [f.key]: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-sm"
+                      className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-400 text-sm"
                     />
                   </div>
                 ))}
