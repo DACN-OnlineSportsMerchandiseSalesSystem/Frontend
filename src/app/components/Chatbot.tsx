@@ -509,8 +509,17 @@ export function Chatbot() {
       // Named SSE event tracking
       let currentEventName = "token";
 
-      while (true) {
-        const { done, value } = await reader.read();
+      let isStreamDone = false;
+      while (!isStreamDone) {
+        let readResult;
+        try {
+          readResult = await reader.read();
+        } catch (readErr) {
+          console.warn("Stream reader finished or disconnected:", readErr);
+          break;
+        }
+
+        const { done, value } = readResult;
         if (done) break;
 
         sseBuffer += decoder.decode(value, { stream: true });
@@ -521,7 +530,6 @@ export function Chatbot() {
           sseBuffer = sseBuffer.substring(splitIndex + 2);
 
           const lines = rawEvent.split('\n');
-          // Lấy event name nếu có
           const eventLine = lines.find(l => l.startsWith('event:'));
           if (eventLine) currentEventName = eventLine.substring(6).trim();
           else currentEventName = 'token';
@@ -530,7 +538,10 @@ export function Chatbot() {
           if (dataLines.length === 0) continue;
           let data = dataLines.map(l => l.substring(5)).join('\n');
 
-          if (currentEventName === 'token') {
+          if (currentEventName === 'done' || data === '[DONE]') {
+            isStreamDone = true;
+            break;
+          } else if (currentEventName === 'token') {
             fullContent += data;
             sentenceBuffer += data;
             setMessages((prev) =>
@@ -566,7 +577,6 @@ export function Chatbot() {
               }
             }
           } else if (currentEventName === 'cart_updated') {
-            // Thông báo Frontend cập nhật giỏ hàng
             window.dispatchEvent(new Event('cart-updated'));
             console.log('>>> [CART] Giỏ hàng đã được cập nhật bởi AI!');
           } else if (currentEventName === 'product_cards') {
@@ -579,7 +589,7 @@ export function Chatbot() {
                   quickReplies: ["Có size nào?", "Màu sắc thế nào?", "Sản phẩm nào rẻ hơn?", "Chính sách đổi trả?"]
                 } : m))
               );
-              console.log(`>>> [UI] Nhận ${cards.length} product cards.`);
+              console.log('>>> [UI] Nhận product cards');
             } catch (e) { console.error('Parse product_cards error:', e); }
           }
         }
@@ -591,10 +601,13 @@ export function Chatbot() {
       }
 
     } catch (error) {
-      console.error("Stream Error:", error);
-      setMessages((prev) =>
-        prev.map((m) => (m.id === botMsgId ? { ...m, text: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại!" } : m))
-      );
+      console.warn("Stream catch block:", error);
+      // BẢO VỆ NỘI DUNG: Tuyệt đối KHÔNG ghi đè nếu đã nhận được câu trả lời từ AI
+      if (!fullContent || fullContent.trim().length === 0) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === botMsgId ? { ...m, text: "Xin lỗi, có lỗi xảy ra khi kết nối. Vui lòng thử lại!" } : m))
+        );
+      }
     } finally {
       setIsTyping(false);
     }

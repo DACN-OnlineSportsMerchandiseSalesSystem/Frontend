@@ -10,6 +10,19 @@ export interface UserProfile {
   roleName?: string;
   level?: number;
   rank?: string;
+  sports?: string;
+  sportLevel?: string;
+  wristStrength?: string;
+  preferredBudget?: string;
+  injuries?: string;
+}
+
+export interface SportProfileRequest {
+  sports: string;
+  sportLevel: string;
+  wristStrength: string;
+  preferredBudget: string;
+  injuries: string;
 }
 
 export interface ChangePasswordRequest {
@@ -102,4 +115,19 @@ export async function getMyInterestsAPI(): Promise<any[]> {
  */
 export async function updateInterestsAPI(categoryIds: number[]): Promise<void> {
   await api.put('/users/interests', categoryIds);
+}
+
+/**
+ * Lấy hồ sơ thể thao cá nhân - GET /api/users/profile/sport
+ */
+export async function getSportProfileAPI(): Promise<UserProfile> {
+  const response = await api.get<UserProfile>('/users/profile/sport');
+  return response.data;
+}
+
+/**
+ * Cập nhật hồ sơ thể thao cá nhân - PUT /api/users/profile/sport
+ */
+export async function updateSportProfileAPI(data: SportProfileRequest): Promise<void> {
+  await api.put('/users/profile/sport', data);
 }

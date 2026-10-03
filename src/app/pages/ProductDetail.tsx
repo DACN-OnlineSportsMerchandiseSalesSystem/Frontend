@@ -411,6 +411,36 @@ export function ProductDetail() {
                     <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-200">Danh mục</td>
                     <td className="py-3 px-4 text-gray-800">{sortedCats.join(", ") || "Chưa phân loại"}</td>
                   </tr>
+                  {product.targetSport && (
+                    <tr className="bg-white">
+                      <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-200">Môn thể thao</td>
+                      <td className="py-3 px-4 text-blue-600 font-semibold">{product.targetSport}</td>
+                    </tr>
+                  )}
+                  {product.fitnessLevel && (
+                    <tr className="bg-gray-50">
+                      <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-200">Trình độ phù hợp</td>
+                      <td className="py-3 px-4 text-gray-800">{product.fitnessLevel}</td>
+                    </tr>
+                  )}
+                  {product.genderTarget && (
+                    <tr className="bg-white">
+                      <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-200">Đối tượng sử dụng</td>
+                      <td className="py-3 px-4 text-gray-800">{product.genderTarget}</td>
+                    </tr>
+                  )}
+                  {product.suitableFor && (
+                    <tr className="bg-gray-50">
+                      <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-200">Công năng / Mục đích</td>
+                      <td className="py-3 px-4 text-gray-800 font-medium">{product.suitableFor}</td>
+                    </tr>
+                  )}
+                  {product.benefits && (
+                    <tr className="bg-white">
+                      <td className="py-3 px-4 text-gray-500 w-1/3 border-r border-gray-200">Lợi ích & Tính năng nổi bật</td>
+                      <td className="py-3 px-4 text-emerald-700 font-medium">{product.benefits}</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

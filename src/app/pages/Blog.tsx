@@ -211,8 +211,31 @@ export function Blog() {
         </div>
       )}
 
+      {/* Community Forum Banner */}
+      <div className="mt-14 bg-gradient-to-r from-indigo-900 via-blue-900 to-slate-900 rounded-3xl p-8 text-white relative overflow-hidden shadow-xl border border-indigo-700/50">
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-2 text-center md:text-left">
+            <span className="bg-blue-500/30 text-blue-300 border border-blue-400/30 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
+              💬 Diễn Đàn Thể Thao SportZone
+            </span>
+            <h3 className="text-xl sm:text-2xl font-black uppercase text-white">
+              Tham Gia Thảo Luận, Đăng Bài & Thả Tim Cùng Cộng Đồng
+            </h3>
+            <p className="text-blue-100/80 text-xs sm:text-sm max-w-xl leading-relaxed">
+              Bạn muốn hỏi ý kiến HLV về bài tập Squat, tìm bạn chạy bộ cuối tuần hay chia sẻ thực đơn giảm cân? Vào ngay Diễn đàn để kết nối với hơn 15.000 thành viên tích cực!
+            </p>
+          </div>
+          <Link
+            to="/forum"
+            className="flex-shrink-0 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs uppercase tracking-wider px-6 py-4 rounded-2xl transition-all shadow-lg hover:scale-105 active:scale-95"
+          >
+            Khám Phá Diễn Đàn Ngay →
+          </Link>
+        </div>
+      </div>
+
       {/* Newsletter CTA */}
-      <div className="mt-14 bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-center text-white">
+      <div className="mt-8 bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-center text-white">
         <h2 className="text-white mb-2">Đăng ký nhận bản tin thể thao</h2>
         <p className="text-blue-200 text-sm mb-5">Nhận các bài viết mới nhất, tips tập luyện và ưu đãi đặc biệt từ SportZone mỗi tuần.</p>
         <div className="flex gap-3 max-w-md mx-auto">

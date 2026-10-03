@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router";
 import { User, Package, Heart, MapPin, Lock, ChevronRight, Edit3, Plus, Trash2, Eye, Gift, Star, Zap, Coffee, ShoppingBag, Shirt, Trophy, Loader2, CheckCircle, AlertCircle, Star as StarDefault } from "lucide-react";
 import { useApp } from "../context/AppContext";
-import { getMyInterestsAPI, updateInterestsAPI } from "../../services/userService";
+import { getMyInterestsAPI, updateInterestsAPI, getSportProfileAPI, updateSportProfileAPI } from "../../services/userService";
 import { products, formatPrice } from "../data/products";
 import { optimizeImage } from "@/utils/imageOptimizer";
 
 const tabs = [
   { key: "profile", label: "Thông tin cá nhân", icon: <User className="w-4 h-4" /> },
+  { key: "sport_profile", label: "Hồ sơ thể thao", icon: <Trophy className="w-4 h-4" /> },
   { key: "orders", label: "Đơn hàng của tôi", icon: <Package className="w-4 h-4" /> },
   { key: "loyalty", label: "Tích điểm đổi quà", icon: <Gift className="w-4 h-4" /> },
   { key: "wishlist", label: "Yêu thích", icon: <Heart className="w-4 h-4" /> },
@@ -53,6 +54,17 @@ export function Account() {
   const [isFetchingInterests, setIsFetchingInterests] = useState(false);
   const [interestMsg, setInterestMsg] = useState({ text: "", type: "" });
 
+  // State for Sport Profile
+  const [sportProfile, setSportProfile] = useState({
+    sports: "",
+    sportLevel: "",
+    wristStrength: "",
+    preferredBudget: "",
+    injuries: ""
+  });
+  const [isFetchingSportProfile, setIsFetchingSportProfile] = useState(false);
+  const [sportProfileMsg, setSportProfileMsg] = useState({ text: "", type: "" });
+
   useEffect(() => {
     if (activeTab === "interests") {
       setIsFetchingInterests(true);
@@ -60,6 +72,20 @@ export function Account() {
         .then((data) => setSelectedInterests(data.map(d => d.id)))
         .catch(() => {})
         .finally(() => setIsFetchingInterests(false));
+    } else if (activeTab === "sport_profile") {
+      setIsFetchingSportProfile(true);
+      getSportProfileAPI()
+        .then((data) => {
+          setSportProfile({
+            sports: data.sports || "",
+            sportLevel: data.sportLevel || "",
+            wristStrength: data.wristStrength || "",
+            preferredBudget: data.preferredBudget || "",
+            injuries: data.injuries || ""
+          });
+        })
+        .catch(() => {})
+        .finally(() => setIsFetchingSportProfile(false));
     }
   }, [activeTab]);
 
@@ -71,6 +97,17 @@ export function Account() {
       setTimeout(() => setInterestMsg({ text: "", type: "" }), 2500);
     } catch {
       setInterestMsg({ text: "Lưu sở thích thất bại", type: "error" });
+    }
+  };
+
+  const handleSaveSportProfile = async () => {
+    setSportProfileMsg({ text: "", type: "" });
+    try {
+      await updateSportProfileAPI(sportProfile);
+      setSportProfileMsg({ text: "Lưu hồ sơ thể thao thành công!", type: "success" });
+      setTimeout(() => setSportProfileMsg({ text: "", type: "" }), 2500);
+    } catch {
+      setSportProfileMsg({ text: "Lưu hồ sơ thể thao thất bại", type: "error" });
     }
   };
 
@@ -521,6 +558,175 @@ export function Account() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Sport Profile */}
+          {activeTab === "sport_profile" && (
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-300">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3 border-b border-gray-100 pb-4">
+                <div>
+                  <h2 className="text-gray-900 font-black text-xl flex items-center gap-2">🏆 Hồ sơ thể thao cá nhân</h2>
+                  <p className="text-sm text-gray-500 mt-1">Cập nhật thể trạng và mục tiêu tập luyện để AI đề xuất thiết bị tối ưu cho bạn</p>
+                </div>
+                <button
+                  onClick={handleSaveSportProfile}
+                  className="flex-shrink-0 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-md flex items-center gap-1.5"
+                >
+                  Lưu hồ sơ
+                </button>
+              </div>
+
+              {sportProfileMsg.text && (
+                <div className={`mb-5 flex items-center gap-2 px-4 py-3 rounded-xl text-sm border-2 ${
+                  sportProfileMsg.type === "success" ? "bg-green-50 border-green-300 text-green-700" : "bg-red-50 border-red-300 text-red-700"
+                }`}>
+                  {sportProfileMsg.type === "success" ? <CheckCircle className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
+                  <span className="font-bold">{sportProfileMsg.text}</span>
+                </div>
+              )}
+
+              {isFetchingSportProfile ? (
+                <div className="flex flex-col items-center justify-center py-10">
+                  <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
+                  <p className="text-gray-500">Đang tải dữ liệu hồ sơ...</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-6">
+                  {/* Môn thể thao chính */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-black text-gray-800 flex items-center gap-1.5">
+                      🎯 Môn thể thao tập luyện chính
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { id: "badminton", label: "Cầu lông" },
+                        { id: "running", label: "Chạy bộ" },
+                        { id: "gym", label: "Gym / Thể hình" },
+                        { id: "pickleball", label: "Pickleball" },
+                        { id: "football", label: "Bóng đá" }
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => setSportProfile({ ...sportProfile, sports: item.id })}
+                          className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
+                            sportProfile.sports === item.id
+                              ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
+                              : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Trình độ / Mục tiêu */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-black text-gray-800 flex items-center gap-1.5">
+                      📈 Trình độ hiện tại
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { id: "beginner", label: "Mới tập (Beginner)" },
+                        { id: "intermediate", label: "Bán chuyên (Intermediate)" },
+                        { id: "advanced", label: "Chuyên nghiệp / Cao cấp (Advanced)" }
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => setSportProfile({ ...sportProfile, sportLevel: item.id })}
+                          className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
+                            sportProfile.sportLevel === item.id
+                              ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
+                              : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Lực cổ tay */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-black text-gray-800 flex items-center gap-1.5">
+                      💪 Lực cổ tay (Dành cho vợt cầu lông/pickleball)
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { id: "weak", label: "Cổ tay yếu / Trung bình (Cần trợ lực)" },
+                        { id: "medium", label: "Cổ tay khỏe (Tự nhiên)" },
+                        { id: "strong", label: "Cổ tay rất khỏe (Ưu tiên tấn công nặng đầu)" }
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => setSportProfile({ ...sportProfile, wristStrength: item.id })}
+                          className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
+                            sportProfile.wristStrength === item.id
+                              ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
+                              : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Ngân sách */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-black text-gray-800 flex items-center gap-1.5">
+                      💰 Ngân sách mua sắm ưu tiên
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { id: "low", label: "Tiết kiệm (Tối ưu giá thành)" },
+                        { id: "medium", label: "Tầm trung (Hiệu năng / Giá tốt)" },
+                        { id: "high", label: "Cao cấp (Hàng hiệu, công nghệ mới nhất)" }
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => setSportProfile({ ...sportProfile, preferredBudget: item.id })}
+                          className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
+                            sportProfile.preferredBudget === item.id
+                              ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
+                              : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tiền sử chấn thương */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-black text-gray-800 flex items-center gap-1.5">
+                      🩹 Tiền sử chấn thương (AI ưu tiên đề xuất đồ bảo hộ/giảm chấn)
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { id: "none", label: "Không có chấn thương" },
+                        { id: "knee_pain", label: "Đau khớp gối / Cần giày đệm êm" },
+                        { id: "ankle_sprain", label: "Dễ lật sơ mi cổ chân / Cần bảo vệ cổ chân" },
+                        { id: "back_pain", label: "Đau vai gáy / Lưng" }
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => setSportProfile({ ...sportProfile, injuries: item.id })}
+                          className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
+                            sportProfile.injuries === item.id
+                              ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
+                              : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

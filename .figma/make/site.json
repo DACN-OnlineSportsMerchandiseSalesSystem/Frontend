@@ -1,0 +1,10 @@
+{
+  "description": "Streamlines fitness service selection with interactive filters, detailed product info, and seamless booking to boost conversions and user engagement.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

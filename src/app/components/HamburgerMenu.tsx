@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { X, ChevronRight, Home, Package, ShoppingCart, Phone, FileText, RotateCcw, Star, ChevronDown, BookOpen } from "lucide-react";
+import { X, ChevronRight, Home, Package, ShoppingCart, Phone, FileText, RotateCcw, Star, ChevronDown, BookOpen, Trophy, MessageCircle } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
 function getCategoryIcon(name: string): string {
@@ -71,10 +71,13 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
               {[
                 { icon: <Home className="w-4 h-4" />, label: "Trang chủ", to: "/" },
                 { icon: <Package className="w-4 h-4" />, label: "Tất cả sản phẩm", to: "/products" },
+                { icon: <Trophy className="w-4 h-4 text-orange-500" />, label: "Dịch vụ số", to: "/digital-services" },
+                { icon: <Star className="w-4 h-4 text-blue-500" />, label: "Trợ lý AI Trainer", to: "/ai-planner" },
                 { icon: <ShoppingCart className="w-4 h-4" />, label: "Giỏ hàng", to: "/cart" },
                 { icon: <Package className="w-4 h-4" />, label: "Theo dõi đơn hàng", to: "/track-order" },
                 { icon: <RotateCcw className="w-4 h-4" />, label: "Đổi trả hàng", to: "/returns" },
                 { icon: <FileText className="w-4 h-4" />, label: "Chính sách", to: "/policy" },
+                { icon: <MessageCircle className="w-4 h-4 text-cyan-600" />, label: "Diễn đàn Thể Thao", to: "/forum" },
                 { icon: <BookOpen className="w-4 h-4" />, label: "Blog Thể Thao", to: "/blog" },
                 { icon: <Phone className="w-4 h-4" />, label: "Liên hệ", to: "/policy?tab=contact" },
               ].map((item) => (

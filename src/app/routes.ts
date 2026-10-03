@@ -15,6 +15,9 @@ import { BlogDetail } from "./pages/BlogDetail";
 import { Login } from "./pages/Login";
 import { Admin } from "./pages/Admin";
 import { NotFound } from "./pages/NotFound";
+import { DigitalServices } from "./pages/DigitalServices";
+import { AIPlanner } from "./pages/AIPlanner";
+import { Forum } from "./pages/Forum";
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +38,10 @@ export const router = createBrowserRouter([
       { path: "returns", Component: Returns },
       { path: "blog", Component: Blog },
       { path: "blog/:id", Component: BlogDetail },
+      { path: "forum", Component: Forum },
+      { path: "community", Component: Forum },
+      { path: "digital-services", Component: DigitalServices },
+      { path: "ai-planner", Component: AIPlanner },
       { path: "*", Component: NotFound },
     ],
   },

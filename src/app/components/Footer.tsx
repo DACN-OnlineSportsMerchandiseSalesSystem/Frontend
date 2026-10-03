@@ -53,6 +53,8 @@ export function Footer() {
               { label: "Chính sách bảo hành", to: "/policy?tab=warranty" },
               { label: "Chính sách vận chuyển", to: "/policy?tab=shipping" },
               { label: "Chính sách bảo mật", to: "/policy?tab=privacy" },
+              { label: "🤖 Trợ lý tập luyện AI", to: "/ai-planner" },
+              { label: "⚡ Dịch vụ số đa năng", to: "/digital-services" },
               { label: "Theo dõi đơn hàng", to: "/track-order" },
               { label: "Câu hỏi thường gặp", to: "/policy?tab=faq" },
               { label: "Tài khoản của tôi", to: "/account" },

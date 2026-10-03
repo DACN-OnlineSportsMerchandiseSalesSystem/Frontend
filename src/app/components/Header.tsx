@@ -78,6 +78,9 @@ export function Header({ onMenuOpen }: HeaderProps) {
           Hotline: <strong>1900 1234</strong> (8:00 - 22:00)
         </span>
         <span className="hidden md:flex items-center gap-4">
+          <Link to="/forum" className="hover:text-white font-black text-cyan-300 transition-colors">💬 Diễn đàn Thể Thao</Link>
+          <Link to="/ai-planner" className="hover:text-white font-black text-blue-300 transition-colors">🤖 Trợ lý AI</Link>
+          <Link to="/digital-services" className="hover:text-white font-black text-yellow-300 transition-colors">⚡ Dịch vụ số</Link>
           <Link to="/policy" className="hover:text-white transition-colors">Chính sách</Link>
           <Link to="/returns" className="hover:text-white transition-colors">Đổi trả</Link>
           <Link to="/track-order" className="hover:text-white transition-colors">Theo dõi đơn hàng</Link>
@@ -317,8 +320,14 @@ export function Header({ onMenuOpen }: HeaderProps) {
           );
         })}
         <Link
+          to="/forum"
+          className="flex items-center gap-1.5 px-3 py-2 text-cyan-300 hover:text-cyan-200 hover:bg-blue-700 rounded-t-lg transition-colors text-sm whitespace-nowrap flex-shrink-0 ml-auto"
+        >
+          <span>💬</span> Diễn Đàn
+        </Link>
+        <Link
           to="/blog"
-          className="flex items-center gap-1.5 px-3 py-2 text-yellow-300 hover:text-yellow-200 hover:bg-blue-700 rounded-t-lg transition-colors text-sm whitespace-nowrap flex-shrink-0 ml-auto"
+          className="flex items-center gap-1.5 px-3 py-2 text-yellow-300 hover:text-yellow-200 hover:bg-blue-700 rounded-t-lg transition-colors text-sm whitespace-nowrap flex-shrink-0"
         >
           <span>📝</span> Blog Thể Thao
         </Link>

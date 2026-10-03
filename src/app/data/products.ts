@@ -30,6 +30,7 @@ export interface Product {
   isBestSeller: boolean;
   isOnSale: boolean;
   reviews: Review[];
+  searchTag?: string;
 }
 
 const IMG = {
