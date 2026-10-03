@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router";
+import { useParams, Link, useNavigate, useLocation } from "react-router";
 import { Star, ShoppingCart, Zap, Heart, Truck, RotateCcw, Shield, ChevronRight, Minus, Plus, Check, MessageSquare } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { ProductCard } from "../components/ProductCard";
@@ -11,7 +11,8 @@ import { sortCategoryNamesParentFirst } from "../../utils/categoryHelpers";
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { addToCart, toggleWishlist, wishlist, user, categories } = useApp();
+  const location = useLocation();
+  const { addToCart, toggleWishlist, wishlist, user, categories, isLoggedIn, isAdmin, allCarts } = useApp();
   const [product, setProduct] = useState<Product | null>(null);
   const [recommendedBySport, setRecommendedBySport] = useState<Product[]>([]);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
@@ -21,6 +22,10 @@ export function ProductDetail() {
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [qty, setQty] = useState(1);
+  const [targetCartId, setTargetCartId] = useState<number | "">("");
+  const [comboChildProducts, setComboChildProducts] = useState<Record<number, Product>>({});
+  const [selectedComboVariants, setSelectedComboVariants] = useState<Record<number, number>>({});
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [activeImage, setActiveImage] = useState(0);
   const [activeTab, setActiveTab] = useState<"desc" | "specs" | "reviews">("desc");
   const [addedToCart, setAddedToCart] = useState(false);
@@ -66,6 +71,7 @@ export function ProductDetail() {
           // Fetch all products to perform filtering for recommendations
           productService.getAllProducts()
             .then(allProducts => {
+              setAllProducts(allProducts);
               // 1. Root categories for sport recommendation
               const currentRootCatIds = new Set<number>();
               data.categoryIds?.forEach(catId => {
@@ -141,9 +147,22 @@ export function ProductDetail() {
     }
   }, [id, categories]);
 
+  useEffect(() => {
+    if (product && product.isCombo && product.comboItems && allProducts.length > 0) {
+      const initialSelections: Record<number, number> = {};
+      product.comboItems.forEach(item => {
+        const childProd = allProducts.find(p => p.variants?.some(v => v.id === item.productVariantId));
+        if (childProd && childProd.variants && childProd.variants.length > 0) {
+          initialSelections[item.productVariantId] = childProd.variants[0].id;
+        }
+      });
+      setSelectedComboVariants(prev => ({ ...initialSelections, ...prev }));
+    }
+  }, [allProducts, product]);
+
   const handleSubmitReview = async () => {
-    if (!user) {
-      navigate("/login");
+    if (!isLoggedIn) {
+      navigate("/login", { state: { from: location } });
       return;
     }
     if (!reviewText.trim()) return;
@@ -187,26 +206,63 @@ export function ProductDetail() {
   const categoryName = sortedCats[0] || "Sản phẩm";
 
   const handleAddToCart = () => {
-    const variant = product.variants.find(v => v.size === selectedSize && v.color === selectedColor) || product.variants[0];
-    if (!variant) return;
+    if (isAdmin) {
+      alert("Tài khoản Quản trị viên (Admin) không thể mua hàng!");
+      return;
+    }
+    if (product.isCombo) {
+      const selectedIds = product.comboItems
+        ?.map(item => selectedComboVariants[item.productVariantId])
+        .filter(Boolean) as number[];
 
-    const finalPrice = product.discount > 0 ? variant.price * (1 - product.discount / 100) : variant.price;
+      if (!product.comboItems || selectedIds.length < product.comboItems.length) {
+        alert("Vui lòng chọn đầy đủ phân loại (Kích cỡ & Màu sắc) cho các sản phẩm thành phần của Combo!");
+        return;
+      }
 
-    addToCart({
-      productId: variant.id.toString(),
-      name: product.name,
-      price: finalPrice,
-      image: product.images[0]?.imageUrl || "",
-      quantity: qty,
-      size: variant.size,
-      color: variant.color,
-      brand: product.brandName,
-    });
+      const defaultComboVariant = product.variants[0];
+      if (!defaultComboVariant) return;
+
+      addToCart({
+        productId: defaultComboVariant.id.toString(),
+        baseProductId: product.id.toString(),
+        comboId: product.id,
+        isCombo: true,
+        name: product.name,
+        price: product.price,
+        image: product.images[0]?.imageUrl || "",
+        quantity: qty,
+        size: "Combo",
+        color: "Combo",
+        brand: product.brandName,
+        childVariantIds: selectedIds
+      }, targetCartId || undefined);
+    } else {
+      const variant = product.variants.find(v => v.size === selectedSize && v.color === selectedColor) || product.variants[0];
+      if (!variant) return;
+
+      const finalPrice = product.discount > 0 ? variant.price * (1 - product.discount / 100) : variant.price;
+
+      addToCart({
+        productId: variant.id.toString(),
+        name: product.name,
+        price: finalPrice,
+        image: product.images[0]?.imageUrl || "",
+        quantity: qty,
+        size: variant.size,
+        color: variant.color,
+        brand: product.brandName,
+      }, targetCartId || undefined);
+    }
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
   const handleBuyNow = () => {
+    if (isAdmin) {
+      alert("Tài khoản Quản trị viên (Admin) không thể mua hàng!");
+      return;
+    }
     handleAddToCart();
     navigate("/cart");
   };
@@ -284,37 +340,111 @@ export function ProductDetail() {
           <div className="bg-blue-50 rounded-2xl p-4 mb-5">
             <div className="flex items-baseline gap-3 mb-1">
               <span className="text-3xl text-blue-700 font-black">{formatPrice(product.price)}</span>
-              {(product.discount || 0) > 0 && (
+              {(product.discount || 0) > 0 && !product.isCombo && (
                 <>
                   <span className="text-lg text-gray-500 line-through">{formatPrice(product.originalPrice)}</span>
                   <span className="bg-red-500 text-white text-sm px-2 py-0.5 rounded-full font-bold">-{product.discount}%</span>
                 </>
               )}
+              {product.isCombo && (product.discountPercent || 0) > 0 && (
+                <>
+                  <span className="text-lg text-gray-500 line-through">{formatPrice(product.retailTotal || 0)}</span>
+                  <span className="bg-red-500 text-white text-sm px-2 py-0.5 rounded-full font-bold">-{product.discountPercent}%</span>
+                </>
+              )}
             </div>
+            {product.isCombo && (product.savingsAmount || 0) > 0 && (
+              <p className="text-sm text-green-600 font-medium mt-1">Tiết kiệm ngay {formatPrice(product.savingsAmount)} khi mua theo Combo</p>
+            )}
           </div>
 
-          {/* Variants selection */}
-          <div className="mb-5">
-            <p className="text-sm text-gray-600 mb-2">Chọn phiên bản (Kích cỡ - Màu sắc):</p>
-            <div className="flex flex-wrap gap-2">
-              {product.variants.map((v) => (
-                <button
-                  key={v.id}
-                  onClick={() => {
-                    setSelectedSize(v.size);
-                    setSelectedColor(v.color);
-                  }}
-                  className={`px-4 py-2 rounded-xl text-sm border-2 transition-all ${
-                    selectedSize === v.size && selectedColor === v.color
-                      ? "border-blue-600 bg-blue-600 text-white font-medium shadow-md"
-                      : "border-gray-200 text-gray-700 hover:border-blue-300"
-                  }`}
-                >
-                  {v.size} - {v.color}
-                </button>
-              ))}
+          {/* Variants selection or Combo breakdown */}
+          {product.isCombo ? (
+            <div className="mb-6 bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                📦 Cấu hình kích cỡ & màu sắc cho các sản phẩm của Combo:
+              </h3>
+              <div className="space-y-5">
+                {product.comboItems?.map((item) => {
+                  const childProd = allProducts.find(p => p.variants?.some(v => v.id === item.productVariantId));
+                  const selectedVarId = selectedComboVariants[item.productVariantId];
+
+                  return (
+                    <div key={item.id} className="border-b border-dashed border-gray-100 pb-4 last:border-0 last:pb-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-bold text-gray-800">
+                          {childProd ? childProd.name : (item.productName || item.skuCode)}
+                        </span>
+                        <span className="text-xs font-semibold text-gray-500">
+                          Số lượng: x{item.quantity}
+                        </span>
+                      </div>
+
+                      {childProd && childProd.variants && childProd.variants.length > 0 ? (
+                        <div className="flex flex-col gap-2">
+                          <div className="flex flex-wrap gap-1.5">
+                            {childProd.variants.map((v) => (
+                              <button
+                                key={v.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedComboVariants(prev => ({
+                                    ...prev,
+                                    [item.productVariantId]: v.id
+                                  }));
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-xs border transition-all ${
+                                  selectedVarId === v.id
+                                    ? "border-blue-600 bg-blue-600 text-white font-bold shadow-sm"
+                                    : "border-gray-200 text-gray-600 hover:border-blue-300"
+                                }`}
+                              >
+                                {v.size} - {v.color} {v.stockQuantity <= 0 ? "(Hết hàng)" : ""}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-xs text-gray-400 italic">Đang tải các tùy chọn phân loại...</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-4 pt-3 border-t border-gray-200 text-xs text-gray-500 flex justify-between">
+                <span>Tổng giá trị mua lẻ:</span>
+                <span className="font-semibold text-gray-700 line-through">{formatPrice(product.retailTotal || 0)}</span>
+              </div>
+              {(product.savingsAmount || 0) > 0 && (
+                <div className="text-xs text-green-600 flex justify-between mt-1 font-semibold">
+                  <span>Tiết kiệm khi mua combo:</span>
+                  <span>-{formatPrice(product.savingsAmount || 0)} ({product.discountPercent || 0}%)</span>
+                </div>
+              )}
             </div>
-          </div>
+          ) : (
+            <div className="mb-5">
+              <p className="text-sm text-gray-600 mb-2">Chọn phiên bản (Kích cỡ - Màu sắc):</p>
+              <div className="flex flex-wrap gap-2">
+                {product.variants.map((v) => (
+                  <button
+                    key={v.id}
+                    onClick={() => {
+                      setSelectedSize(v.size);
+                      setSelectedColor(v.color);
+                    }}
+                    className={`px-4 py-2 rounded-xl text-sm border-2 transition-all ${
+                      selectedSize === v.size && selectedColor === v.color
+                        ? "border-blue-600 bg-blue-600 text-white font-medium shadow-md"
+                        : "border-gray-200 text-gray-700 hover:border-blue-300"
+                    }`}
+                  >
+                    {v.size} - {v.color}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Qty */}
           <div className="flex items-center gap-4 mb-6">
@@ -330,37 +460,66 @@ export function ProductDetail() {
             </div>
           </div>
 
+          {/* Target Cart Selection if user has multiple carts */}
+          {!isAdmin && isLoggedIn && allCarts.length > 1 && (
+            <div className="mb-5 bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center justify-between gap-3 animate-fadeIn">
+              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">🎯 Thêm vào giỏ hàng:</span>
+              <select
+                value={targetCartId}
+                onChange={(e) => setTargetCartId(e.target.value === "" ? "" : Number(e.target.value))}
+                className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400 bg-white text-gray-700 cursor-pointer"
+              >
+                <option value="">Giỏ hàng chính (Mặc định)</option>
+                {allCarts.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name || `Giỏ hàng #${c.id}`} {c.isDefault ? "(Mặc định)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* CTAs */}
-          <div className="flex gap-3 mb-6">
-            <button
-              onClick={handleAddToCart}
-              className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border-2 font-medium transition-all ${
-                addedToCart
-                  ? "border-green-500 bg-green-50 text-green-600"
-                  : "border-blue-600 text-blue-600 hover:bg-blue-50"
-              }`}
-            >
-              {addedToCart ? <><Check className="w-5 h-5" /> Đã thêm</> : <><ShoppingCart className="w-5 h-5" /> Thêm vào giỏ</>}
-            </button>
-            <button
-              onClick={handleBuyNow}
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-medium transition-colors shadow-lg shadow-blue-200"
-            >
-              <Zap className="w-5 h-5" /> Mua ngay
-            </button>
-          </div>
+          {isAdmin ? (
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 text-amber-900 shadow-sm">
+              <Shield className="w-6 h-6 text-amber-600 flex-shrink-0" />
+              <div>
+                <p className="font-bold text-sm">Chế độ xem trước của Quản trị viên</p>
+                <p className="text-xs text-amber-700 mt-0.5">Tài khoản Admin không thể đặt hàng hoặc thêm sản phẩm vào giỏ hàng.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-3 mb-6">
+              <button
+                onClick={handleAddToCart}
+                className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border-2 font-medium transition-all ${
+                  addedToCart
+                    ? "border-green-500 bg-green-50 text-green-600"
+                    : "border-blue-600 text-blue-600 hover:bg-blue-50"
+                }`}
+              >
+                {addedToCart ? <><Check className="w-5 h-5" /> Đã thêm</> : <><ShoppingCart className="w-5 h-5" /> Thêm vào giỏ</>}
+              </button>
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-medium transition-colors shadow-lg shadow-blue-200"
+              >
+                <Zap className="w-5 h-5" /> Mua ngay
+              </button>
+            </div>
+          )}
 
           {/* Benefits */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { icon: <Truck className="w-4 h-4" />, text: "Giao hàng toàn quốc" },
-              { icon: <RotateCcw className="w-4 h-4" />, text: "Đổi trả 30 ngày" },
-              { icon: <Shield className="w-4 h-4" />, text: "Hàng chính hãng" },
+              { icon: <Truck className="w-4 h-4" />, text: "Giao hàng toàn quốc", link: "/policy?tab=shipping" },
+              { icon: <RotateCcw className="w-4 h-4" />, text: "Chính sách đổi trả", link: "/policy?tab=refund-privacy" },
+              { icon: <Shield className="w-4 h-4" />, text: "Hàng chính hãng", link: "/policy?tab=warranty" },
             ].map((b, i) => (
-              <div key={i} className="flex flex-col items-center text-center gap-1.5 p-2.5 bg-gray-50 rounded-xl">
-                <span className="text-blue-600">{b.icon}</span>
-                <span className="text-xs text-gray-600">{b.text}</span>
-              </div>
+              <Link to={b.link} key={i} className="flex flex-col items-center text-center gap-1.5 p-2.5 bg-gray-50 hover:bg-blue-50 hover:border-blue-200 border border-transparent rounded-xl transition-all cursor-pointer group">
+                <span className="text-blue-600 group-hover:scale-110 transition-transform">{b.icon}</span>
+                <span className="text-xs text-gray-600 group-hover:text-blue-600 font-medium">{b.text}</span>
+              </Link>
             ))}
           </div>
         </div>

@@ -52,13 +52,22 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
     }
   };
 
-  // Logic tính toán thông minh: Ưu tiên API Thống kê, dự phòng bằng dữ liệu Orders thực tế
+  // Logic tính toán: Ưu tiên dữ liệu đơn hàng thực tế thời gian thực (đã loại bỏ hoàn/hủy)
+  const excludedStatuses = ["CANCELLED", "CANCELED", "REFUNDED", "RETURNED"];
+  const currentMonthValidOrders = orders.filter(o => {
+    if (!o.createAt) return false;
+    const d = new Date(o.createAt);
+    return d.getMonth() + 1 === currentMonth && d.getFullYear() === currentYear && !excludedStatuses.includes((o.status || "").toUpperCase());
+  });
+  const realTimeMonthRevenue = currentMonthValidOrders.reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0);
+  const realTimeMonthOrders = currentMonthValidOrders.length;
+
   const monthlyRevenueFromStats = dailyStats.reduce((sum, d) => sum + d.revenue, 0);
   const monthlyOrdersFromStats = dailyStats.reduce((sum, d) => sum + d.orderCount, 0);
   
-  // Nếu API Thống kê trả về 0 (chưa sync), dùng stats truyền từ Admin.tsx
-  const finalRevenue = monthlyRevenueFromStats > 0 ? monthlyRevenueFromStats : stats.totalRevenue;
-  const finalOrders = monthlyOrdersFromStats > 0 ? monthlyOrdersFromStats : stats.totalOrders;
+  // Ưu tiên số liệu thực tế thời gian thực
+  const finalRevenue = orders.length > 0 ? realTimeMonthRevenue : (monthlyRevenueFromStats > 0 ? monthlyRevenueFromStats : stats.totalRevenue);
+  const finalOrders = orders.length > 0 ? realTimeMonthOrders : (monthlyOrdersFromStats > 0 ? monthlyOrdersFromStats : stats.totalOrders);
   const finalNewUsers = dailyStats.reduce((sum, d) => sum + (d.newUserCount || 0), 0);
 
   // Sắp xếp để lấy 5 đơn hàng mới nhất và 5 sản phẩm mới nhất
@@ -151,22 +160,89 @@ export function AdminDashboard({ stats, orders, products, onNavigate }: Dashboar
                     <ShoppingCart className="w-12 h-12 mb-2" />
                     <p className="text-sm font-bold">Chưa có đơn hàng</p>
                   </div>
-                ) : recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-5 hover:bg-gray-50 rounded-3xl transition-all border border-transparent hover:border-gray-100 group">
-                    <div className="flex-1">
-                      <p className="text-sm font-black text-gray-900 group-hover:text-blue-600 transition-colors">#{order.id}</p>
-                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter mt-1">
-                        {order.receiverName || "Khách hàng"}
-                      </p>
+                ) : recentOrders.map((order) => {
+                  const status = (order.status || "").toUpperCase();
+                  const isRefunded = status === "REFUNDED" || status === "RETURNED";
+                  const isCanceled = status === "CANCELED" || status === "CANCELLED";
+                  const isDelivered = status === "DELIVERED" || status === "COMPLETED";
+                  const isShipping = status === "SHIPPING";
+                  const isPaid = status === "PAID";
+                  const isPending = status === "PENDING";
+                  const isExcluded = isRefunded || isCanceled;
+
+                  return (
+                    <div 
+                      key={order.id} 
+                      className={`flex items-center justify-between p-5 rounded-3xl transition-all border group ${
+                        isRefunded 
+                          ? "bg-purple-50/40 border-purple-200/80 hover:bg-purple-50/60" 
+                          : isCanceled 
+                          ? "bg-gray-100/60 border-gray-200 opacity-70 hover:bg-gray-100" 
+                          : "hover:bg-gray-50 border-transparent hover:border-gray-100 bg-white"
+                      }`}
+                    >
+                      <div className="flex-1 min-w-0 pr-4">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <p className={`text-sm font-black transition-colors ${isExcluded ? "text-gray-500" : "text-gray-900 group-hover:text-blue-600"}`}>
+                            #{order.id}
+                          </p>
+                          {isRefunded && (
+                            <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
+                              Đã hoàn tiền
+                            </span>
+                          )}
+                          {isCanceled && (
+                            <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                              Đã hủy
+                            </span>
+                          )}
+                          {isDelivered && (
+                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-green-100 text-green-700">
+                              Đã giao
+                            </span>
+                          )}
+                          {isShipping && (
+                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                              Đang giao
+                            </span>
+                          )}
+                          {isPaid && (
+                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                              Đã thanh toán
+                            </span>
+                          )}
+                          {isPending && (
+                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                              Chờ xử lý
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter truncate">
+                          {order.receiverName || "Khách hàng"}
+                          {isExcluded && (
+                            <span className="ml-2 text-rose-500 font-semibold normal-case">
+                              (Không tính vào tổng doanh thu)
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        {isExcluded ? (
+                          <p className="text-sm font-bold text-gray-400 line-through">
+                            {formatPrice(order.totalPrice)}
+                          </p>
+                        ) : (
+                          <p className="text-sm font-black text-blue-600">
+                            {formatPrice(order.totalPrice)}
+                          </p>
+                        )}
+                        <p className="text-[10px] font-bold text-gray-500 uppercase mt-1">
+                          {new Date(order.createAt).toLocaleDateString('vi-VN')}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-black text-blue-600">{formatPrice(order.totalPrice)}</p>
-                      <p className="text-[10px] font-bold text-gray-500 uppercase mt-1">
-                        {new Date(order.createAt).toLocaleDateString('vi-VN')}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

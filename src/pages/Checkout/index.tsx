@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router";
-import { ChevronRight, CreditCard, Banknote, Smartphone, Check, MapPin, Plus } from "lucide-react";
+import { ChevronRight, CreditCard, Banknote, Check, MapPin, Plus } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { formatPrice } from "@/constants/productsData";
 import { optimizeImage } from "@/utils/imageOptimizer";
@@ -16,25 +16,11 @@ const paymentMethods = [
     color: "border-green-200 bg-green-50",
   },
   {
-    id: "MoMo",
-    label: "Ví MoMo",
-    desc: "Thanh toán qua ví điện tử MoMo",
-    icon: <Smartphone className="w-5 h-5 text-pink-600" />,
-    color: "border-pink-200 bg-pink-50",
-  },
-  {
     id: "VNPay",
-    label: "VNPay",
-    desc: "Thanh toán qua cổng VNPay",
+    label: "Cổng thanh toán VNPAY (ATM / QR / Thẻ Quốc tế)",
+    desc: "Thanh toán an toàn qua VNPAY-QR, Thẻ ATM nội địa, Visa, Mastercard",
     icon: <CreditCard className="w-5 h-5 text-blue-600" />,
     color: "border-blue-200 bg-blue-50",
-  },
-  {
-    id: "Card",
-    label: "Thẻ ngân hàng / Visa / Mastercard",
-    desc: "Thanh toán bằng thẻ ATM/Visa/Mastercard",
-    icon: <CreditCard className="w-5 h-5 text-indigo-600" />,
-    color: "border-indigo-200 bg-indigo-50",
   },
 ];
 
@@ -268,19 +254,7 @@ export function Checkout() {
                   </label>
                 ))}
               </div>
-              {payment === "Card" && (
-                <div className="p-4 bg-indigo-50 rounded-xl mb-5 border border-indigo-100">
-                  <p className="text-sm text-indigo-700 mb-3">Thông tin thẻ</p>
-                  <div className="space-y-3">
-                    <input placeholder="Số thẻ" className="w-full px-4 py-2.5 border border-indigo-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 bg-white" />
-                    <div className="grid grid-cols-2 gap-3">
-                      <input placeholder="MM/YY" className="px-4 py-2.5 border border-indigo-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 bg-white" />
-                      <input placeholder="CVV" className="px-4 py-2.5 border border-indigo-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 bg-white" />
-                    </div>
-                    <input placeholder="Tên chủ thẻ" className="w-full px-4 py-2.5 border border-indigo-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 bg-white" />
-                  </div>
-                </div>
-              )}
+              
               <div className="flex gap-3">
                 <button onClick={() => setStep("address")} className="px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
                   Quay lại

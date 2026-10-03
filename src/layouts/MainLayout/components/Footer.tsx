@@ -106,7 +106,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 flex-wrap justify-center">
             <span className="text-sm text-gray-500">Phương thức thanh toán:</span>
-            {["COD", "MoMo", "VNPay", "Thẻ ngân hàng", "Visa/MC"].map((m) => (
+            {["COD", "VNPAY-QR", "Thẻ ATM", "Visa/Mastercard"].map((m) => (
               <span key={m} className="px-3 py-1 bg-gray-800 rounded text-xs text-gray-500 border border-gray-700">{m}</span>
             ))}
           </div>

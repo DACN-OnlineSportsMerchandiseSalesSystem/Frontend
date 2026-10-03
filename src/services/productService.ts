@@ -10,9 +10,24 @@ export interface ProductVariant {
   id: number;
   skuCode: string;
   price: number;
+  costPrice?: number;
+  originalPrice?: number;
+  discount?: number;
   stockQuantity: number;
   size: string;
   color: string;
+}
+
+export interface ComboItem {
+  id: number;
+  productVariantId: number;
+  productId?: number;
+  productName?: string;
+  skuCode: string;
+  color: string;
+  size: string;
+  quantity: number;
+  price: number;
 }
 
 export interface Product {
@@ -26,11 +41,18 @@ export interface Product {
   brandName: string;
   images: ProductImage[];
   variants: ProductVariant[];
+  costPrice?: number;
   price: number;
   originalPrice: number;
+  stockQuantity?: number;
   rating: number;
   reviewCount: number;
   discount: number;
+  isCombo?: boolean;
+  comboItems?: ComboItem[];
+  retailTotal?: number;
+  savingsAmount?: number;
+  discountPercent?: number;
 }
 
 const productService = {

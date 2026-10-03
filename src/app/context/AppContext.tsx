@@ -15,6 +15,7 @@ import categoryService, { Category } from "../../services/categoryService";
 import brandService, { Brand } from "../../services/brandService";
 import voucherService from "../../services/voucherService";
 import returnService from '../../services/returnService';
+import wishlistService from "../../services/wishlistService";
 
 export interface CartItem {
   id?: number; // Database CartItem ID
@@ -29,6 +30,10 @@ export interface CartItem {
   size: string;
   color: string;
   brand: string;
+  childVariantIds?: number[];
+  comboId?: number;
+  isCombo?: boolean;
+  variantInfo?: string;
 }
 
 export interface Address {
@@ -52,8 +57,11 @@ export interface Order {
   id: string;
   orderCode: string;
   orderDate: string;
+  rawDate?: string;
+  createdAt?: string;
   status: string;
   total: number;
+  totalPrice?: number;
   subtotal?: number;
   shippingFee?: number;
   paymentMethod: string;
@@ -104,7 +112,7 @@ interface AppContextType {
     turnstileToken?: string;
     otp?: string;
   }) => Promise<boolean>;
-  addToCart: (item: CartItem) => void;
+  addToCart: (item: CartItem, targetCartId?: number) => void;
   removeFromCart: (productId: string, size: string, color: string) => void;
   updateCartQty: (productId: string, size: string, color: string, qty: number) => void;
   clearCart: () => void;
@@ -117,7 +125,7 @@ interface AppContextType {
   updateAddress: (id: number, data: Partial<Address>) => Promise<void>;
   deleteAddress: (id: number) => Promise<void>;
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
-  toggleWishlist: (productId: string) => void;
+  toggleWishlist: (productId: string | number) => void;
   refreshProfile: () => Promise<void>;
   categories: Category[];
   brands: Brand[];
@@ -127,6 +135,12 @@ interface AppContextType {
   refreshCart: () => Promise<void>;
   cartCount: number;
   cartTotal: number;
+  allCarts: ApiCart[];
+  refreshAllCarts: () => Promise<void>;
+  createNewCart: (name: string) => Promise<void>;
+  switchCart: (cartId: number) => Promise<void>;
+  renameCart: (cartId: number, name: string) => Promise<void>;
+  deleteCart: (cartId: number) => Promise<void>;
 }
 
 const defaultUser: User = {
@@ -188,16 +202,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return defaultUser;
   });
   const [wishlist, setWishlist] = useState<string[]>([]);
+  const [allCarts, setAllCarts] = useState<ApiCart[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [validVouchers, setValidVouchers] = useState<any[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('accessToken'));
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const isAdmin = isLoggedIn && (user.role === "admin" || user.roleName === "ROLE_ADMIN" || user.roleName === "ADMIN" || user.roleName === "ROLE_IT_ADMIN" || user.roleName === "IT_ADMIN");
 
-  // ==================== CART ====================
   const refreshCart = useCallback(async () => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn || isAdmin) return;
     try {
       const apiCart = await cartService.getMyCart();
       const mappedItems: CartItem[] = apiCart.items.map(item => ({
@@ -212,7 +227,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         quantity: item.quantity,
         size: item.variantInfo,
         color: '',
-        brand: ''
+        brand: '',
+        comboId: item.comboId,
+        isCombo: item.isCombo ?? !!item.comboId,
+        variantInfo: item.variantInfo
       }));
       setCart(mappedItems);
     } catch (err) {
@@ -220,12 +238,85 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isLoggedIn]);
 
+  // ==================== MULTICART ====================
+  const refreshAllCarts = useCallback(async () => {
+    if (!isLoggedIn || isAdmin) return;
+    try {
+      const cartsList = await cartService.getAllCarts();
+      setAllCarts(cartsList);
+    } catch (err) {
+      console.error("Failed to load all carts", err);
+    }
+  }, [isLoggedIn]);
+
+  const createNewCart = useCallback(async (name: string) => {
+    if (!isLoggedIn) return;
+    try {
+      console.log(">>> [DEBUG] createNewCart calling API with name:", name);
+      const res = await cartService.createCart(name);
+      console.log(">>> [DEBUG] createNewCart API response:", res);
+      await refreshAllCarts();
+    } catch (err: any) {
+      console.error("Failed to create cart", err);
+      alert("Lỗi tạo giỏ hàng: " + (err.response?.data?.message || err.message));
+    }
+  }, [isLoggedIn, refreshAllCarts]);
+
+  const switchCart = useCallback(async (cartId: number) => {
+    if (!isLoggedIn) return;
+    try {
+      console.log(">>> [DEBUG] switchCart calling API for cartId:", cartId);
+      const res = await cartService.updateCart(cartId, undefined, true);
+      console.log(">>> [DEBUG] switchCart API response:", res);
+      await refreshCart();
+      await refreshAllCarts();
+    } catch (err: any) {
+      console.error("Failed to switch default cart", err);
+      alert("Lỗi chuyển đổi giỏ hàng: " + (err.response?.data?.message || err.message));
+    }
+  }, [isLoggedIn, refreshCart, refreshAllCarts]);
+
+  const renameCart = useCallback(async (cartId: number, name: string) => {
+    if (!isLoggedIn) return;
+    try {
+      await cartService.updateCart(cartId, name);
+      await refreshAllCarts();
+      await refreshCart();
+    } catch (err) {
+      console.error("Failed to rename cart", err);
+    }
+  }, [isLoggedIn, refreshAllCarts, refreshCart]);
+
+  const deleteCart = useCallback(async (cartId: number) => {
+    if (!isLoggedIn) return;
+    try {
+      await cartService.archiveCart(cartId);
+      await refreshAllCarts();
+      await refreshCart();
+    } catch (err) {
+      console.error("Failed to delete cart", err);
+    }
+  }, [isLoggedIn, refreshAllCarts, refreshCart]);
+
+  // ==================== CART ====================
+  
+
   const refreshVouchers = useCallback(async () => {
     if (!isLoggedIn) return;
     try {
       const vouchers = await voucherService.getValidVouchers();
       setValidVouchers(vouchers);
     } catch (err) {}
+  }, [isLoggedIn]);
+
+  const refreshWishlist = useCallback(async () => {
+    if (!isLoggedIn) return;
+    try {
+      const items = await wishlistService.getWishlist();
+      setWishlist(items.map((item: any) => item.id.toString()));
+    } catch (err) {
+      console.error("Failed to load wishlist", err);
+    }
   }, [isLoggedIn]);
 
     // Khôi phục session khi app load (nếu token còn trong localStorage)
@@ -251,7 +342,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             ...profile,
             fullName,
             avatar,
-            role: (profile.roleName === 'ROLE_ADMIN' || profile.roleName === 'ADMIN') ? 'admin' : 'user',
+            role: (profile.roleName === 'ROLE_ADMIN' || profile.roleName === 'ADMIN' || profile.roleName === 'ROLE_IT_ADMIN' || profile.roleName === 'IT_ADMIN') ? 'admin' : 'user',
           }));
         })
         .catch(() => {
@@ -270,10 +361,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         .catch(() => {});
 
       refreshCart();
+      refreshAllCarts();
       refreshVouchers();
       refreshOrders();
+      refreshWishlist();
     }
-  }, [refreshCart, refreshVouchers]);
+  }, [refreshCart, refreshAllCarts, refreshVouchers, refreshWishlist]);
 
   // Load Categories & Brands
   useEffect(() => {
@@ -281,7 +374,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     brandService.getAllBrands().then(setBrands).catch(() => {});
   }, []);
 
-  const addToCart = useCallback(async (item: CartItem) => {
+  const addToCart = useCallback(async (item: CartItem, targetCartId?: number) => {
+    if (isAdmin) {
+      alert("Tài khoản Quản trị viên (Admin) không thể mua hàng!");
+      return;
+    }
     if (!isLoggedIn) {
       // Local cart if not logged in
       const guestItem = { ...item, price: Number(item.price) || 0 };
@@ -293,12 +390,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      await cartService.addToCart(parseInt(item.productId), item.quantity);
+      if (targetCartId) {
+        await cartService.addToCartToSpecific(targetCartId, parseInt(item.productId), item.quantity, item.childVariantIds, item.comboId);
+      } else {
+        await cartService.addToCart(parseInt(item.productId), item.quantity, item.childVariantIds, item.comboId);
+      }
       await refreshCart();
+      await refreshAllCarts();
     } catch (err) {
       console.error("Add to cart failed", err);
     }
-  }, [isLoggedIn, refreshCart]);
+  }, [isLoggedIn, isAdmin, refreshCart, refreshAllCarts]);
 
   const removeFromCart = useCallback(async (productId: string) => {
     if (!isLoggedIn) {
@@ -306,13 +408,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      const itemToDelete = cart.find(i => i.productId === productId);
+      let itemToDelete: any = null;
+      // Search in all carts
+      for (const singleCart of allCarts) {
+        const found = singleCart.items.find(i => i.productVariantId.toString() === productId);
+        if (found) {
+          itemToDelete = found;
+          break;
+        }
+      }
+      // Fallback to cart state if not found in allCarts yet
+      if (!itemToDelete) {
+        itemToDelete = cart.find(i => i.productId === productId);
+      }
+
       if (itemToDelete && itemToDelete.id) {
         await cartService.removeCartItem(itemToDelete.id);
         await refreshCart();
+        await refreshAllCarts();
       }
     } catch (err) {}
-  }, [isLoggedIn, cart, refreshCart]);
+  }, [isLoggedIn, cart, allCarts, refreshCart, refreshAllCarts]);
 
   const updateCartQty = useCallback(async (productId: string, size: string, color: string, qty: number) => {
     if (!isLoggedIn) {
@@ -320,13 +436,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      const itemToUpdate = cart.find(i => i.productId === productId);
+      let itemToUpdate: any = null;
+      // Search in all carts
+      for (const singleCart of allCarts) {
+        const found = singleCart.items.find(i => i.productVariantId.toString() === productId);
+        if (found) {
+          itemToUpdate = found;
+          break;
+        }
+      }
+      // Fallback to cart state if not found in allCarts yet
+      if (!itemToUpdate) {
+        itemToUpdate = cart.find(i => i.productId === productId);
+      }
+
       if (itemToUpdate && itemToUpdate.id) {
         await cartService.updateCartItem(itemToUpdate.id, qty);
         await refreshCart();
+        await refreshAllCarts();
       }
     } catch (err) {}
-  }, [isLoggedIn, cart, refreshCart]);
+  }, [isLoggedIn, cart, allCarts, refreshCart, refreshAllCarts]);
 
   const clearCart = useCallback(async () => {
     if (isLoggedIn) {
@@ -339,9 +469,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const mapApiOrderToUI = useCallback((o: any): Order => ({
     id: o.id.toString(),
     orderCode: o.orderCode || `SZ${o.id}`, 
-    orderDate: o.createAt ? new Date(o.createAt).toLocaleDateString('vi-VN') : '',
+    orderDate: (o.createAt || o.createdAt) ? new Date(o.createAt || o.createdAt).toLocaleDateString('vi-VN') : '',
+    rawDate: o.createAt || o.createdAt || '',
+    createdAt: o.createAt || o.createdAt || '',
     status: (o.status || 'pending').toLowerCase(),
     total: Number(o.totalPrice) || 0,
+    totalPrice: Number(o.totalPrice) || 0,
     subtotal: (Number(o.totalPrice) || 0) - (o.shippingFee !== undefined ? Number(o.shippingFee) : 30000),
     shippingFee: o.shippingFee !== undefined ? Number(o.shippingFee) : 30000,
     voucherCode: o.voucher?.code || null,
@@ -388,15 +521,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [isLoggedIn, mapApiOrderToUI]);
 
   const placeOrder = useCallback(async (orderData: any): Promise<any> => {
+    if (isAdmin) {
+      throw new Error("Tài khoản Quản trị viên (Admin) không thể đặt hàng!");
+    }
     try {
       const newOrder = await orderService.createOrder(orderData);
       await refreshOrders();
       await refreshCart();
+      await refreshAllCarts();
       return newOrder;
     } catch (err) {
       throw err;
     }
-  }, [refreshOrders, refreshCart]);
+  }, [refreshOrders, refreshCart, refreshAllCarts]);
 
   const cancelOrder = useCallback(async (orderId: string, reason: string) => {
     try {
@@ -448,7 +585,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const profile = await getMyProfileAPI();
       const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || email;
       const avatar = fullName.substring(0, 2).toUpperCase();
-      const dbRole = profile.roleName === 'ROLE_ADMIN' || profile.roleName === 'ADMIN' ? 'admin' : 'user';
+      const dbRole = (profile.roleName === 'ROLE_ADMIN' || profile.roleName === 'ADMIN' || profile.roleName === 'ROLE_IT_ADMIN' || profile.roleName === 'IT_ADMIN') ? 'admin' : 'user';
       
       setUser({
         ...defaultUser,
@@ -522,7 +659,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const profile = await getMyProfileAPI();
       const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || userData.email;
       const avatar = fullName.substring(0, 2).toUpperCase();
-      const dbRole = profile.roleName === 'ROLE_ADMIN' || profile.roleName === 'ADMIN' ? 'admin' : 'user';
+      const dbRole = (profile.roleName === 'ROLE_ADMIN' || profile.roleName === 'ADMIN' || profile.roleName === 'ROLE_IT_ADMIN' || profile.roleName === 'IT_ADMIN') ? 'admin' : 'user';
       setUser({ 
         ...profile, 
         fullName: `${profile.firstName} ${profile.lastName}`,
@@ -607,12 +744,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setApiError(null);
     try {
       const newAddr = await addAddressAPI(addr);
-      setUser((prev) => ({
-        ...prev,
-        addresses: addr.isDefault
-          ? [...prev.addresses.map((a) => ({ ...a, isDefault: false })), newAddr]
-          : [...prev.addresses, newAddr],
-      }));
+      try {
+        const freshAddresses = await getMyAddressesAPI();
+        setUser((prev) => ({ ...prev, addresses: freshAddresses }));
+      } catch {
+        setUser((prev) => ({
+          ...prev,
+          addresses: addr.isDefault
+            ? [...prev.addresses.map((a) => ({ ...a, isDefault: false })), newAddr]
+            : [...prev.addresses, newAddr],
+        }));
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Thêm địa chỉ thất bại';
       setApiError(msg);
@@ -627,13 +769,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setApiError(null);
     try {
       await setDefaultAddressAPI(id);
-      setUser((prev) => ({
-        ...prev,
-        addresses: prev.addresses.map((a) => ({
-          ...a,
-          isDefault: a.id === id,
-        })),
-      }));
+      try {
+        const freshAddresses = await getMyAddressesAPI();
+        setUser((prev) => ({ ...prev, addresses: freshAddresses }));
+      } catch {
+        setUser((prev) => ({
+          ...prev,
+          addresses: prev.addresses.map((a) => ({
+            ...a,
+            isDefault: a.id === id,
+          })),
+        }));
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Cập nhật địa chỉ mặc định thất bại';
       setApiError(msg);
@@ -648,10 +795,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setApiError(null);
     try {
       const updated = await updateAddressAPI(id, data);
-      setUser((prev) => ({
-        ...prev,
-        addresses: prev.addresses.map((a) => (a.id === id ? { ...a, ...updated } : a)),
-      }));
+      if (data.isDefault) {
+        try {
+          await setDefaultAddressAPI(id);
+        } catch {}
+      }
+      try {
+        const freshAddresses = await getMyAddressesAPI();
+        setUser((prev) => ({ ...prev, addresses: freshAddresses }));
+      } catch {
+        setUser((prev) => ({
+          ...prev,
+          addresses: prev.addresses.map((a) =>
+            a.id === id
+              ? { ...a, ...updated, isDefault: data.isDefault ?? a.isDefault }
+              : (data.isDefault ? { ...a, isDefault: false } : a)
+          ),
+        }));
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Cập nhật địa chỉ thất bại';
       setApiError(msg);
@@ -666,10 +827,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setApiError(null);
     try {
       await deleteAddressAPI(id);
-      setUser((prev) => ({
-        ...prev,
-        addresses: prev.addresses.filter((a) => a.id !== id),
-      }));
+      try {
+        const freshAddresses = await getMyAddressesAPI();
+        setUser((prev) => ({ ...prev, addresses: freshAddresses }));
+      } catch {
+        setUser((prev) => ({
+          ...prev,
+          addresses: prev.addresses.filter((a) => a.id !== id),
+        }));
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Xóa địa chỉ thất bại';
       setApiError(msg);
@@ -680,15 +846,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // ==================== WISHLIST ====================
-  const toggleWishlist = useCallback((productId: string) => {
+  const toggleWishlist = useCallback(async (productId: string | number) => {
+    const idStr = productId.toString();
+    const idNum = typeof productId === 'number' ? productId : parseInt(productId);
+    const wasWishlisted = wishlist.includes(idStr);
+
     setWishlist((prev) =>
-      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
+      prev.includes(idStr) ? prev.filter((id) => id !== idStr) : [...prev, idStr]
     );
-  }, []);
+
+    if (isLoggedIn && !isNaN(idNum)) {
+      try {
+        if (wasWishlisted) {
+          await wishlistService.removeFromWishlist(idNum);
+        } else {
+          await wishlistService.addToWishlist(idNum);
+        }
+      } catch (err) {
+        console.error("Failed to toggle wishlist in backend", err);
+        // Revert local state
+        setWishlist((prev) =>
+          prev.includes(idStr) ? prev.filter((id) => id !== idStr) : [...prev, idStr]
+        );
+      }
+    }
+  }, [isLoggedIn, wishlist]);
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const isAdmin = isLoggedIn && (user.role === "admin" || user.roleName === "ROLE_ADMIN" || user.roleName === "ADMIN");
 
   return (
     <AppContext.Provider
@@ -702,6 +887,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         toggleWishlist,
         categories, brands, validVouchers, refreshVouchers, refreshOrders, refreshCart,
         cartCount, cartTotal,
+        allCarts, refreshAllCarts, createNewCart, switchCart, renameCart, deleteCart,
       }}
     >
       {children}

@@ -125,7 +125,7 @@ export function Returns() {
       </div>
 
       <h1 className="text-gray-900 mb-2">Đổi trả hàng</h1>
-      <p className="text-gray-500 text-sm mb-5">SportZone hỗ trợ đổi trả miễn phí trong vòng 30 ngày kể từ ngày nhận hàng</p>
+      <p className="text-gray-500 text-sm mb-5">SportZone hỗ trợ đổi trả nhanh chóng theo quy định. Xem chi tiết tại <Link to="/policy?tab=refund-privacy" className="text-blue-600 underline font-semibold">Chính sách đổi trả</Link></p>
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6 bg-gray-100 p-1 rounded-2xl">
@@ -199,7 +199,7 @@ export function Returns() {
                 <div className="text-sm text-blue-700">
                   <p className="font-medium mb-1 text-blue-800">Chính sách đổi trả của SportZone</p>
                   <ul className="space-y-0.5 text-blue-600">
-                    <li>✓ Đổi trả trong 30 ngày kể từ ngày nhận hàng</li>
+                    <li>✓ Đổi trả theo thời hạn trong <Link to="/policy?tab=refund-privacy" className="underline font-semibold">chính sách quy định</Link></li>
                     <li>✓ Miễn phí vận chuyển đổi trả toàn quốc</li>
                     <li>✓ Hoàn tiền nhanh chóng trong 3-5 ngày làm việc</li>
                     <li>✓ Sản phẩm cần còn nguyên tem, chưa qua sử dụng</li>

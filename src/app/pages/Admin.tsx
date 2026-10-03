@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   LayoutDashboard, Package, ShoppingCart, Users, TrendingUp,
-  Tag, FileText, Settings, LogOut, Menu, Bell, PercentIcon, MessageSquare, RotateCcw
+  Tag, FileText, Settings, LogOut, Menu, Bell, PercentIcon, MessageSquare, RotateCcw,
+  Server
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import productService from "../../services/productService";
@@ -21,8 +22,9 @@ import { CategoriesManagement } from "./admin/CategoriesManagement";
 import { ReviewsManagement } from "./admin/ReviewsManagement";
 import { PoliciesManagement } from "./admin/PoliciesManagement";
 import { ReturnsManagement } from "./admin/ReturnsManagement";
+import { SystemManagement } from "./admin/SystemManagement";
 
-type AdminTab = "dashboard" | "products" | "orders" | "returns" | "customers" | "stats" | "vouchers" | "discounts" | "blog" | "settings" | "brands" | "categories" | "reviews" | "policies";
+type AdminTab = "dashboard" | "products" | "orders" | "returns" | "customers" | "stats" | "vouchers" | "discounts" | "blog" | "settings" | "brands" | "categories" | "reviews" | "policies" | "system";
 
 export function Admin() {
   const { isLoggedIn, isAdmin, logout, user } = useApp();
@@ -52,7 +54,7 @@ export function Admin() {
     if (isLoggedIn && isAdmin) {
       fetchData();
     }
-  }, [isLoggedIn, isAdmin]);
+  }, [isLoggedIn, isAdmin, activeTab]);
 
   if (!isLoggedIn || !isAdmin) {
     return null;
@@ -62,6 +64,8 @@ export function Admin() {
     logout();
     navigate("/");
   };
+
+  const isItAdmin = user.roleName === "ROLE_IT_ADMIN" || user.roleName === "IT_ADMIN";
 
   const menuItems: { id: AdminTab; icon: any; label: string }[] = [
     { id: "dashboard", icon: LayoutDashboard, label: "Tổng quan" },
@@ -78,13 +82,16 @@ export function Admin() {
     { id: "blog", icon: FileText, label: "Blog" },
     { id: "policies", icon: FileText, label: "Chính sách" },
     { id: "settings", icon: Settings, label: "Cài đặt" },
+    ...(isItAdmin ? [{ id: "system" as const, icon: Server, label: "Hệ thống" }] : []),
   ];
 
-  // Stats from real data
-  const totalRevenue = realOrders.reduce((sum, o) => sum + (o.status !== "CANCELLED" ? o.totalPrice : 0), 0);
-  const totalOrdersCount = realOrders.length;
-  const pendingOrders = realOrders.filter(o => o.status === "PENDING").length;
-  const completedOrders = realOrders.filter(o => o.status === "DELIVERED").length;
+  // Stats from real data - Loại trừ hoàn tiền & hủy đơn
+  const excludedStatuses = ["CANCELLED", "CANCELED", "REFUNDED", "RETURNED"];
+  const validOrders = realOrders.filter(o => !excludedStatuses.includes((o.status || "").toUpperCase()));
+  const totalRevenue = validOrders.reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0);
+  const totalOrdersCount = validOrders.length;
+  const pendingOrders = realOrders.filter(o => (o.status || "").toUpperCase() === "PENDING").length;
+  const completedOrders = realOrders.filter(o => ["DELIVERED", "COMPLETED"].includes((o.status || "").toUpperCase())).length;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -189,6 +196,7 @@ export function Admin() {
           {activeTab === "categories" && <CategoriesManagement />}
           {activeTab === "policies" && <PoliciesManagement />}
           {activeTab === "settings" && <SettingsManagement />}
+          {activeTab === "system" && <SystemManagement />}
         </main>
       </div>
     </div>

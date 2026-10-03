@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router";
-import { Search, Package, CheckCircle, Truck, XCircle, Clock, ChevronRight, AlertTriangle, RotateCcw } from "lucide-react";
+import { Search, Package, CheckCircle, Truck, XCircle, Clock, ChevronRight, AlertTriangle, RotateCcw, CreditCard } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { formatPrice } from "../data/products";
 import { optimizeImage } from "@/utils/imageOptimizer";
+import paymentService from "../../services/paymentService";
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
   pending: { label: "Chờ xác nhận", color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200", icon: <Clock className="w-4 h-4 text-yellow-600" /> },
@@ -167,6 +168,29 @@ export function OrderTracking() {
                 <p className="text-gray-800">{foundOrder.paymentMethod}</p>
               </div>
             </div>
+
+            {foundOrder.status?.toLowerCase() === "pending" && 
+             foundOrder.paymentMethod?.toLowerCase() === "vnpay" && (
+              <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-blue-50/60 p-3.5 rounded-xl border border-blue-100">
+                <div>
+                  <p className="text-xs font-bold text-blue-900">Đơn hàng chưa hoàn tất thanh toán</p>
+                  <p className="text-[11px] text-gray-500">Nhấn nút bên cạnh để hoàn tất thanh toán qua cổng VNPAY</p>
+                </div>
+                <button
+                  onClick={async () => {
+                    try {
+                      const payUrl = await paymentService.createVNPayPayment(foundOrder.id);
+                      if (payUrl) window.location.href = payUrl;
+                    } catch (err) {
+                      alert("Không thể khởi tạo liên kết thanh toán VNPay. Vui lòng thử lại!");
+                    }
+                  }}
+                  className="py-2 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer flex-shrink-0"
+                >
+                  <CreditCard className="w-4 h-4" /> Thanh toán ngay qua VNPAY
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="bg-white rounded-2xl p-5 border border-gray-100">

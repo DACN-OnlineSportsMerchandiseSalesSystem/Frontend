@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link, useLocation } from "react-router";
-import { ChevronRight, CreditCard, Banknote, Smartphone, Check, MapPin, Plus } from "lucide-react";
+import { ChevronRight, CreditCard, Banknote, Check, MapPin, Plus } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { formatPrice } from "../data/products";
 import { optimizeImage } from "@/utils/imageOptimizer";
+import paymentService from "../../services/paymentService";
 
 type Step = "address" | "payment" | "confirm";
 
@@ -16,36 +17,34 @@ const paymentMethods = [
     color: "border-green-200 bg-green-50",
   },
   {
-    id: "MoMo",
-    label: "Ví MoMo",
-    desc: "Thanh toán qua ví điện tử MoMo",
-    icon: <Smartphone className="w-5 h-5 text-pink-600" />,
-    color: "border-pink-200 bg-pink-50",
-  },
-  {
     id: "VNPay",
-    label: "VNPay",
-    desc: "Thanh toán qua cổng VNPay",
+    label: "Cổng thanh toán VNPAY (ATM / QR / Thẻ Quốc tế)",
+    desc: "Thanh toán an toàn qua VNPAY-QR, Thẻ ATM nội địa, Visa, Mastercard",
     icon: <CreditCard className="w-5 h-5 text-blue-600" />,
     color: "border-blue-200 bg-blue-50",
-  },
-  {
-    id: "Card",
-    label: "Thẻ ngân hàng / Visa / Mastercard",
-    desc: "Thanh toán bằng thẻ ATM/Visa/Mastercard",
-    icon: <CreditCard className="w-5 h-5 text-indigo-600" />,
-    color: "border-indigo-200 bg-indigo-50",
   },
 ];
 
 const provinces = ["TP. Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Hải Phòng", "Cần Thơ", "Nha Trang", "Huế", "Đà Lạt"];
 
 export function Checkout() {
-  const { cart, cartTotal, user, placeOrder, clearCart, addAddress } = useApp();
+  const { cart, cartTotal, user, placeOrder, clearCart, addAddress, allCarts, isLoggedIn, isAdmin } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { voucherCode = "", discountAmount = 0 } = location.state || {};
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/login", { state: { from: location }, replace: true });
+    } else if (isAdmin) {
+      navigate("/admin", { replace: true });
+    }
+  }, [isLoggedIn, isAdmin, navigate, location]);
+
+  if (!isLoggedIn || isAdmin) {
+    return null;
+  }
+
+  const { voucherCode = "", discountAmount = 0, checkoutCartId } = location.state || {};
 
   const [step, setStep] = useState<Step>("address");
   const [payment, setPayment] = useState("COD");
@@ -73,10 +72,39 @@ export function Checkout() {
     }
   }, [user.addresses]);
 
-  const shippingFee = cartTotal >= 500000 ? 0 : 30000;
-  const originalSubtotal = cart.reduce((sum, item) => sum + (item.originalPrice || item.price) * item.quantity, 0);
-  const productDiscount = cart.reduce((sum, item) => sum + ((item.originalPrice || item.price) - item.price) * item.quantity, 0);
-  const total = Math.max(0, cartTotal - discountAmount + shippingFee);
+  const checkoutCart = useMemo(() => {
+    if (!checkoutCartId || !allCarts || allCarts.length === 0) {
+      return cart;
+    }
+    const currentCart = allCarts.find(c => c.id === checkoutCartId);
+    if (!currentCart) return cart;
+
+    // Map ApiCartItem to UI CartItem shape
+    return currentCart.items.map((item) => ({
+      id: item.id,
+      productId: item.productVariantId.toString(),
+      baseProductId: item.productId.toString(),
+      name: item.productName,
+      price: Number(item.unitPrice) || 0,
+      originalPrice: item.originalPrice !== undefined && item.originalPrice !== null ? Number(item.originalPrice) : undefined,
+      discount: item.discount !== undefined && item.discount !== null ? Number(item.discount) : undefined,
+      image: item.imageUrl,
+      quantity: item.quantity,
+      size: item.variantInfo,
+      color: '',
+      brand: ''
+    }));
+  }, [checkoutCartId, allCarts, cart]);
+
+  const checkoutCartTotal = useMemo(() => {
+    return checkoutCart.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
+  }, [checkoutCart]);
+
+  const hasItems = checkoutCart.length > 0;
+  const shippingFee = !hasItems || checkoutCartTotal >= 500000 ? 0 : 30000;
+  const originalSubtotal = checkoutCart.reduce((sum, item) => sum + (item.originalPrice || item.price) * item.quantity, 0);
+  const productDiscount = checkoutCart.reduce((sum, item) => sum + ((item.originalPrice || item.price) - item.price) * item.quantity, 0);
+  const total = !hasItems ? 0 : Math.max(0, checkoutCartTotal - discountAmount + shippingFee);
 
   const steps: { key: Step; label: string }[] = [
     { key: "address", label: "Địa chỉ giao hàng" },
@@ -134,12 +162,13 @@ export function Checkout() {
         status: "PENDING",
         paymentMethod: payment,
         voucherCode: voucherCode || null,
+        cartId: checkoutCartId ? Number(checkoutCartId) : undefined,
         billingAddress: {
           street: finalAddress?.street || "",
           city: (finalAddress as any)?.city || (finalAddress as any)?.province || "",
           state: (finalAddress as any)?.state || (finalAddress as any)?.ward || ""
         },
-        items: cart.map(item => ({
+        items: checkoutCart.map(item => ({
           productVariantId: parseInt(item.productId),
           quantity: item.quantity
         }))
@@ -167,7 +196,38 @@ export function Checkout() {
         throw new Error("Không nhận được phản hồi từ hệ thống sau khi đặt hàng.");
       }
 
-      navigate(`/order-success/${result.id || result.orderCode || "unknown"}`);
+      const orderId = result.id || result.orderCode;
+
+      // Xử lý thanh toán trực tuyến qua cổng VNPAY hoặc MoMo
+      if (payment === "VNPay") {
+        try {
+          const payUrl = await paymentService.createVNPayPayment(orderId);
+          if (payUrl) {
+            window.location.href = payUrl;
+            return;
+          }
+        } catch (payErr: any) {
+          console.error("Lỗi khi tạo liên kết thanh toán VNPay:", payErr);
+          alert("Đặt hàng thành công nhưng không thể chuyển hướng sang VNPAY. Vui lòng thử thanh toán lại trong mục Đơn hàng của bạn!");
+          navigate(`/order-success/${orderId || "unknown"}`);
+          return;
+        }
+      } else if (payment === "MoMo") {
+        try {
+          const payUrl = await paymentService.createMomoPayment(orderId, finalTotal);
+          if (payUrl) {
+            window.location.href = payUrl;
+            return;
+          }
+        } catch (payErr: any) {
+          console.error("Lỗi khi tạo liên kết thanh toán MoMo:", payErr);
+          alert("Đặt hàng thành công nhưng không thể chuyển hướng sang MoMo. Vui lòng thanh toán lại trong mục Đơn hàng!");
+          navigate(`/order-success/${orderId || "unknown"}`);
+          return;
+        }
+      }
+
+      navigate(`/order-success/${orderId || "unknown"}`);
     } catch (err: any) {
       console.error("Lỗi đặt hàng:", err);
       alert(err.message || "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!");
@@ -176,7 +236,11 @@ export function Checkout() {
     }
   };
 
-  if (cart.length === 0 && step !== "confirm") {
+  if (!isLoggedIn) {
+    return null;
+  }
+
+  if (checkoutCart.length === 0 && step !== "confirm") {
     return (
       <div className="text-center py-20">
         <h2 className="text-gray-600 mb-4">Giỏ hàng trống</h2>
@@ -392,19 +456,18 @@ export function Checkout() {
                   </label>
                 ))}
               </div>
-              {payment === "Card" && (
-                <div className="p-4 bg-indigo-50 rounded-xl mb-5 border border-indigo-100">
-                  <p className="text-sm text-indigo-700 mb-3">Thông tin thẻ</p>
-                  <div className="space-y-3">
-                    <input placeholder="Số thẻ" className="w-full px-4 py-2.5 border border-indigo-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 bg-white" />
-                    <div className="grid grid-cols-2 gap-3">
-                      <input placeholder="MM/YY" className="px-4 py-2.5 border border-indigo-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 bg-white" />
-                      <input placeholder="CVV" className="px-4 py-2.5 border border-indigo-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 bg-white" />
-                    </div>
-                    <input placeholder="Tên chủ thẻ" className="w-full px-4 py-2.5 border border-indigo-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 bg-white" />
+              {payment === "VNPay" && (
+                <div className="p-4 bg-blue-50 rounded-2xl mb-5 border border-blue-200">
+                  <div className="flex items-center gap-2 text-sm font-bold text-blue-900 mb-1">
+                    <CreditCard className="w-4 h-4 text-blue-600" />
+                    Cổng thanh toán VNPAY (Môi trường Sandbox)
                   </div>
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    Sau khi bấm <strong>"Đặt hàng"</strong>, hệ thống sẽ chuyển hướng bạn sang cổng thanh toán VNPAY an toàn để quét mã QR (VNPAY-QR) hoặc nhập thẻ ngân hàng (NCB, Vietcombank, Vietinbank, Agribank...).
+                  </p>
                 </div>
               )}
+              
               <div className="flex gap-3">
                 <button onClick={() => setStep("address")} className="px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
                   Quay lại
@@ -437,7 +500,7 @@ export function Checkout() {
               </div>
               {/* Items */}
               <div className="space-y-3 mb-5">
-                {cart.map((item) => (
+                {checkoutCart.map((item) => (
                   <div key={`${item.productId}-${item.size}-${item.color}`} className="flex items-center gap-3">
                     <img loading="lazy" decoding="async" src={optimizeImage(item.image)} alt={item.name} className="w-14 h-14 object-cover rounded-xl" />
                     <div className="flex-1 min-w-0">
@@ -488,7 +551,7 @@ export function Checkout() {
         <div className="bg-white rounded-2xl p-5 border border-gray-100 h-fit sticky top-24">
           <h3 className="text-gray-800 mb-4">Đơn hàng của bạn</h3>
           <div className="space-y-3 mb-4">
-            {cart.map((item) => (
+            {checkoutCart.map((item) => (
               <div key={`${item.productId}-${item.size}`} className="flex items-center gap-3">
                 <div className="relative">
                   <img loading="lazy" decoding="async" src={optimizeImage(item.image)} alt={item.name} className="w-12 h-12 object-cover rounded-lg" />
@@ -530,7 +593,9 @@ export function Checkout() {
             )}
             <div className="flex justify-between text-gray-600">
               <span>Phí ship</span>
-              <span className={shippingFee === 0 ? "text-green-600" : ""}>{shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}</span>
+              <span className={shippingFee === 0 && hasItems ? "text-green-600 font-medium" : ""}>
+                {!hasItems ? formatPrice(0) : shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}
+              </span>
             </div>
             <div className="flex justify-between text-gray-800 font-bold pt-2 border-t border-gray-100">
               <span>Tổng cộng</span>

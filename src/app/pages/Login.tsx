@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router";
+import { Link, useNavigate, useLocation, Navigate } from "react-router";
 import { User, Mail, Lock, Phone, ChevronRight, Eye, EyeOff, Zap, Loader2 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { TurnstileWidget } from "../components/TurnstileWidget";
@@ -8,7 +8,7 @@ import { sendOtpAPI } from "../../services/authService";
 const TURNSTILE_SITE_KEY = "1x00000000000000000000AA"; // Dummy testing key
 
 export function Login() {
-  const { login, register, isLoading, apiError } = useApp();
+  const { login, register, isLoading, apiError, isLoggedIn, isAdmin } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
@@ -40,6 +40,13 @@ export function Login() {
   const [registerOtp, setRegisterOtp] = useState("");
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [otpSentMessage, setOtpSentMessage] = useState("");
+
+  // Nếu người dùng đã đăng nhập thì tự động chuyển hướng, không cho vào lại trang đăng nhập
+  if (isLoggedIn && !registerSuccess) {
+    const from = (location.state as any)?.from?.pathname;
+    const target = (from && from !== "/login") ? from : (isAdmin ? "/admin" : "/");
+    return <Navigate to={target} replace />;
+  }
 
   const handleSendOtp = async () => {
     if (!registerData.email) {

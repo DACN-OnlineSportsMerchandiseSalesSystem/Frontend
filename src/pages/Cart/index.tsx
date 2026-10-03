@@ -433,7 +433,7 @@ export function Cart() {
 
             {/* Payment icons */}
             <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
-              {["COD", "MoMo", "VNPay", "Thẻ"].map((m) => (
+              {["COD", "VNPAY-QR", "Thẻ ATM", "Visa/Mastercard"].map((m) => (
                 <span key={m} className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded border border-gray-100">{m}</span>
               ))}
             </div>

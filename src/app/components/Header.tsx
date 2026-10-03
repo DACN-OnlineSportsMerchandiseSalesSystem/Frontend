@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
-import { ShoppingCart, Search, User, Menu, X, Zap, Heart, Package, Phone, ChevronDown, Gift, LogOut } from "lucide-react";
+import { ShoppingCart, Search, User, Menu, X, Zap, Heart, Package, Phone, ChevronDown, Gift, LogOut, Shield } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import productService, { Product } from "../../services/productService";
 
@@ -25,7 +25,7 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuOpen }: HeaderProps) {
-  const { cartCount, wishlist, isLoggedIn, logout, user, categories } = useApp();
+  const { cartCount, wishlist, isLoggedIn, isAdmin, logout, user, categories } = useApp();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
@@ -172,15 +172,17 @@ export function Header({ onMenuOpen }: HeaderProps) {
             <Package className="w-5 h-5" />
           </Link>
 
-          {/* Cart */}
-          <Link to="/cart" aria-label="Menu icon" className="relative p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
-            <ShoppingCart className="w-5 h-5" />
-            {cartCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-yellow-400 text-blue-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-black">
-                {cartCount > 9 ? "9+" : cartCount}
-              </span>
-            )}
-          </Link>
+          {/* Cart - Only for customer / guest */}
+          {!isAdmin && (
+            <Link to="/cart" aria-label="Menu icon" className="relative p-2 text-white hover:bg-blue-600 rounded-lg transition-colors">
+              <ShoppingCart className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-yellow-400 text-blue-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-black">
+                  {cartCount > 9 ? "9+" : cartCount}
+                </span>
+              )}
+            </Link>
+          )}
 
           {/* User */}
           {!isLoggedIn ? (
@@ -268,6 +270,22 @@ export function Header({ onMenuOpen }: HeaderProps) {
                           <p className="text-xs text-gray-500">{(user as any).level || 0} điểm khả dụng</p>
                         </div>
                       </Link>
+
+                      {isAdmin && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-5 py-3 min-h-[44px] hover:bg-purple-50 transition-colors group"
+                        >
+                          <div className="w-9 h-9 bg-purple-100 group-hover:bg-purple-200 rounded-xl flex items-center justify-center transition-colors flex-shrink-0">
+                            <Shield className="w-4 h-4 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-purple-700 font-semibold group-hover:text-purple-800 transition-colors">Trang Quản Trị</p>
+                            <p className="text-xs text-gray-500">Quản lý hệ thống & báo cáo</p>
+                          </div>
+                        </Link>
+                      )}
 
                       <div className="mx-5 my-1 border-t border-gray-100" />
 

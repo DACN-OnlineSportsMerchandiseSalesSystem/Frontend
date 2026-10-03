@@ -6,9 +6,11 @@ import { ProductCard } from "../components/ProductCard";
 import productService, { Product } from "../../services/productService";
 import blogService, { BlogPostDTO } from "../../services/blogService";
 import reviewService, { Review } from "../../services/reviewService";
+import { policyService, StorePolicy } from "../../services/policyService";
 import heroVideo1 from "../../imports/_o___u_real.mp4?url";
 import heroVideo2 from "../../imports/___th__thao_victor.mp4?url";
 import heroVideo3 from "../../imports/Video_gi_y.mp4?url";
+import posterGiay from "../../assets/poster-giay.webp";
 
 const heroSlides = [
   {
@@ -22,6 +24,7 @@ const heroSlides = [
     cta: "Mua ngay",
     link: "/products?category=Giày thể thao",
     video: heroVideo3,
+    poster: posterGiay,
   },
   {
     rgb: "15, 23, 42",
@@ -59,6 +62,7 @@ export function Home() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [blogs, setBlogs] = useState<BlogPostDTO[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [policies, setPolicies] = useState<StorePolicy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -88,6 +92,8 @@ export function Home() {
       console.error("Failed to fetch reviews", err);
       return [];
     });
+
+    policyService.getAllPolicies().then(data => setPolicies(data || [])).catch(() => {});
 
     Promise.all([fetchTopSelling, fetchRecommendations, fetchAll, fetchBlogs, fetchReviews])
       .then(([topSellingData, recommendedData, allData, blogsData, reviewsData]) => {
@@ -148,7 +154,8 @@ export function Home() {
           <video
             ref={videoRef}
             src={current.video}
-            fetchPriority="high"
+            poster={current.poster}
+            preload="metadata"
             autoPlay
             muted
             playsInline
@@ -270,22 +277,66 @@ export function Home() {
       <section className="bg-gradient-to-b from-gray-50 to-white py-6">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { icon: <Truck className="w-5 h-5 text-white" />, title: "Giao hàng toàn quốc", desc: "Miễn phí từ 500K" },
-              { icon: <RotateCcw className="w-5 h-5 text-white" />, title: "Đổi trả 30 ngày", desc: "Miễn phí, không lý do" },
-              { icon: <Shield className="w-5 h-5 text-white" />, title: "Hàng chính hãng 100%", desc: "Cam kết hoàn tiền" },
-              { icon: <Headphones className="w-5 h-5 text-white" />, title: "Hỗ trợ 24/7", desc: "Hotline 1900 1234" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 bg-white p-4 rounded-2xl border-2 border-orange-400 hover:border-orange-500 hover:shadow-lg transition-all">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
-                  {item.icon}
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">{item.title}</p>
-                  <p className="text-xs text-gray-600">{item.desc}</p>
-                </div>
-              </div>
-            ))}
+            {(() => {
+              const returnPolicy = policies.find(p => {
+                const k = (p.key || (p as any).policyKey || "").toLowerCase();
+                const t = (p.title || "").toLowerCase();
+                return k.includes("return") || k.includes("refund") || t.includes("đổi") || t.includes("trả");
+              });
+              const shippingPolicy = policies.find(p => {
+                const k = (p.key || (p as any).policyKey || "").toLowerCase();
+                const t = (p.title || "").toLowerCase();
+                return k.includes("ship") || t.includes("giao") || t.includes("vận chuyển");
+              });
+              const warrantyPolicy = policies.find(p => {
+                const k = (p.key || (p as any).policyKey || "").toLowerCase();
+                const t = (p.title || "").toLowerCase();
+                return k.includes("warrant") || t.includes("bảo hành") || t.includes("chính hãng");
+              });
+
+              const badges = [
+                {
+                  icon: <Truck className="w-5 h-5 text-white" />,
+                  title: shippingPolicy ? shippingPolicy.title : "Giao hàng toàn quốc",
+                  desc: "Miễn phí từ 500K",
+                  link: shippingPolicy ? `/policy?tab=${shippingPolicy.key || (shippingPolicy as any).policyKey}` : "/policy?tab=shipping"
+                },
+                {
+                  icon: <RotateCcw className="w-5 h-5 text-white" />,
+                  title: returnPolicy ? returnPolicy.title : "Chính sách đổi trả",
+                  desc: returnPolicy?.content?.includes("15 ngày") ? "Hỗ trợ đổi trả 15 ngày" : "Đổi trả theo quy định",
+                  link: returnPolicy ? `/policy?tab=${returnPolicy.key || (returnPolicy as any).policyKey}` : "/policy?tab=refund-privacy"
+                },
+                {
+                  icon: <Shield className="w-5 h-5 text-white" />,
+                  title: warrantyPolicy ? warrantyPolicy.title : "Hàng chính hãng 100%",
+                  desc: "Cam kết hoàn tiền",
+                  link: warrantyPolicy ? `/policy?tab=${warrantyPolicy.key || (warrantyPolicy as any).policyKey}` : "/policy?tab=warranty"
+                },
+                {
+                  icon: <Headphones className="w-5 h-5 text-white" />,
+                  title: "Hỗ trợ 24/7",
+                  desc: "Hotline 1900 1234 & AI Chat",
+                  link: "/policy?tab=faq"
+                }
+              ];
+
+              return badges.map((item, i) => (
+                <Link
+                  key={i}
+                  to={item.link}
+                  className="flex items-center gap-3 bg-white p-4 rounded-2xl border-2 border-orange-400 hover:border-orange-500 hover:shadow-lg hover:-translate-y-0.5 transition-all group cursor-pointer"
+                >
+                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                    {item.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-gray-900 group-hover:text-orange-600 transition-colors truncate">{item.title}</p>
+                    <p className="text-xs text-gray-600 truncate">{item.desc}</p>
+                  </div>
+                </Link>
+              ));
+            })()}
           </div>
         </div>
       </section>

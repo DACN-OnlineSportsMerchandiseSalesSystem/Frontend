@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search, Eye, Edit2, Printer, Download, CheckCircle, XCircle, Clock, Package, Truck, X, Loader2, AlertCircle } from "lucide-react";
+import { Search, Eye, RotateCcw, Edit2, Printer, Download, CheckCircle, XCircle, Clock, Package, Truck, X, Loader2, AlertCircle } from "lucide-react";
 import { formatPrice } from "../../data/products";
 import orderService from "../../../services/orderService";
 import { Order, useApp } from "../../context/AppContext";
@@ -11,8 +11,10 @@ const statusConfig = {
   shipping: { label: "Đang giao", color: "purple", icon: Truck, next: "delivered" },
   delivered: { label: "Đã giao", color: "green", icon: CheckCircle, next: null },
   canceled: { label: "Đã hủy", color: "red", icon: XCircle, next: null },
-  return_requested: { label: "Yêu cầu trả", color: "orange", icon: Package, next: "returned" },
-  returned: { label: "Đã trả", color: "gray", icon: Package, next: null },
+  cancelled: { label: "Đã hủy", color: "red", icon: XCircle, next: null },
+  return_requested: { label: "Yêu cầu trả", color: "orange", icon: Package, next: "refunded" },
+  refunded: { label: "Đã hoàn tiền", color: "purple", icon: RotateCcw, next: null },
+  returned: { label: "Đã hoàn trả", color: "gray", icon: Package, next: null },
 };
 
 export function OrdersManagement() {
@@ -36,7 +38,14 @@ export function OrdersManagement() {
       const apiOrders = await orderService.getAllOrdersAdmin();
       console.log(">>> [ADMIN] Fetched orders:", apiOrders);
       const mappedOrders: Order[] = apiOrders.map(mapApiOrderToUI)
-        .sort((a, b) => parseInt(b.id) - parseInt(a.id));
+        .sort((a, b) => {
+          const timeB = (b as any).rawDate ? new Date((b as any).rawDate).getTime() : 0;
+          const timeA = (a as any).rawDate ? new Date((a as any).rawDate).getTime() : 0;
+          if (timeB && timeA && timeB !== timeA) {
+            return timeB - timeA;
+          }
+          return (parseInt(b.id, 10) || 0) - (parseInt(a.id, 10) || 0);
+        });
       setOrders(mappedOrders);
     } catch (err: any) {
       console.error(">>> [ADMIN] Fetch orders error:", err);
@@ -72,10 +81,22 @@ export function OrdersManagement() {
 
   const sortedOrders = [...filteredOrders].sort((a, b) => {
     switch (sortBy) {
-      case "id_desc":
-        return b.id.localeCompare(a.id);
-      case "id_asc":
-        return a.id.localeCompare(b.id);
+      case "id_desc": {
+        const timeB = (b as any).rawDate ? new Date((b as any).rawDate).getTime() : 0;
+        const timeA = (a as any).rawDate ? new Date((a as any).rawDate).getTime() : 0;
+        if (timeB && timeA && timeB !== timeA) {
+          return timeB - timeA;
+        }
+        return (parseInt(b.id, 10) || 0) - (parseInt(a.id, 10) || 0);
+      }
+      case "id_asc": {
+        const timeB = (b as any).rawDate ? new Date((b as any).rawDate).getTime() : 0;
+        const timeA = (a as any).rawDate ? new Date((a as any).rawDate).getTime() : 0;
+        if (timeB && timeA && timeB !== timeA) {
+          return timeA - timeB;
+        }
+        return (parseInt(a.id, 10) || 0) - (parseInt(b.id, 10) || 0);
+      }
       case "total_asc":
         return a.total - b.total;
       case "total_desc":
@@ -97,7 +118,8 @@ export function OrdersManagement() {
     confirmed: orders.filter(o => o.status === "confirmed").length,
     shipping: orders.filter(o => o.status === "shipping").length,
     delivered: orders.filter(o => o.status === "delivered").length,
-    canceled: orders.filter(o => o.status === "canceled").length,
+    refunded: orders.filter(o => o.status === "refunded" || o.status === "returned").length,
+    canceled: orders.filter(o => o.status === "canceled" || o.status === "cancelled").length,
   };
 
   return (
@@ -124,6 +146,7 @@ export function OrdersManagement() {
             { key: "confirmed", label: "Đã xác nhận" },
             { key: "shipping", label: "Đang giao" },
             { key: "delivered", label: "Đã giao" },
+            { key: "refunded", label: "Đã hoàn tiền" },
             { key: "canceled", label: "Đã hủy" },
           ].map((tab) => (
             <button
@@ -206,12 +229,18 @@ export function OrdersManagement() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {paginatedOrders.map((order) => {
-                  const config = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
+                  const st = (order.status || "").toLowerCase();
+                  const isRefunded = st === "refunded" || st === "returned";
+                  const isCanceled = st === "canceled" || st === "cancelled";
+                  const isExcluded = isRefunded || isCanceled;
+                  const config = statusConfig[st as keyof typeof statusConfig] || statusConfig.pending;
                   const StatusIcon = config.icon;
                   return (
-                    <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={order.id} className={`transition-colors ${
+                      isRefunded ? "bg-purple-50/25 hover:bg-purple-50/50" : isCanceled ? "bg-gray-50/50 opacity-70 hover:bg-gray-50" : "hover:bg-gray-50"
+                    }`}>
                       <td className="px-4 py-3">
-                        <p className="text-sm font-mono font-medium text-blue-600">#{order.id}</p>
+                        <p className={`text-sm font-mono font-medium ${isExcluded ? "text-gray-500" : "text-blue-600"}`}>#{order.id}</p>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">{order.orderDate}</td>
                       <td className="px-4 py-3">
@@ -222,8 +251,17 @@ export function OrdersManagement() {
                         <p className="text-sm text-gray-600">{order.items.length} sản phẩm</p>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-sm font-bold text-gray-900">{formatPrice(order.total)}</p>
-                        <p className="text-xs text-gray-500">{order.paymentMethod}</p>
+                        {isExcluded ? (
+                          <div>
+                            <p className="text-sm font-bold text-gray-400 line-through">{formatPrice(order.total)}</p>
+                            <span className="text-[10px] text-purple-600 font-semibold">{isRefunded ? "(Đã hoàn tiền)" : "(Đã hủy)"}</span>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-sm font-bold text-gray-900">{formatPrice(order.total)}</p>
+                            <p className="text-xs text-gray-500">{order.paymentMethod}</p>
+                          </>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-${config.color}-100 text-${config.color}-700`}>

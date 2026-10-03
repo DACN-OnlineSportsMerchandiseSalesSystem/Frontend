@@ -49,7 +49,8 @@ export function Footer() {
           <h3 className="text-white mb-4">Hỗ trợ khách hàng</h3>
           <ul className="space-y-2 text-sm">
             {[
-              { label: "Chính sách đổi trả", to: "/returns" },
+              { label: "Chính sách đổi trả", to: "/policy?tab=refund-privacy" },
+              { label: "Gửi yêu cầu đổi trả", to: "/returns" },
               { label: "Chính sách bảo hành", to: "/policy?tab=warranty" },
               { label: "Chính sách vận chuyển", to: "/policy?tab=shipping" },
               { label: "Chính sách bảo mật", to: "/policy?tab=privacy" },
@@ -106,7 +107,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 flex-wrap justify-center">
             <span className="text-sm text-gray-400">Phương thức thanh toán:</span>
-            {["COD", "MoMo", "VNPay", "Thẻ ngân hàng", "Visa/MC"].map((m) => (
+            {["COD", "VNPAY-QR", "Thẻ ATM", "Visa/Mastercard"].map((m) => (
               <span key={m} className="px-3 py-1 bg-gray-800 rounded text-xs text-gray-400 border border-gray-700">{m}</span>
             ))}
           </div>

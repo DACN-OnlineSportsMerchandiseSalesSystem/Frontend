@@ -8,6 +8,8 @@ const roleLabel: Record<string, string> = {
   ADMIN: "Quản trị",
   ROLE_USER: "Khách hàng",
   USER: "Khách hàng",
+  ROLE_IT_ADMIN: "IT Admin",
+  IT_ADMIN: "IT Admin",
 };
 
 export function CustomersManagement() {
@@ -148,6 +150,7 @@ export function CustomersManagement() {
           >
             <option value="all">Tất cả vai trò</option>
             <option value="ROLE_ADMIN">Quản trị</option>
+            <option value="ROLE_IT_ADMIN">IT Admin</option>
             <option value="ROLE_USER">Khách hàng</option>
           </select>
           <select
@@ -188,7 +191,7 @@ export function CustomersManagement() {
         <div className="bg-white rounded-xl p-4 border border-gray-100">
           <p className="text-sm text-gray-600">Quản trị viên</p>
           <p className="text-2xl font-black text-purple-600 mt-1">
-            {users.filter(u => u.roleName === "ROLE_ADMIN").length}
+            {users.filter(u => u.roleName === "ROLE_ADMIN" || u.roleName === "ADMIN" || u.roleName === "ROLE_IT_ADMIN" || u.roleName === "IT_ADMIN").length}
           </p>
         </div>
         <div className="bg-white rounded-xl p-4 border border-gray-100">
@@ -254,7 +257,7 @@ export function CustomersManagement() {
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                          (user.roleName === 'ROLE_ADMIN' || user.roleName === 'ADMIN') ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                          (user.roleName === 'ROLE_ADMIN' || user.roleName === 'ADMIN' || user.roleName === 'ROLE_IT_ADMIN' || user.roleName === 'IT_ADMIN') ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
                         }`}>
                           {roleLabel[user.roleName || 'ROLE_USER'] || 'Khách hàng'}
                         </span>
@@ -397,6 +400,7 @@ export function CustomersManagement() {
                 <select className="w-full px-4 py-2 border rounded-xl" value={createForm.roleName} onChange={e => setCreateForm({...createForm, roleName: e.target.value})}>
                   <option value="ROLE_USER">Khách hàng</option>
                   <option value="ROLE_ADMIN">Quản trị viên</option>
+                  <option value="ROLE_IT_ADMIN">IT Admin</option>
                 </select>
               </div>
               <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
@@ -417,6 +421,7 @@ function UserDetailModal({ user, onClose, onUpdate }: { user: UserProfile; onClo
     if (!role) return "ROLE_USER";
     if (role === "ADMIN") return "ROLE_ADMIN";
     if (role === "USER") return "ROLE_USER";
+    if (role === "IT_ADMIN") return "ROLE_IT_ADMIN";
     return role;
   };
 
@@ -486,7 +491,7 @@ function UserDetailModal({ user, onClose, onUpdate }: { user: UserProfile; onClo
               <p className="text-sm text-gray-500 mb-2">ID: {user.id}</p>
               {!isEditing && (
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                  (user.roleName === 'ROLE_ADMIN' || user.roleName === 'ADMIN') ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                  (user.roleName === 'ROLE_ADMIN' || user.roleName === 'ADMIN' || user.roleName === 'ROLE_IT_ADMIN' || user.roleName === 'IT_ADMIN') ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
                 }`}>
                   {roleLabel[user.roleName || 'ROLE_USER']}
                 </span>
@@ -534,6 +539,7 @@ function UserDetailModal({ user, onClose, onUpdate }: { user: UserProfile; onClo
                     >
                       <option value="ROLE_USER">Khách hàng</option>
                       <option value="ROLE_ADMIN">Quản trị viên</option>
+                      <option value="ROLE_IT_ADMIN">IT Admin</option>
                     </select>
                   ) : (
                     <p className="font-medium text-gray-800">{roleLabel[user.roleName || 'ROLE_USER']}</p>

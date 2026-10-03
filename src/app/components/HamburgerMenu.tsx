@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { X, ChevronRight, Home, Package, ShoppingCart, Phone, FileText, RotateCcw, Star, ChevronDown, BookOpen } from "lucide-react";
+import { X, ChevronRight, Home, Package, ShoppingCart, Phone, FileText, RotateCcw, Star, ChevronDown, BookOpen, Shield } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
 function getCategoryIcon(name: string): string {
@@ -25,7 +25,7 @@ interface HamburgerMenuProps {
 }
 
 export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
-  const { categories, brands: apiBrands } = useApp();
+  const { categories, brands: apiBrands, isAdmin } = useApp();
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
   const [openSection, setOpenSection] = useState<string>("sports");
 
@@ -69,9 +69,10 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
             <p className="text-xs text-gray-500 uppercase tracking-wider mb-3 px-1">Điều hướng nhanh</p>
             <div className="space-y-1">
               {[
+                ...(isAdmin ? [{ icon: <Shield className="w-4 h-4 text-purple-600" />, label: "Trang Quản trị", to: "/admin" }] : []),
                 { icon: <Home className="w-4 h-4" />, label: "Trang chủ", to: "/" },
                 { icon: <Package className="w-4 h-4" />, label: "Tất cả sản phẩm", to: "/products" },
-                { icon: <ShoppingCart className="w-4 h-4" />, label: "Giỏ hàng", to: "/cart" },
+                ...(!isAdmin ? [{ icon: <ShoppingCart className="w-4 h-4" />, label: "Giỏ hàng", to: "/cart" }] : []),
                 { icon: <Package className="w-4 h-4" />, label: "Theo dõi đơn hàng", to: "/track-order" },
                 { icon: <RotateCcw className="w-4 h-4" />, label: "Đổi trả hàng", to: "/returns" },
                 { icon: <FileText className="w-4 h-4" />, label: "Chính sách", to: "/policy" },
